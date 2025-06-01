@@ -14,7 +14,7 @@ const HeroSection = () => {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 relative z-10 pt-24">
+      <div className="container mx-auto px-4 relative z-40 pt-24">
         <div className="max-w-xl">
           <h1 className="mb-8">
             <span className="text-[32px] font-semibold text-[#3d3d3d] font-['Open_Sans'] block">
@@ -23,7 +23,7 @@ const HeroSection = () => {
             <span className="text-[40px] font-bold text-[#3d3d3d] font-['Oleo_Script']">
               Bus Ticket
             </span>
-            <span className="text-[40px] font-bold text-[#5f5f5f] font-['Oleo_Script']"> with</span>
+            <span className="text-[40px] font-semibold text-[#3d3d3d] font-['Open_Sans']"> with</span>
           </h1>
 
           <div className="mb-16">
@@ -33,23 +33,24 @@ const HeroSection = () => {
           </div>
 
           {/* Tab Buttons */}
-          <div className="flex space-x-3 mb-4">
+
+          <div className="flex space-x-3 mt-[120px] ml-[48px] z-35">
             <Button 
               className="h-[68px] w-[120px] rounded-lg bg-[#0a639d] flex items-center justify-center"
             >
-              <span className="text-2xl font-semibold text-white">Bus</span>
+              <span className="text-xl font-semibold text-white">Bus</span>
             </Button>
             <Button 
               className="h-[68px] w-[120px] rounded-lg bg-[#ececec] flex items-center justify-center"
               variant="secondary"
             >
-              <span className="text-2xl font-semibold text-[#b0b0b0]">Flight</span>
+              <span className="text-xl font-semibold text-[#b0b0b0]">Flight</span>
             </Button>
             <Button 
               className="h-[68px] w-[120px] rounded-lg bg-[#ececec] flex items-center justify-center"
               variant="secondary"
             >
-              <span className="text-2xl font-semibold text-[#b0b0b0]">Hotel</span>
+              <span className="text-xl font-semibold text-[#b0b0b0]">Hotel</span>
             </Button>
           </div>
         </div>

@@ -1,0 +1,25 @@
+{
+  "short_name": "Sona Travel",
+  "name": "Sona Travel & Tours",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "images/img_logo_with_name_png_1.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "images/img_logo_with_name_png_2.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0a639d",
+  "background_color": "#ffffff"
+}

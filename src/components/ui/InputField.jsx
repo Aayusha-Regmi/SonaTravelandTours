@@ -25,7 +25,7 @@ const InputField = ({
       {label && (
         <label 
           htmlFor={inputId} 
-          className={`block text-[#5f5f5f] font-bold text-2xl mb-2 ${labelClassName}`}
+          className={`block text-[#5f5f5f] font-bold text-xl mb-2 ${labelClassName}`}
         >
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}

@@ -37,10 +37,23 @@ module.exports = {
       boxShadow: {
         card: '0px 4px 0px #888888',
         stats: '8px 8px 13px rgba(10, 99, 157, 0.3)',
-      },
-      borderRadius: {
+      },      borderRadius: {
         'xl': '12px',
         '2xl': '16px',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        pulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '.5' },
+        },
+      },
+      animation: {
+        fadeIn: 'fadeIn 0.3s ease-out',
+        pulse: 'pulse 1.5s ease-in-out infinite',
       },
     },
   },
