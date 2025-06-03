@@ -75,27 +75,27 @@ const LocationDropdown = ({
   };
   
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
-      {label && (
-        <label className="block text-[#5f5f5f] font-bold text-2xl mb-2">
+    <div className={`relative ${className}`} ref={dropdownRef}>      {label && (
+        <label className="block text-[#5f5f5f] font-semibold text-sm mb-2">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      
-      <button
+        <button
         type="button"
         onClick={toggleDropdown}
-        className="w-full px-4 py-3 bg-[#f5f5f5] rounded-xl text-lg font-semibold flex justify-between items-center hover:bg-[#efefef] focus:outline-none focus:ring-2 focus:ring-blue-300"
+        className="w-full px-4 h-[50px] bg-[#f5f5f5] rounded-xl text-sm font-medium flex justify-between items-center hover:bg-[#efefef] focus:outline-none focus:ring-2 focus:ring-blue-300 border border-transparent hover:border-[#0a639d]/20 transition-all duration-200 shadow-sm"
       >
         <span className={selectedOption ? 'text-[#5f5f5f]' : 'text-[#d9d9d9]'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <img 
-          src="/images/img_hicon_linear_down_2.svg" 
-          alt="Down Arrow" 
-          className={`w-6 h-6 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-        />
+        <span className={`flex items-center justify-center h-8 w-8 rounded-full ${isOpen ? 'bg-[#0a639d]/10' : ''}`}>
+          <img 
+            src="/images/img_hicon_linear_down_2.svg" 
+            alt="Down Arrow" 
+            className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+          />
+        </span>
       </button>
       
       {isOpen && (
@@ -121,19 +121,27 @@ const LocationDropdown = ({
           
           {/* Location options */}
           {filteredOptions.length > 0 ? (
-            filteredOptions.map((option) => (
-              <div 
+            filteredOptions.map((option) => (              <div 
                 key={option.value}
                 onClick={() => handleOptionSelect(option)}
                 onKeyDown={(e) => handleKeyDown(e, option)}
-                className="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 focus:outline-none focus:bg-gray-50"
+                className={`p-3 sm:p-4 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 focus:outline-none focus:bg-blue-50 transition-colors duration-150 ${option.value === value ? 'bg-blue-50' : ''}`}
                 tabIndex="0"
                 role="option"
                 aria-selected={option.value === value}
               >
-                <div className="text-[#3d3d3d] text-lg font-bold">{option.label}</div>
+                <div className="flex items-center">
+                  {option.value === value && (
+                    <span className="mr-2 text-[#0a639d]">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                    </span>
+                  )}
+                  <div className="text-[#3d3d3d] text-sm font-semibold">{option.label}</div>
+                </div>
                 {option.description && (
-                  <div className="text-[#8f8f8f] text-sm mt-1">{option.description}</div>
+                  <div className="text-[#8f8f8f] text-xs mt-1 ml-6">{option.description}</div>
                 )}
               </div>
             ))

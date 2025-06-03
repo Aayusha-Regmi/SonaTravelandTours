@@ -20,22 +20,34 @@ const Card = ({
   if (type === 'booking') {
     return (
       <div className={`bg-white rounded-2xl p-6 ${className}`}>
-        <div className="flex flex-col h-full">
-          <div className="mb-4">
+        <div className="flex flex-col h-full">          <div className="mb-4">
             <div className="flex justify-between">
               <div>
-                <h3 className="text-xl font-bold text-[#3d3d3d]">{origin}</h3>
-                <p className="text-lg font-semibold text-[#8f8f8f]">{subtitle}</p>
-              </div>
-              
-              <div className="flex items-center">
-                <div className="h-[30px] w-[2px] bg-gray-300"></div>
-                <img 
-                  src="/images/img_group_red_300.svg" 
-                  alt="Direction" 
-                  className="mx-2 w-6 h-6"
-                />
-                <div className="h-[30px] w-[2px] bg-gray-300"></div>
+                <h3 className="text-base sm:text-lg font-bold text-[#3d3d3d]">{origin}</h3>
+                <p className="text-sm sm:text-base font-medium text-[#8f8f8f]">{subtitle}</p>
+              </div>              <div className="flex items-center">
+                <svg width="80" height="30" viewBox="0 0 80 30" className="mx-2">
+                  <path 
+                    d="M5,15 L75,15" 
+                    stroke="#0a639d" 
+                    strokeWidth="2" 
+                    fill="none"
+                  />
+                  <circle cx="5" cy="15" r="4" fill="#0a639d" />
+                  <circle cx="75" cy="15" r="4" fill="#ff8f1f" />
+                  <path 
+                    d="M70,15 L80,15" 
+                    stroke="#ff8f1f" 
+                    strokeWidth="2" 
+                    strokeLinecap="round"
+                  />
+                  <path 
+                    d="M75,10 L75,20" 
+                    stroke="#ff8f1f" 
+                    strokeWidth="2" 
+                    strokeLinecap="round"
+                  />
+                </svg>
               </div>
               
               <div>

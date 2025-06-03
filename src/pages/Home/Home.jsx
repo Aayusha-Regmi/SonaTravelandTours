@@ -16,7 +16,7 @@ const HomePage = () => {
     <div className="bg-[#f5f5f5] min-h-screen">
       <Header />
       
-      <main>
+      <main className="pt-[80px]">
         <HeroSection />
         <SearchForm />
         <NowBookingSection />

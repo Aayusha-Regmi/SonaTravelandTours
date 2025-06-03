@@ -7,56 +7,63 @@ const Header = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-  };
-
-  return (
-    <header className="bg-white border-b border-[#ececec] h-[110px] w-full">
-      <div className="container mx-auto px-4 h-full flex items-center justify-between">
-        <div className="flex items-center">
+  };  return (
+    <header className="backdrop-blur-md bg-white/80 border-b border-[#ececec]/60 h-[80px] w-full fixed top-0 left-0 right-0 shadow-md z-50 after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-r after:from-white/10 after:to-white/20 after:z-[-1]">
+      <div className="container mx-auto px-4 h-full flex items-center justify-between relative">
+        {/* Decorative blobs for enhanced glass morphism effect */}
+        <div className="absolute -top-10 -left-20 w-48 h-48 rounded-full bg-[#ff8f1f]/15 blur-3xl animate-pulse"></div>
+        <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-[#0a639d]/15 blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+        <div className="absolute -bottom-10 left-1/3 w-32 h-32 rounded-full bg-[#ff8f1f]/10 blur-2xl animate-pulse" style={{ animationDelay: '0.7s' }}></div>
+        
+        <div className="flex items-center relative z-10">
           <Link to="/">
             <img 
               src="/images/img_logo_with_name_png_1.png" 
               alt="Sona Travel & Tours Logo" 
-              className="h-12 w-auto"
+              className="h-10 w-auto"
             />
           </Link>
-        </div>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
-          <Link to="/" className="text-[#5f5f5f] text-xl font-semibold">
+        </div>        {/* Desktop Navigation */}        <nav className="hidden md:flex items-center space-x-7 relative z-10">
+          <Link to="/" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Home
           </Link>
-          <Link to="/bookings" className="text-[#5f5f5f] text-xl font-semibold">
-            Bokings
+          <Link to="/bookings" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
+            Bookings
           </Link>
-          <Link to="/live-track" className="text-[#5f5f5f] text-xl font-semibold">
+          <Link to="/live-track" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Live Track
-          </Link>
-          <Link to="/faqs" className="text-[#5f5f5f] text-xl font-semibold">
+          </Link>          <Link to="/faqs" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             FAQs
           </Link>
-          <Link to="/contact" className="text-[#5f5f5f] text-xl font-semibold">
-            Contact Us
-          </Link>
-          <img 
-            src="/images/img_hicon_linear_down_2_gray_700.svg" 
-            alt="Down Arrow" 
-            className="w-6 h-6"
-          />
-        </nav>
-
-        <div className="hidden md:block">
+          <div className="relative group">
+            <div className="flex items-center cursor-pointer text-base font-medium text-[#5f5f5f] hover:text-[#0a639d] transition-colors">
+              Contact Us
+              <img 
+                src="/images/img_hicon_linear_down_2_gray_700.svg" 
+                alt="Down Arrow" 
+                className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:rotate-180"
+              />
+            </div>
+            <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100">
+              <Link to="/about-us" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
+                About Us
+              </Link>
+              <Link to="/testimonials" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
+                Testimonials
+              </Link>
+            </div>
+          </div>
+        </nav>        <div className="hidden md:block">
           <Button 
             variant="primary" 
-            className="bg-[#0a639d] rounded-xl h-[60px] px-4 flex items-center"
+            className="bg-[#0a639d] rounded-lg h-[45px] px-4 flex items-center hover:bg-[#07456e] transition-colors"
           >
             <img 
               src="/images/img_hicon_outline_profile_1.svg" 
               alt="Profile Icon" 
-              className="w-6 h-6 mr-2"
+              className="w-5 h-5 mr-2"
             />
-            <span className="text-xl font-bold">Sign Up</span>
+            <span className="text-lg font-bold">Sign Up</span>
           </Button>
         </div>
 
@@ -94,54 +101,69 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white py-4 px-4 shadow-lg">
-          <nav className="flex flex-col space-y-4">
+        <div className="md:hidden fixed top-[80px] left-0 right-0 bg-white/90 backdrop-blur-md py-6 px-5 shadow-lg border-b border-[#ececec]/60 z-50 max-h-[calc(100vh-80px)] overflow-y-auto">
+          <nav className="flex flex-col space-y-5">
             <Link 
               to="/" 
-              className="text-[#5f5f5f] text-xl font-semibold"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Home
             </Link>
             <Link 
               to="/bookings" 
-              className="text-[#5f5f5f] text-xl font-semibold"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
-              Bokings
+              Bookings
             </Link>
             <Link 
               to="/live-track" 
-              className="text-[#5f5f5f] text-xl font-semibold"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               Live Track
             </Link>
             <Link 
               to="/faqs" 
-              className="text-[#5f5f5f] text-xl font-semibold"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
               FAQs
             </Link>
-            <Link 
-              to="/contact" 
-              className="text-[#5f5f5f] text-xl font-semibold"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Contact Us
-            </Link>
+            
+            {/* Contact Us Dropdown for Mobile */}
+            <div className="py-2 space-y-3 pl-2 border-l-2 border-[#ececec]">
+              <div className="text-[#5f5f5f] text-base sm:text-lg font-medium">
+                Contact Us
+              </div>
+              <Link 
+                to="/about-us" 
+                className="block text-sm sm:text-base text-[#5f5f5f] hover:text-[#0a639d] pl-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About Us
+              </Link>
+              <Link 
+                to="/testimonials" 
+                className="block text-sm sm:text-base text-[#5f5f5f] hover:text-[#0a639d] pl-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Testimonials
+              </Link>
+            </div>
+            
             <Button 
               variant="primary" 
-              className="bg-[#0a639d] rounded-xl h-[60px] w-full flex items-center justify-center"
+              className="bg-[#0a639d] rounded-lg h-[50px] w-full flex items-center justify-center hover:bg-[#07456e] transition-colors mt-2"
               onClick={() => setIsMenuOpen(false)}
             >
               <img 
                 src="/images/img_hicon_outline_profile_1.svg" 
                 alt="Profile Icon" 
-                className="w-6 h-6 mr-2"
+                className="w-5 h-5 mr-2"
               />
-              <span className="text-xl font-bold">Sign Up</span>
+              <span className="text-base sm:text-lg font-bold">Sign Up</span>
             </Button>
           </nav>
         </div>

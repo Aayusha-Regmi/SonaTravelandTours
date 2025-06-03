@@ -30,6 +30,9 @@ module.exports = {
           placeholder: "#d9d9d9",
         },
       },
+      spacing: {
+        '58px': '58px',
+      },
       fontFamily: {
         'open-sans': ['Open Sans', 'sans-serif'],
         'oleo-script': ['Oleo Script', 'cursive'],
@@ -40,9 +43,16 @@ module.exports = {
       },      borderRadius: {
         'xl': '12px',
         '2xl': '16px',
-      },
-      keyframes: {
+      },      keyframes: {
         fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        slideDown: {
           '0%': { opacity: '0', transform: 'translateY(-10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
@@ -50,10 +60,44 @@ module.exports = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '.5' },
         },
+        flowDown: {
+          '0%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(10px)' },
+          '100%': { transform: 'translateY(0)' },
+        },
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(-3deg)' },
+          '50%': { transform: 'rotate(3deg)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        'flow-zigzag': {
+          '0%': { transform: 'translateX(0) translateY(0)' },
+          '25%': { transform: 'translateX(40px) translateY(20px)' },
+          '50%': { transform: 'translateX(80px) translateY(0)' },
+          '75%': { transform: 'translateX(120px) translateY(20px)' },
+          '100%': { transform: 'translateX(160px) translateY(0)' },
+        },
+        'flow-zigzag-reverse': {
+          '0%': { transform: 'translateX(0) translateY(0)' },
+          '25%': { transform: 'translateX(-40px) translateY(20px)' },
+          '50%': { transform: 'translateX(-80px) translateY(0)' },
+          '75%': { transform: 'translateX(-120px) translateY(20px)' },
+          '100%': { transform: 'translateX(-160px) translateY(0)' },
+        },
       },
       animation: {
         fadeIn: 'fadeIn 0.3s ease-out',
+        scaleIn: 'scaleIn 0.3s ease-out',
+        slideDown: 'slideDown 0.2s ease-out',
         pulse: 'pulse 1.5s ease-in-out infinite',
+        flowDown: 'flowDown 2s ease-in-out infinite',
+        wiggle: 'wiggle 2s ease-in-out infinite',
+        float: 'float 3s ease-in-out infinite',
+        'flow-zigzag': 'flow-zigzag 4s linear infinite',
+        'flow-zigzag-reverse': 'flow-zigzag-reverse 4s linear infinite',
       },
     },
   },
