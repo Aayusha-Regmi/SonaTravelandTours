@@ -345,8 +345,7 @@ const DatePicker = ({
               </div>
               
               {/* Footer buttons */}
-              <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between">
-                <button
+              <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between">                <button
                   type="button"
                   className="px-4 py-2 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all duration-200 focus:outline-none font-medium"
                   onClick={handleReset}
@@ -358,27 +357,29 @@ const DatePicker = ({
                     Reset
                   </div>
                 </button>
-                
-                <button
-                  type="button"
-                  className="px-4 py-2 text-xs bg-blue-50 text-[#0a639d] rounded-lg hover:bg-blue-100 transition-all duration-200 focus:outline-none font-medium"
-                  onClick={() => {
-                    const today = new Date();
-                    setCurrentMonth(today);
-                    setSelectedDate(today);
-                    onChange({ target: { name, value: formatDate(today) } });
-                    setIsOpen(false);
-                    setAnimate(true);
-                    setTimeout(() => setAnimate(false), 300);
-                  }}
-                >
-                  <div className="flex items-center">
-                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    Today
-                  </div>
-                </button>              </div>
+                  {(!isReturnDate && !label?.toLowerCase().includes('return date')) && (
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-xs bg-blue-50 text-[#0a639d] rounded-lg hover:bg-blue-100 transition-all duration-200 focus:outline-none font-medium"
+                    onClick={() => {
+                      const today = new Date();
+                      
+                      setCurrentMonth(today);
+                      setSelectedDate(today);
+                      onChange({ target: { name, value: formatDate(today) } });
+                      setIsOpen(false);
+                      setAnimate(true);
+                      setTimeout(() => setAnimate(false), 300);
+                    }}
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      Today
+                    </div>
+                  </button>
+                )}</div>
             </div>
           </div>
         )}
