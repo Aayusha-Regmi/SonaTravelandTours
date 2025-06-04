@@ -31,7 +31,11 @@ module.exports = {
         },
       },
       spacing: {
+        '10px': '10px',
+        '20px': '20px',
+        '30px': '30px',
         '58px': '58px',
+        '22': '5.5rem', // This will create ml-22 = 88px
       },
       fontFamily: {
         'open-sans': ['Open Sans', 'sans-serif'],
@@ -72,23 +76,23 @@ module.exports = {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-10px)' },
-        },        'flow-zigzag': {
-          '0%': { transform: 'translateX(0) translateY(0)', opacity: '1' },
-          '20%': { transform: 'translateX(40px) translateY(20px)', opacity: '0.9' },
-          '40%': { transform: 'translateX(80px) translateY(0)', opacity: '0.8' },
-          '60%': { transform: 'translateX(120px) translateY(20px)', opacity: '0.7' },
-          '80%': { transform: 'translateX(160px) translateY(0)', opacity: '0.6' },
-          '100%': { transform: 'translateX(200px) translateY(20px)', opacity: '0' },
+        },
+        'flow-zigzag': {
+          '0%': { transform: 'translateX(0) translateY(0)' },
+          '25%': { transform: 'translateX(40px) translateY(20px)' },
+          '50%': { transform: 'translateX(80px) translateY(0)' },
+          '75%': { transform: 'translateX(120px) translateY(20px)' },
+          '100%': { transform: 'translateX(160px) translateY(0)' },
         },
         'flow-zigzag-reverse': {
-          '0%': { transform: 'translateX(0) translateY(0)', opacity: '1' },
-          '20%': { transform: 'translateX(-40px) translateY(20px)', opacity: '0.9' },
-          '40%': { transform: 'translateX(-80px) translateY(0)', opacity: '0.8' },
-          '60%': { transform: 'translateX(-120px) translateY(20px)', opacity: '0.7' },
-          '80%': { transform: 'translateX(-160px) translateY(0)', opacity: '0.6' },
-          '100%': { transform: 'translateX(-200px) translateY(20px)', opacity: '0' },
+          '0%': { transform: 'translateX(0) translateY(0)' },
+          '25%': { transform: 'translateX(-40px) translateY(20px)' },
+          '50%': { transform: 'translateX(-80px) translateY(0)' },
+          '75%': { transform: 'translateX(-120px) translateY(20px)' },
+          '100%': { transform: 'translateX(-160px) translateY(0)' },
         },
-      },      animation: {
+      },
+      animation: {
         fadeIn: 'fadeIn 0.3s ease-out',
         scaleIn: 'scaleIn 0.3s ease-out',
         slideDown: 'slideDown 0.2s ease-out',
@@ -96,8 +100,8 @@ module.exports = {
         flowDown: 'flowDown 2s ease-in-out infinite',
         wiggle: 'wiggle 2s ease-in-out infinite',
         float: 'float 3s ease-in-out infinite',
-        'flow-zigzag': 'flow-zigzag 3s linear infinite',
-        'flow-zigzag-reverse': 'flow-zigzag-reverse 3s linear infinite',
+        'flow-zigzag': 'flow-zigzag 4s linear infinite',
+        'flow-zigzag-reverse': 'flow-zigzag-reverse 4s linear infinite',
       },
     },
   },

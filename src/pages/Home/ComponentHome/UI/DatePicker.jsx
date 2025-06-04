@@ -48,26 +48,39 @@ const DatePicker = ({
   };
     // Handle month navigation
   const handleMonthChange = (change) => {
-    setCurrentMonth(prev => {
-      const newDate = new Date(prev);
-      newDate.setMonth(prev.getMonth() + change);
-      return newDate;
-    });
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(newMonth.getMonth() + change);
+
+    // Check if the new month has any selectable dates
+    const daysInMonth = getDaysInMonth(newMonth.getMonth(), newMonth.getFullYear());
+    let hasSelectableDates = false;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const testDate = new Date(newMonth.getFullYear(), newMonth.getMonth(), day);
+      if (minDate) {
+        const min = new Date(minDate.getTime());
+        min.setHours(0, 0, 0, 0);
+        if (testDate >= min) {
+          hasSelectableDates = true;
+          break;
+        }
+      } else {
+        hasSelectableDates = true;
+        break;
+      }
+    }
+
+    if (hasSelectableDates) {
+      setCurrentMonth(newMonth);
+    }
   };
   
-  const handlePrevMonth = () => {
-    handleMonthChange(-1);
-  };
-  
-  const handleNextMonth = () => {
-    handleMonthChange(1);
-  };
+  const handlePrevMonth = () => handleMonthChange(-1);
+  const handleNextMonth = () => handleMonthChange(+1);
   
   // Make sure we can navigate through all months properly
   const goToSpecificMonth = (month, year) => {
-    const newDate = new Date();
-    newDate.setMonth(month);
-    newDate.setFullYear(year);
+    const newDate = new Date(year, month, 1);
     setCurrentMonth(newDate);
   };
   
@@ -78,51 +91,49 @@ const DatePicker = ({
     setTimeout(() => setAnimate(false), 300);
     setIsOpen(false);
   };  // Ensure the calendar is visible when opening
+  const hasOpened = useRef(false);
   useEffect(() => {
-    if (isOpen) {
-      // Set current month to selected date if available, otherwise current date
+    if (isOpen && !hasOpened.current) {
       if (selectedDate) {
-        // Create a fresh Date object to avoid reference issues
-        const newDate = new Date(selectedDate);
-        setCurrentMonth(newDate);
-      } else if (minDate && new Date() < new Date(minDate)) {
-        const newDate = new Date(minDate);
-        setCurrentMonth(newDate);
+        // If there's a selected date, show that month
+        setCurrentMonth(new Date(selectedDate));
+      } else if (minDate) {
+        // If there's a minimum date and it's in the future, show that month
+        const now = new Date();
+        const min = new Date(minDate);
+        setCurrentMonth(now < min ? new Date(minDate) : now);
       } else {
-        // Always create a fresh Date object
-        const today = new Date();
-        setCurrentMonth(today);
+        // Default to current month
+        setCurrentMonth(new Date());
       }
-      
-      // Enhanced scrolling to make the calendar fully visible
+      hasOpened.current = true;
+    }
+    if (!isOpen) {
+      hasOpened.current = false;
+    }
+    // Improved scroll logic
+    if (isOpen) {
       setTimeout(() => {
         if (calendarRef.current) {
           const rect = calendarRef.current.getBoundingClientRect();
-          const calendarHeight = rect.height;
-          const viewportHeight = window.innerHeight;
-          const isCalendarBelowViewport = rect.bottom > viewportHeight;
-          const isCalendarPartiallyVisible = rect.top < 0 || rect.bottom > viewportHeight;
-          const isCalendarTooTall = calendarHeight > viewportHeight * 0.8; // Calendar takes up more than 80% of viewport
-          
-          if (isCalendarBelowViewport || isCalendarPartiallyVisible) {
-            // Calculate the optimal scroll position
-            let scrollPosition;
-            
-            if (isCalendarTooTall) {
-              // If calendar is very tall, position it near the top of the viewport
-              scrollPosition = rect.top + window.scrollY - 50; // 50px from top
-            } else {
-              // Center the calendar in the viewport
-              scrollPosition = rect.top + window.scrollY - ((viewportHeight - calendarHeight) / 2);
-            }
-            
+          const scrollY = window.scrollY || window.pageYOffset;
+          const padding = 24; // px
+          let scrollTo = null;
+          if (rect.top < padding) {
+            // If calendar is above the viewport, scroll down
+            scrollTo = rect.top + scrollY - padding;
+          } else if (rect.bottom > window.innerHeight) {
+            // If calendar is below the viewport, scroll up
+            scrollTo = rect.bottom + scrollY - window.innerHeight + padding;
+          }
+          if (scrollTo !== null) {
             window.scrollTo({
-              top: scrollPosition,
-              behavior: 'smooth'
+              top: scrollTo,
+              behavior: 'smooth',
             });
           }
         }
-      }, 150); // Increased delay to ensure DOM is fully updated
+      }, 150);
     }
   }, [isOpen, selectedDate, minDate]);
   
@@ -159,17 +170,26 @@ const DatePicker = ({
   
   const isDateDisabled = (day) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    
-    // Check if date is before minimum date
-    if (minDate && date < new Date(minDate.setHours(0, 0, 0, 0))) {
-      return true;
+    date.setHours(0, 0, 0, 0);
+
+    // For past dates
+    if (minDate) {
+      const min = new Date(minDate);
+      min.setHours(0, 0, 0, 0);
+      if (date < min) {
+        return true;
+      }
     }
-    
-    // Check if date is after maximum date
-    if (maxDate && date > new Date(maxDate.setHours(23, 59, 59, 999))) {
-      return true;
+
+    // For max date if set
+    if (maxDate) {
+      const max = new Date(maxDate);
+      max.setHours(23, 59, 59, 999);
+      if (date > max) {
+        return true;
+      }
     }
-    
+
     return false;
   };
   
@@ -271,12 +291,13 @@ const DatePicker = ({
           </span>
         </button>            {isOpen && (
           <div className="absolute left-0 right-0 mt-2 z-50">
-            <div className="relative bg-white rounded-xl shadow-2xl p-4 border-2 border-[#0a639d]/20 animate-slideDown transition-all duration-200 ease-out max-h-[400px] overflow-auto">
-              {/* Close button in the corner */}
+            <div ref={calendarRef} className="relative bg-white rounded-xl shadow-2xl p-4 border-2 border-[#0a639d]/20 animate-slideDown transition-all duration-200 ease-out max-h-[400px] overflow-auto">
+              {/* Close button inside the calendar frame, top-right with padding */}
               <button 
                 type="button"
-                className="absolute -top-4 -right-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors focus:outline-none flex items-center justify-center"
+                className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors focus:outline-none flex items-center justify-center z-10"
                 onClick={() => setIsOpen(false)}
+                aria-label="Close calendar"
               >
                 <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -294,11 +315,9 @@ const DatePicker = ({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  
                   <div className="text-base font-bold text-white select-none">
                     {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                   </div>
-                  
                   <button 
                     type="button"
                     onClick={handleNextMonth}

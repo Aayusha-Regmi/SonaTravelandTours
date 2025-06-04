@@ -1,7 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Button from '@/components/ui/Button';
+import Toast from '@/components/ui/Toast';
 
-const HeroSection = () => {  return (
+const HeroSection = () => {
+  const [showToast, setShowToast] = useState(false);
+
+  const handleUnavailableService = () => {
+    setShowToast(true);
+  };
+
+  return (
     <section className="relative h-[400px] md:h-[450px] lg:h-[500px] overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
@@ -29,22 +37,22 @@ const HeroSection = () => {  return (
           <div className="mb-4">
             <span className="text-2xl sm:text-3xl md:text-4xl lg:text-[52px] font-bold text-[#ff8f1f] font-['Oleo_Script'] leading-tight">Sona</span>
             <span className="text-2xl sm:text-3xl md:text-4xl lg:text-[52px] font-bold text-[#0a639d] font-['Oleo_Script'] leading-tight"> Travel</span>
-            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-[52px] font-bold text-[#0a639d] font-['Oleo_Script'] leading-tight">&amp; Tours</div>
-          </div>{/* Tab Buttons positioned for the search card */}
-          <div className="absolute right-0 ml-40px bottom-0 transform translate-y-20 z-40">
-            <div className="flex space-x-1 sm:space-x-2">
+            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-[52px] font-bold text-[#0a639d] font-['Oleo_Script'] leading-tight">&amp; Tours</div>          </div>{/* Tab Buttons positioned for the search card */}          <div className="absolute ml-22 bottom-0 transform translate-y-20 z-50">
+            <div className="flex space-x-2 ml-2 sm:space-x-2">
               <Button 
                 className="h-[45px] sm:h-[50px] w-[80px] sm:w-[100px] rounded-lg bg-[#0a639d] flex items-center justify-center shadow-md hover:bg-[#07456e] transition-colors"
               >
                 <span className="text-sm sm:text-base font-medium text-white">Bus</span>
               </Button>
               <Button 
+                onClick={handleUnavailableService}
                 className="h-[45px] sm:h-[50px] w-[80px] sm:w-[100px] rounded-lg bg-[#ececec] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
                 variant="secondary"
               >
                 <span className="text-sm sm:text-base font-medium text-[#b0b0b0]">Flight</span>
               </Button>
               <Button 
+                onClick={handleUnavailableService}
                 className="h-[45px] sm:h-[50px] w-[80px] sm:w-[100px] rounded-lg bg-[#ececec] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
                 variant="secondary"
               >
@@ -54,6 +62,12 @@ const HeroSection = () => {  return (
           </div>
         </div>
       </div>
+
+      <Toast 
+        message="Services Available Soon"
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </section>
   );
 };
