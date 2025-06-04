@@ -343,9 +343,8 @@ const DatePicker = ({
               <div className="grid grid-cols-7 gap-1 mb-2 h-[180px]">
                 {renderDays()}
               </div>
-              
-              {/* Footer buttons */}
-              <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between">                <button
+                {/* Footer buttons */}
+              <div className={`mt-2 pt-2 border-t border-gray-100 flex ${(isReturnDate || label?.toLowerCase().includes('return date')) ? 'justify-center' : 'justify-between'}`}>                <button
                   type="button"
                   className="px-4 py-2 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all duration-200 focus:outline-none font-medium"
                   onClick={handleReset}
