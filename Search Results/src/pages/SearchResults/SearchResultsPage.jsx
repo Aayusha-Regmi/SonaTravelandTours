@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
-import FilterSection from './FilterSection';
-import BusListings from './BusListings';
-import DateSelector from './DateSelector';
+import FilterSection from './ComponentSearch/FilterSection';
+import BusListings from './ComponentSearch/BusListings';
+import DateSelector from './ComponentSearch/DateSelector';
 import Button from '../../components/ui/Button';
 
 

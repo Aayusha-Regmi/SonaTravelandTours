@@ -94,19 +94,63 @@ const apiService = {
       return handleResponse(response);
     } catch (error) {
       console.error('Failed to search routes:', error);
-      
-      // Return fallback data in case of error
+        // Return fallback data in case of error
       return {
         success: true,
         results: [
           {
-            id: '123',
+            id: 'bus-1',
+            busName: 'Sona Deluxe',
+            busType: 'AC Sleeper',
             from: searchParams.from,
             to: searchParams.to,
             date: searchParams.date,
             price: 'Rs. 1500.00',
-            departureTime: '08:00 AM',
-            arrivalTime: '02:30 PM'
+            fare: 1500,
+            departureTime: '08:00 PM',
+            arrivalTime: '06:00 AM',
+            boardingPoint: 'New Bus Park',
+            droppingPoint: 'Adarsha Nagar',
+            rating: '4.8',
+            duration: '10h',
+            availableSeats: 18,
+            facilities: ['WiFi', 'Charging Point', 'Blanket', 'Water Bottle']
+          },
+          {
+            id: 'bus-2',
+            busName: 'Sona Express',
+            busType: 'Non-AC Seater',
+            from: searchParams.from,
+            to: searchParams.to,
+            date: searchParams.date,
+            price: 'Rs. 1200.00',
+            fare: 1200,
+            departureTime: '09:00 PM',
+            arrivalTime: '07:30 AM',
+            boardingPoint: 'Kalanki',
+            droppingPoint: 'Ghantaghar',
+            rating: '4.5',
+            duration: '10h 30m',
+            availableSeats: 12,
+            facilities: ['Charging Point', 'Water Bottle']
+          },
+          {
+            id: 'bus-3',
+            busName: 'Sona Premium',
+            busType: 'AC Seater',
+            from: searchParams.from,
+            to: searchParams.to,
+            date: searchParams.date,
+            price: 'Rs. 1350.00',
+            fare: 1350,
+            departureTime: '07:00 PM',
+            arrivalTime: '05:00 AM',
+            boardingPoint: 'Koteshwor',
+            droppingPoint: 'Birta',
+            rating: '4.7',
+            duration: '10h',
+            availableSeats: 24,
+            facilities: ['WiFi', 'Charging Point', 'Water Bottle', 'Snacks']
           }
         ]
       };

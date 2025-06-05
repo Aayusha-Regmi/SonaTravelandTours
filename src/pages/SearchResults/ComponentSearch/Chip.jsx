@@ -11,7 +11,7 @@ const Chip = ({
   className = '',
   ...props 
 }) => {
-  const baseClasses = 'inline-flex items-center rounded-[13px] font-opensans transition-colors';
+  const baseClassSearch = 'inline-flex items-center rounded-[13px] font-opensans transition-colors';
   
   const variants = {
     default: selected 
@@ -29,7 +29,7 @@ const Chip = ({
   };
 
   const chipClasses = `
-    ${baseClasses} 
+    ${baseClassSearch} 
     ${variants[variant]} 
     ${sizes[size]} 
     ${onClick && !disabled ? 'cursor-pointer' : ''} 

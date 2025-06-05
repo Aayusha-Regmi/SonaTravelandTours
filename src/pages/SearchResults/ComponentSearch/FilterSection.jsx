@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import InputField from '../../components/ui/InputField';
-import Checkbox from '../../components/ui/Checkbox';
-import Chip from '../../components/ui/Chip';
+import InputField from '../../../components/ui/InputField';
+import Checkbox from '../../../components/ui/Checkbox';
+import Chip from './Chip';
 
 const FilterSection = () => {
   const [priceRange, setPriceRange] = useState([20, 120]);

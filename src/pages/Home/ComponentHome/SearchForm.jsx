@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import InputField from '../../../components/ui/InputField';
 import Button from '../../../components/ui/Button';
 import DatePicker from './UI/DatePicker';
@@ -6,6 +7,7 @@ import LocationDropdown from './UI/LocationDropdown';
 import apiService from '../../../services/api';
 
 const SearchForm = () => {
+  const navigate = useNavigate();
   const [tripType, setTripType] = useState('oneWay');  const [formData, setFormData] = useState({
     from: '',
     to: '',
@@ -93,7 +95,7 @@ const SearchForm = () => {
       [name]: value
     });
   };
-    const handleSearch = async () => {
+  const handleSearch = async () => {
     // Validate form data
     if (!formData.from || !formData.to || !formData.date || (tripType === 'twoWay' && !formData.returnDate)) {
       setError('Please fill in all required fields');
@@ -125,8 +127,20 @@ const SearchForm = () => {
       const data = await apiService.searchBusRoutes({ tripType, ...formData });
       
       console.log('Search results:', data);
-      // Here you would handle the results, perhaps by setting state or redirecting
-      alert(`Found ${data.results.length} buses for your journey!`);
+      
+      // Navigate to search results page with the data
+      navigate('/search-results', { 
+        state: { 
+          searchResults: data.results,
+          searchParams: { 
+            tripType, 
+            ...formData,
+            // Include city names from location codes
+            fromCity: locationOptions.find(loc => loc.value === formData.from)?.label || formData.from,
+            toCity: locationOptions.find(loc => loc.value === formData.to)?.label || formData.to
+          } 
+        } 
+      });
       
     } catch (err) {
       console.error('Error searching:', err);

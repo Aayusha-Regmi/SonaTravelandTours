@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Button from '../../components/ui/Button';
-import Chip from '../../components/ui/Chip';
+import Button from '../../../components/ui/Button';
+import Chip from './Chip';
 
 const BusListings = () => {
   const [expandedFacilities, setExpandedFacilities] = useState({});
