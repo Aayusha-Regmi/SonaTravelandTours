@@ -12,20 +12,19 @@ const Chip = ({
   ...props 
 }) => {
   const baseClassSearch = 'inline-flex items-center rounded-[13px] font-opensans transition-colors';
-  
-  const variants = {
+    const variants = {
     default: selected 
       ? 'bg-[#0a639d] text-white' 
       : 'bg-[#f5f5f5] text-[#5f5f5f] hover:bg-[#ececec]',
-    rating: 'bg-[#d85f66] text-white',
+    rating: 'bg-[#d85f66] text-white flex items-center',
     new: 'bg-[#ff8f1f] text-white',
     facility: 'bg-[#f5f5f5] text-[#3d3d3d]',
   };
 
   const sizes = {
-    small: 'px-2 py-1 text-[12px] leading-[17px]',
-    medium: 'px-3 py-2 text-[14px] leading-[20px]',
-    large: 'px-4 py-3 text-[16px] leading-[22px]',
+    small: 'px-2 py-0.5 text-xs',
+    medium: 'px-3 py-1 text-sm',
+    large: 'px-4 py-2 text-base',
   };
 
   const chipClasses = `

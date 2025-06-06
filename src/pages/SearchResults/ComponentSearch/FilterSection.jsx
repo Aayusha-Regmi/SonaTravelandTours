@@ -1,259 +1,465 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import InputField from '../../../components/ui/InputField';
 import Checkbox from '../../../components/ui/Checkbox';
 import Chip from './Chip';
 
-const FilterSection = () => {
-  const [priceRange, setPriceRange] = useState([20, 120]);
+const FilterSection = ({
+  priceRange = [500, 2000],
+  setPriceRange = () => {},
+  selectedBoardingPlaces = [],
+  setSelectedBoardingPlaces = () => {},
+  selectedDroppingPlaces = [],
+  setSelectedDroppingPlaces = () => {},
+  selectedBusTypes = [],
+  setSelectedBusTypes = () => {},
+  selectedFacilities = [],
+  setSelectedFacilities = () => {},
+  selectedRatings = [],
+  setSelectedRatings = () => {}
+}) => {
+  // Use props for price range
   const [liveTracking, setLiveTracking] = useState(true);
   const [selectedDepartureTime, setSelectedDepartureTime] = useState('Early Morning');
-  const [boardingPlaces, setBoardingPlaces] = useState({
-    'Boarding Place Name': true,
-    'Boarding Place Name 2': false,
-    'Boarding Place Name 3': false,
-    'Boarding Place Name 4': false,
-    'Boarding Place Name 5': false,
+  const [searchBoardingPlace, setSearchBoardingPlace] = useState('');
+  const [searchDroppingPlace, setSearchDroppingPlace] = useState('');
+  const [localBusTypes, setLocalBusTypes] = useState(selectedBusTypes.length > 0 ? selectedBusTypes : ['AC', 'Deluxe']);  const [isFilterExpanded, setIsFilterExpanded] = useState(true);
+    // Initialize boarding places with default selections or from props
+  const boardingPlaceOptions = {
+    'New Bus Park, Kathmandu': false,
+    'Kalanki, Kathmandu': false,
+    'Balkhu, Kathmandu': false,
+    'Koteshwor, Kathmandu': false,
+    'Chabahil, Kathmandu': false,
+  };
+  
+  // Mark selected boarding places as true
+  selectedBoardingPlaces.forEach(place => {
+    if (boardingPlaceOptions.hasOwnProperty(place)) {
+      boardingPlaceOptions[place] = true;
+    }
   });
-  const [droppingPlaces, setDroppingPlaces] = useState({
-    'Dropping Place Name': true,
-    'Dropping Place Name 2': false,
-    'Dropping Place Name 3': false,
-    'Dropping Place Name 4': false,
-    'Dropping Place Name 5': false,
+  
+  // If none selected, default to New Bus Park
+  if (selectedBoardingPlaces.length === 0) {
+    boardingPlaceOptions['New Bus Park, Kathmandu'] = true;
+  }
+  
+  const [boardingPlaces, setBoardingPlaces] = useState(boardingPlaceOptions);
+  
+  // Initialize dropping places with default selections or from props
+  const droppingPlaceOptions = {
+    'Adarsha Nagar, Birgunj': false,
+    'Ghantaghar, Birgunj': false,
+    'Birta, Birgunj': false,
+    'Powerhouse, Birgunj': false,
+    'Rangeli, Birgunj': false,
+  };
+  
+  // Mark selected dropping places as true
+  selectedDroppingPlaces.forEach(place => {
+    if (droppingPlaceOptions.hasOwnProperty(place)) {
+      droppingPlaceOptions[place] = true;
+    }
   });
-  const [selectedStars, setSelectedStars] = useState(['1-2 Stars', '3 Stars', '4 Stars', '5 Stars']);
+  
+  // If none selected, default to Adarsha Nagar
+  if (selectedDroppingPlaces.length === 0) {
+    droppingPlaceOptions['Adarsha Nagar, Birgunj'] = true;
+  }
+  
+  const [droppingPlaces, setDroppingPlaces] = useState(droppingPlaceOptions);
+    // Note: Filters are now applied automatically by the parent component
+  
+  const [localStars, setLocalStars] = useState(selectedRatings.length > 0 ? selectedRatings : ['3 Stars', '4 Stars']);
+  const [localFacilities, setLocalFacilities] = useState(selectedFacilities.length > 0 ? selectedFacilities : ['Full A/C & Air Suspension', 'Heated front seats']);
 
   const departureTimeOptions = [
-    { label: 'Early Morning', time: 'Before 9 AM' },
-    { label: 'Morning', time: '9 - 11:59 AM' },
-    { label: 'Afternoon', time: '12 - 6 PM' },
-    { label: 'Evening', time: 'After 6 PM' },
+    { label: 'Early Morning', time: 'Before 6 AM' },
+    { label: 'Morning', time: '6 - 11:59 AM' },
+    { label: 'Afternoon', time: '12 - 5 PM' },
+    { label: 'Evening', time: 'After 5 PM' },
   ];
 
+  // More realistic bus facilities for Nepal bus routes
   const busFacilities = [
-    'OLED OnePlus 42" TV',
-    'Navigation system',
     'Full A/C & Air Suspension',
-    'Multi-zone A/C',
+    'Reclining seats',
     'Heated front seats',
-    'CCTV Surveillance',
-    'Sony Dolby Digital system',
+    'WiFi onboard',
+    'Phone charging',
+    'Water bottle',
+    'CCTV camera',
+    'First aid kit',
+    'Reading light',
+    'Blankets'
   ];
-
-  const handleBoardingPlaceChange = (place, checked) => {
-    setBoardingPlaces(prev => ({
-      ...prev,
+  
+  // Bus types typically found in Nepal
+  const busTypes = [
+    'AC', 
+    'Deluxe', 
+    'Super Deluxe', 
+    'Tourist', 
+    'Luxury'
+  ];  const handleBoardingPlaceChange = (place, checked) => {
+    const updatedPlaces = {
+      ...boardingPlaces,
       [place]: checked
-    }));
+    };
+    setBoardingPlaces(updatedPlaces);
+    
+    // Update parent component with selected places
+    const selectedPlaces = Object.entries(updatedPlaces)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([placeName]) => placeName);
+    
+    setSelectedBoardingPlaces(selectedPlaces);
   };
-
   const handleDroppingPlaceChange = (place, checked) => {
-    setDroppingPlaces(prev => ({
-      ...prev,
+    const updatedPlaces = {
+      ...droppingPlaces,
       [place]: checked
-    }));
+    };
+    setDroppingPlaces(updatedPlaces);
+    
+    // Update parent component with selected places
+    const selectedPlaces = Object.entries(updatedPlaces)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([placeName]) => placeName);
+    
+    setSelectedDroppingPlaces(selectedPlaces);
   };
-
   const toggleStar = (star) => {
-    setSelectedStars(prev => 
-      prev.includes(star) 
-        ? prev.filter(s => s !== star)
-        : [...prev, star]
-    );
+    const newStars = localStars.includes(star)
+      ? localStars.filter(s => s !== star)
+      : [...localStars, star];
+    
+    setLocalStars(newStars);
+    setSelectedRatings(newStars);
   };
-
-  return (
-    <div className="bg-white rounded-[16px] w-[354px] h-[2000px] p-[24px]">
-      {/* Header */}
-      <h2 className="text-[20px] font-bold leading-[28px] text-[#3d3d3d] font-opensans mb-[21px]">
-        Filters
-      </h2>
+    const toggleBusType = (type) => {
+    const newBusTypes = localBusTypes.includes(type)
+      ? localBusTypes.filter(t => t !== type)
+      : [...localBusTypes, type];
+    
+    setLocalBusTypes(newBusTypes);
+    setSelectedBusTypes(newBusTypes);
+  };
+    const toggleFacility = (facility) => {
+    const newFacilities = localFacilities.includes(facility)
+      ? localFacilities.filter(f => f !== facility)
+      : [...localFacilities, facility];
+    
+    setLocalFacilities(newFacilities);
+    setSelectedFacilities(newFacilities);
+  };
+    const handlePriceChange = (min, max) => {
+    setPriceRange([min, max]);
+  };
+  
+  // Filter boarding places based on search input
+  const filteredBoardingPlaces = Object.entries(boardingPlaces).filter(
+    ([place]) => place.toLowerCase().includes(searchBoardingPlace.toLowerCase())
+  );
+  
+  // Filter dropping places based on search input
+  const filteredDroppingPlaces = Object.entries(droppingPlaces).filter(
+    ([place]) => place.toLowerCase().includes(searchDroppingPlace.toLowerCase())
+  );
+  return (    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-5 max-h-[85vh] overflow-auto">
+      {/* Header with expand/collapse button */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-gray-800">
+          Filters
+        </h2>
+        <button 
+          onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+          className="text-blue-600 text-sm font-medium hover:underline"
+        >
+          {isFilterExpanded ? 'Collapse All' : 'Expand All'}
+        </button>
+      </div>
       
-      <div className="w-full h-[1px] bg-[#ececec] mb-[51px]"></div>
+      <div className="w-full h-px bg-gray-200 mb-5"></div>
 
       {/* Price Filter */}
-      <div className="mb-[24px]">
-        <h3 className="text-[16px] font-bold leading-[22px] text-[#5f5f5f] font-opensans mb-[38px]">
-          Price
+      <div className="mb-6">
+        <h3 className="text-sm font-semibold text-gray-700 mb-4">
+          Price Range (NPR)
         </h3>
         
         {/* Price Range Slider */}
-        <div className="relative mb-[11px]">
-          <div className="w-full h-[4px] bg-[#ececec] rounded-full relative">
-            <div className="absolute h-full bg-[#0a639d] rounded-full left-[25%] right-[25%]"></div>
-            <div className="absolute w-[16px] h-[16px] bg-[#0a639d] rounded-full top-[-6px] left-[25%] transform -translate-x-1/2 cursor-pointer"></div>
-            <div className="absolute w-[16px] h-[16px] bg-[#0a639d] rounded-full top-[-6px] right-[25%] transform translate-x-1/2 cursor-pointer"></div>
+        <div className="relative mb-2 px-2">
+          <div className="w-full h-1 bg-gray-200 rounded-full relative">
+            <div 
+              className="absolute h-full bg-blue-600 rounded-full" 
+              style={{
+                left: `${((priceRange[0] - 500) / (2000 - 500)) * 100}%`,
+                right: `${100 - ((priceRange[1] - 500) / (2000 - 500)) * 100}%`
+              }}
+            ></div>
+            <input
+              type="range"
+              min="500"
+              max="2000"
+              step="100"
+              value={priceRange[0]}
+              onChange={(e) => handlePriceChange(parseInt(e.target.value), priceRange[1])}
+              className="absolute w-full h-1 opacity-0 cursor-pointer z-10"
+            />
+            <input
+              type="range"
+              min="500"
+              max="2000"
+              step="100"
+              value={priceRange[1]}
+              onChange={(e) => handlePriceChange(priceRange[0], parseInt(e.target.value))}
+              className="absolute w-full h-1 opacity-0 cursor-pointer z-10"
+            />
+            <div 
+              className="absolute w-4 h-4 bg-white border-2 border-blue-600 rounded-full top-[-6px] z-20"
+              style={{ left: `${((priceRange[0] - 500) / (2000 - 500)) * 100}%`, transform: 'translateX(-50%)' }}
+            ></div>
+            <div 
+              className="absolute w-4 h-4 bg-white border-2 border-blue-600 rounded-full top-[-6px] z-20"
+              style={{ left: `${((priceRange[1] - 500) / (2000 - 500)) * 100}%`, transform: 'translateX(-50%)' }}
+            ></div>
           </div>
         </div>
         
-        <div className="flex justify-between">
-          <span className="text-[14px] font-bold leading-[20px] text-[#8f8f8f] font-opensans">$20</span>
-          <span className="text-[14px] font-bold leading-[20px] text-[#8f8f8f] font-opensans">$120</span>
+        <div className="flex justify-between text-sm mt-3">
+          <span className="font-medium text-gray-600">Rs. {priceRange[0]}</span>
+          <span className="font-medium text-gray-600">Rs. {priceRange[1]}</span>
         </div>
-      </div>
-
-      <div className="w-full h-[1px] bg-[#ececec] mb-[24px]"></div>
+      </div>      <div className="w-full h-px bg-gray-200 mb-5"></div>
 
       {/* Live Tracking */}
-      <div className="mb-[24px]">
+      <div className="mb-5">
         <div className="flex items-center justify-between">
-          <h3 className="text-[16px] font-bold leading-[22px] text-[#5f5f5f] font-opensans">
+          <h3 className="text-sm font-semibold text-gray-700">
             Live Tracking
           </h3>
-          <div className="relative">
-            <div className={`w-[52px] h-[28px] rounded-[14px] transition-colors ${liveTracking ? 'bg-[#0a639d]' : 'bg-[#ececec]'}`}>
+          <button 
+            className="relative inline-flex items-center cursor-pointer"
+            onClick={() => setLiveTracking(!liveTracking)}
+          >
+            <div className={`w-10 h-5 rounded-full transition-colors ${liveTracking ? 'bg-blue-600' : 'bg-gray-200'}`}>
               <div 
-                className={`w-[20px] h-[20px] bg-white rounded-full absolute top-[4px] transition-transform ${liveTracking ? 'translate-x-[28px]' : 'translate-x-[4px]'}`}
-                onClick={() => setLiveTracking(!liveTracking)}
+                className={`absolute w-4 h-4 bg-white rounded-full top-0.5 transition-transform ${liveTracking ? 'translate-x-5' : 'translate-x-0.5'} shadow-md`}
               ></div>
             </div>
-          </div>
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          {liveTracking ? 'Track your bus in real-time' : 'Real-time tracking disabled'}
+        </p>
+      </div>
+
+      <div className="w-full h-px bg-gray-200 mb-5"></div>
+
+      {/* Bus Type */}
+      <div className="mb-5">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">
+          Bus Type
+        </h3>
+        
+        <div className="flex flex-wrap gap-2">
+          {busTypes.map((type, index) => (
+            <button
+              key={index}              className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                localBusTypes.includes(type)
+                  ? 'bg-blue-100 text-blue-700 font-medium'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              onClick={() => toggleBusType(type)}
+            >
+              {type}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="w-full h-[1px] bg-[#ececec] mb-[24px]"></div>
+      <div className="w-full h-px bg-gray-200 mb-5"></div>
 
       {/* Departure Time */}
-      <div className="mb-[24px]">
-        <h3 className="text-[16px] font-bold leading-[22px] text-[#5f5f5f] font-opensans mb-[38px]">
+      <div className="mb-5">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">
           Departure Time
         </h3>
         
-        <div className="grid grid-cols-2 gap-[8px]">
+        <div className="grid grid-cols-2 gap-2">
           {departureTimeOptions.map((option, index) => (
             <div 
               key={index}
-              className={`bg-[#f5f5f5] rounded-[8px] p-[12px] cursor-pointer transition-colors ${
-                selectedDepartureTime === option.label ? 'ring-2 ring-[#0a639d]' : ''
+              className={`bg-gray-50 rounded-lg p-3 cursor-pointer transition-colors ${
+                selectedDepartureTime === option.label 
+                  ? 'ring-2 ring-blue-500 bg-blue-50' 
+                  : 'hover:bg-gray-100'
               }`}
               onClick={() => setSelectedDepartureTime(option.label)}
             >
-              <div className="text-[14px] font-bold leading-[20px] text-[#5f5f5f] font-opensans mb-[15px]">
+              <div className="text-xs font-medium text-gray-700 mb-1">
                 {option.label}
               </div>
-              <div className="flex items-center">
-                <img 
-                  src="/images/img_hicon_linear_time_circle_1.svg" 
-                  alt="time" 
-                  className="w-[16px] h-[16px] mr-[4px]"
-                />
-                <span className="text-[12px] font-semibold leading-[17px] text-[#8f8f8f] font-opensans">
-                  {option.time}
-                </span>
+              <div className="flex items-center text-xs text-gray-500">
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                {option.time}
               </div>
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="w-full h-[1px] bg-[#ececec] mb-[24px]"></div>
+      </div>      <div className="w-full h-px bg-gray-200 mb-5"></div>
 
       {/* Boarding Place */}
-      <div className="mb-[24px]">
-        <h3 className="text-[16px] font-bold leading-[22px] text-[#5f5f5f] font-opensans mb-[34px]">
+      <div className="mb-5">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">
           Boarding Place
         </h3>
         
-        <div className="mb-[16px]">
-          <InputField 
-            placeholder="Search boarding place"
-            className="bg-[#f5f5f5] rounded-[12px] h-[60px]"
-          />
+        <div className="mb-3">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search boarding place"
+              value={searchBoardingPlace}
+              onChange={(e) => setSearchBoardingPlace(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+            />
+            <svg className="w-4 h-4 absolute right-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
         </div>
 
-        <div className="space-y-[35px]">
-          {Object.entries(boardingPlaces).map(([place, checked]) => (
-            <Checkbox
-              key={place}
-              label={place}
-              checked={checked}
-              onChange={(newChecked) => handleBoardingPlaceChange(place, newChecked)}
-            />
-          ))}
+        <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+          {filteredBoardingPlaces.length > 0 ? (
+            filteredBoardingPlaces.map(([place, checked]) => (
+              <div key={place} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`boarding-${place}`}
+                  checked={checked}
+                  onChange={(e) => handleBoardingPlaceChange(place, e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <label htmlFor={`boarding-${place}`} className="ml-2 text-xs text-gray-700">
+                  {place}
+                </label>
+              </div>
+            ))
+          ) : (
+            <p className="text-xs text-gray-500 italic">No matching boarding places found</p>
+          )}
         </div>
       </div>
 
-      <div className="w-full h-[1px] bg-[#ececec] mb-[24px]"></div>
+      <div className="w-full h-px bg-gray-200 mb-5"></div>
 
       {/* Dropping Place */}
-      <div className="mb-[24px]">
-        <h3 className="text-[16px] font-bold leading-[22px] text-[#5f5f5f] font-opensans mb-[34px]">
+      <div className="mb-5">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">
           Dropping Place
         </h3>
         
-        <div className="mb-[16px]">
-          <InputField 
-            placeholder="Search dropping place"
-            className="bg-[#f5f5f5] rounded-[12px] h-[60px]"
-          />
-        </div>
-
-        <div className="space-y-[35px]">
-          {Object.entries(droppingPlaces).map(([place, checked]) => (
-            <Checkbox
-              key={place}
-              label={place}
-              checked={checked}
-              onChange={(newChecked) => handleDroppingPlaceChange(place, newChecked)}
+        <div className="mb-3">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search dropping place"
+              value={searchDroppingPlace}
+              onChange={(e) => setSearchDroppingPlace(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
             />
-          ))}
+            <svg className="w-4 h-4 absolute right-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
         </div>
-      </div>
 
-      <div className="w-full h-[1px] bg-[#ececec] mb-[24px]"></div>
+        <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+          {filteredDroppingPlaces.length > 0 ? (
+            filteredDroppingPlaces.map(([place, checked]) => (
+              <div key={place} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`dropping-${place}`}
+                  checked={checked}
+                  onChange={(e) => handleDroppingPlaceChange(place, e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <label htmlFor={`dropping-${place}`} className="ml-2 text-xs text-gray-700">
+                  {place}
+                </label>
+              </div>
+            ))
+          ) : (
+            <p className="text-xs text-gray-500 italic">No matching dropping places found</p>
+          )}
+        </div>
+      </div>      <div className="w-full h-px bg-gray-200 mb-5"></div>
 
       {/* Bus Facilities */}
-      <div className="mb-[24px]">
-        <h3 className="text-[16px] font-bold leading-[22px] text-[#5f5f5f] font-opensans mb-[34px]">
+      <div className="mb-5">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">
           Bus Facilities
         </h3>
         
-        <div className="flex flex-wrap gap-[8px]">
+        <div className="flex flex-wrap gap-2">
           {busFacilities.map((facility, index) => (
-            <Chip
+            <button
               key={index}
-              variant="facility"
-              size="small"
-              className="bg-[#f5f5f5] text-[#3d3d3d] rounded-[8px] px-[12px] py-[12px] h-[40px] flex items-center"
+              onClick={() => toggleFacility(facility)}              className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs ${
+                localFacilities.includes(facility)
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                  : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+              }`}
             >
-              <img 
-                src="/images/img_phbus.svg" 
-                alt="facility" 
-                className="w-[16px] h-[16px] mr-[4px]"
-              />
+              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {localFacilities.includes(facility) ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
+                )}
+              </svg>
               {facility}
-            </Chip>
+            </button>
           ))}
         </div>
       </div>
 
-      <div className="w-full h-[1px] bg-[#ececec] mb-[24px]"></div>
+      <div className="w-full h-px bg-gray-200 mb-5"></div>
 
       {/* Star Rating */}
-      <div className="mb-[24px]">
-        <h3 className="text-[16px] font-bold leading-[22px] text-[#5f5f5f] font-opensans mb-[39px]">
-          Star
+      <div className="mb-5">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">
+          Star Rating
         </h3>
         
-        <div className="flex flex-wrap gap-[4px]">
+        <div className="flex flex-wrap gap-2">
           {['1-2 Stars', '3 Stars', '4 Stars', '5 Stars'].map((star, index) => (
-            <Chip
+            <button
               key={index}
-              variant="rating"
-              size="medium"
-              selected={selectedStars.includes(star)}
-              onClick={() => toggleStar(star)}
-              className="mb-[8px] h-[27px] rounded-[13px]"
+              onClick={() => toggleStar(star)}              className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs transition-colors ${
+                localStars.includes(star)
+                  ? 'bg-yellow-100 text-yellow-700 font-medium'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
             >
-              <img 
-                src="/images/img_hicon_outline_tick.svg" 
-                alt="star" 
-                className="w-[12px] h-[12px] mr-[4px] bg-white rounded-full"
-              />
+              {localStars.includes(star) && (
+                <svg className="w-3 h-3 mr-1 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                </svg>
+              )}
               {star}
-            </Chip>
+            </button>
           ))}
         </div>
+      </div>
+        {/* Filters applied automatically */}
+      <div className="pt-3 mt-2 border-t border-gray-200">
+        <p className="text-xs text-center text-gray-500">Filters are applied automatically</p>
       </div>
     </div>
   );

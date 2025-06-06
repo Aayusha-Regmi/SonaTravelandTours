@@ -1,36 +1,103 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
 import Chip from './Chip';
 
-const BusListings = ({ buses = [], isLoading = false }) => {
+// Utility function to convert time string to minutes for comparison
+const timeToMinutes = (timeString) => {
+  if (!timeString) return 0;
+  const [hours, minutes] = timeString.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+// Utility function to format time for display
+const formatTimeForDisplay = (timeString) => {
+  if (!timeString) return '';
+  
+  // Check if time is already in proper format
+  if (timeString.includes(':')) {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  }
+  
+  return timeString; // Return as is if not in expected format
+};
+
+// Utility function to calculate duration between departure and arrival
+const calculateDuration = (departureTime, arrivalTime) => {
+  if (!departureTime || !arrivalTime) return '';
+  
+  const departureMinutes = timeToMinutes(departureTime);
+  let arrivalMinutes = timeToMinutes(arrivalTime);
+  
+  // Handle overnight journeys
+  if (arrivalMinutes < departureMinutes) {
+    arrivalMinutes += 24 * 60; // Add 24 hours
+  }
+  
+  const durationMinutes = arrivalMinutes - departureMinutes;
+  const hours = Math.floor(durationMinutes / 60);
+  const minutes = durationMinutes % 60;
+  
+  return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
+};
+
+const BusListings = ({ buses = [], isLoading = false, totalBuses = 0 }) => {
   const navigate = useNavigate();
   const [expandedFacilities, setExpandedFacilities] = useState({});
   
   // If no buses passed, use default data
-  const busData = buses.length > 0 ? buses.map(bus => {
-    // Ensure we have an ID for navigation
-    const busId = bus.id || bus._id || `bus-${Math.random().toString(36).substr(2, 9)}`;
+  const busData = useMemo(() => {
+    if (buses.length === 0) return [];
     
-    return {
-      id: busId,
-      rating: bus.rating || '4.8',
-      name: bus.busName || bus.name || 'Sona Express',
-      type: bus.busType || bus.type || 'Tourist A/c, Delux',
-      departureTime: bus.departureTime || bus.departure_time || '16:00',
-      departureLocation: bus.boardingPoint || bus.boarding_point || bus.source || 'Bus Park',
-      arrivalTime: bus.arrivalTime || bus.arrival_time || '20:50',
-      arrivalLocation: bus.droppingPoint || bus.dropping_point || bus.destination || 'Bus Park',
-      duration: bus.duration || '9h',
-      price: bus.price || (bus.fare ? `Rs. ${bus.fare}` : 'Rs. 1200'),
-      priceUnit: '/ Seat',
-      availableSeats: `${bus.availableSeats || bus.available_seats || 12} Seats Available`,
-      facilities: bus.facilities || ['Heated front seats', 'Full A/C & Air Suspension'],
+    return buses.map(bus => {
+      // Ensure we have an ID for navigation
+      const busId = bus.id || bus._id || `bus-${Math.random().toString(36).substr(2, 9)}`;
       
-      // Store original data for passing to booking
-      originalData: bus
-    };
-  }) : [];
+      // Extract and normalize times
+      const depTime = bus.departureTime || bus.departure_time || '16:00';
+      const arrTime = bus.arrivalTime || bus.arrival_time || '20:50';
+      
+      // Calculate duration if not provided
+      const duration = bus.duration || calculateDuration(depTime, arrTime);
+      
+      // Format display times with AM/PM
+      const formattedDepartureTime = formatTimeForDisplay(depTime);
+      const formattedArrivalTime = formatTimeForDisplay(arrTime);
+      
+      // Determine if it's a night journey (departure after 6 PM)
+      const departureMinutes = timeToMinutes(depTime);
+      const isNightJourney = departureMinutes >= timeToMinutes('18:00');
+      
+      // Determine if it's an early morning journey (departure before 8 AM)
+      const isEarlyMorning = departureMinutes < timeToMinutes('08:00');
+      
+      return {
+        id: busId,
+        rating: bus.rating || '4.8',
+        name: bus.busName || bus.name || 'Sona Express',
+        type: bus.busType || bus.type || 'Tourist A/c, Delux',
+        departureTime: depTime,
+        departureTimeFormatted: formattedDepartureTime,
+        departureLocation: bus.boardingPoint || bus.boarding_point || bus.source || 'Bus Park',
+        arrivalTime: arrTime,
+        arrivalTimeFormatted: formattedArrivalTime,
+        arrivalLocation: bus.droppingPoint || bus.dropping_point || bus.destination || 'Bus Park',
+        duration: duration,
+        price: bus.price || (bus.fare ? `Rs. ${bus.fare}` : 'Rs. 1200'),
+        priceUnit: '/ Seat',
+        availableSeats: `${bus.availableSeats || bus.available_seats || 12} Seats Available`,
+        facilities: bus.facilities || ['Heated front seats', 'Full A/C & Air Suspension'],
+        isNightJourney,
+        isEarlyMorning,
+        
+        // Store original data for passing to booking
+        originalData: bus
+      };
+    });
+  }, [buses]);
 
   const toggleFacilities = (index) => {
     setExpandedFacilities(prev => ({
@@ -44,18 +111,17 @@ const BusListings = ({ buses = [], isLoading = false }) => {
       state: { bus: bus.originalData || bus }
     });
   };
-
   // Show loading state
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-[16px] w-[920px]">
+      <div className="flex flex-col items-center justify-center p-10 bg-white rounded-lg shadow-sm w-full border border-gray-100">
         <div className="animate-spin mb-4">
-          <svg className="w-12 h-12 text-[#0a639d]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg className="w-10 h-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
         </div>
-        <p className="text-lg font-semibold text-[#5f5f5f]">Searching for buses...</p>
+        <p className="text-base font-medium text-gray-600">Searching for buses...</p>
       </div>
     );
   }
@@ -63,20 +129,22 @@ const BusListings = ({ buses = [], isLoading = false }) => {
   // Show empty state when no results
   if (busData.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-[16px] w-[920px]">
+      <div className="flex flex-col items-center justify-center p-10 bg-white rounded-lg shadow-sm w-full border border-gray-100">
         <img 
           src="/images/img_illustrationbus9517789629.png" 
           alt="No buses found" 
-          className="w-56 h-56 mb-6 opacity-60"
+          className="w-48 h-48 mb-5 opacity-60"
         />
-        <h3 className="text-2xl font-bold text-[#3d3d3d] mb-2">No Buses Found</h3>
-        <p className="text-[#5f5f5f] text-center max-w-md mb-6">
-          We couldn't find any buses for this route on the selected date. Try different dates or locations.
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">No Matching Buses Found</h3>
+        <p className="text-gray-600 text-center max-w-md mb-6">
+          {totalBuses > 0 
+            ? `We found ${totalBuses} buses for this route, but none match your current filters. Try adjusting your filter criteria.` 
+            : "We couldn't find any buses for this route on the selected date. Try different dates or locations."}
         </p>
         <Button
           variant="primary"
           onClick={() => navigate('/')}
-          className="bg-[#0a639d] text-white rounded-[12px] px-8 py-3"
+          className="bg-[#0a639d] text-white rounded-lg px-6 py-2.5 hover:bg-blue-700 transition-colors"
         >
           Search Again
         </Button>
@@ -85,128 +153,132 @@ const BusListings = ({ buses = [], isLoading = false }) => {
   }
 
   return (
-    <div className="space-y-[16px]">
+    <div className="space-y-4">
       {busData.map((bus, index) => (
-        <div key={index} className="bg-white rounded-[16px] p-[28px] w-[920px] h-[236px]">
-          {/* Header with Rating and New Badge */}
-          <div className="flex items-center space-x-[4px] mb-[5px]">
-            <Chip variant="rating" size="medium" className="h-[27px] rounded-[13px]">
-              <img 
-                src="/images/img_hicon_outline_tick.svg" 
-                alt="star" 
-                className="w-[12px] h-[12px] mr-[4px] bg-white rounded-full"
-              />
-              {bus.rating}
-            </Chip>
-            <Chip variant="new" size="medium" className="h-[27px] rounded-[13px]">
-              New
-            </Chip>
-          </div>
-
-          {/* Bus Name and Type */}
-          <div className="mb-[25px]">
-            <h3 className="text-[20px] font-bold leading-[28px] text-[#3d3d3d] font-opensans mb-[1px]">
-              {bus.name}
-            </h3>
-            <p className="text-[14px] font-semibold leading-[20px] text-[#8f8f8f] font-opensans">
-              {bus.type}
-            </p>
-          </div>
-
-          {/* Journey Details */}
-          <div className="flex items-center justify-between mb-[40px]">
-            {/* Departure */}
-            <div className="text-center">
-              <div className="text-[20px] font-bold leading-[28px] text-[#3d3d3d] font-opensans">
-                {bus.departureTime}
+        <div key={index} className="bg-white rounded-lg p-4 md:p-6 w-full shadow-sm border border-gray-100">
+          <div className="flex flex-col lg:flex-row justify-between">
+            <div className="flex-1">
+              {/* Left column */}
+              <div className="flex items-center space-x-2 mb-1">
+                <Chip variant="rating" size="small" className="h-6 rounded-full px-2 py-1">
+                  <svg className="w-3 h-3 mr-1 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
+                  </svg>
+                  {bus.rating}
+                </Chip>
+                <Chip variant="new" size="small" className="h-6 rounded-full px-2 py-1">
+                  New
+                </Chip>
               </div>
-              <div className="text-[12px] font-semibold leading-[17px] text-[#8f8f8f] font-opensans">
-                {bus.departureLocation}
-              </div>
-            </div>
 
-            {/* Journey Line */}
-            <div className="flex items-center flex-1 mx-[15px]">
-              <div className="w-[70px] h-[1px] bg-[#efbdc0]"></div>
-              <div className="mx-[5px]">
-                <img 
-                  src="/images/img_group_red_300.svg" 
-                  alt="bus" 
-                  className="w-[32px] h-[32px]"
-                />
-                <div className="text-[12px] font-bold leading-[17px] text-[#8f8f8f] font-opensans text-center mt-[-18px]">
-                  {bus.duration}
+              {/* Bus Name and Type */}
+              <h3 className="text-lg font-bold text-gray-800 mb-0.5">
+                {bus.name}
+              </h3>
+              <p className="text-sm text-gray-500 mb-4">
+                {bus.type}
+              </p>              {/* Journey Details */}
+              <div className="flex items-center mb-6">
+                {/* Departure */}
+                <div className="text-left">
+                  <div className="text-xl font-bold text-gray-800">
+                    {bus.departureTimeFormatted}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {bus.departureLocation}
+                  </div>
+                  {bus.isEarlyMorning && (
+                    <span className="inline-block mt-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
+                      Early Morning
+                    </span>
+                  )}
+                </div>
+
+                {/* Journey Line with duration */}
+                <div className="flex items-center mx-4 flex-1">
+                  <div className="h-[1px] bg-red-200 flex-1"></div>
+                  <div className="relative mx-2">
+                    <img 
+                      src="/images/img_group_red_300.svg" 
+                      alt="bus" 
+                      className="w-8 h-8"
+                    />
+                    <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-500">
+                      {bus.duration}
+                    </div>
+                  </div>
+                  <div className="h-[1px] bg-red-200 flex-1"></div>
+                </div>
+
+                {/* Arrival */}
+                <div className="text-right">
+                  <div className="text-xl font-bold text-gray-800">
+                    {bus.arrivalTimeFormatted}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {bus.arrivalLocation}
+                  </div>
+                  {bus.isNightJourney && (
+                    <span className="inline-block mt-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded">
+                      Night Journey
+                    </span>
+                  )}
                 </div>
               </div>
-              <div className="w-[70px] h-[1px] bg-[#efbdc0]"></div>
             </div>
 
-            {/* Arrival */}
-            <div className="text-center">
-              <div className="text-[20px] font-bold leading-[28px] text-[#3d3d3d] font-opensans">
-                {bus.arrivalTime}
+            {/* Right column - Price */}
+            <div className="flex flex-col items-end justify-between ml-8">
+              <div className="text-right">
+                <span className="text-xl font-bold text-gray-800">
+                  {bus.price}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {bus.priceUnit}
+                </span>
               </div>
-              <div className="text-[12px] font-semibold leading-[17px] text-[#8f8f8f] font-opensans">
-                {bus.arrivalLocation}
-              </div>
-            </div>
-
-            {/* Price */}
-            <div className="text-right ml-[98px]">
-              <span className="text-[20px] font-bold leading-[28px] text-[#3d3d3d] font-opensans">
-                {bus.price}
-              </span>
-              <span className="text-[16px] font-bold leading-[21px] text-[#8f8f8f] font-opensans">
-                {bus.priceUnit}
-              </span>
             </div>
           </div>
 
-          <div className="w-full h-[1px] bg-[#ececec] mb-[40px]"></div>
-
-          {/* Bottom Section */}
-          <div className="flex items-center mt-[200px] justify-between">
+          {/* Bottom Section with divider */}
+          <div className="border-t border-gray-100 mt-4 pt-4 flex flex-wrap items-center justify-between">
             {/* Facilities */}
-            <div className="flex items-center space-x-[14px]">
+            <div className="flex flex-wrap items-center mb-3 lg:mb-0">
               {bus.facilities.map((facility, facilityIndex) => (
                 <span 
                   key={facilityIndex}
-                  className="text-[12px] font-semibold leading-[17px] text-[#5f5f5f] font-opensans"
+                  className="text-xs mr-4 text-gray-600 flex items-center"
                 >
-                  {facility}
+                  • {facility}
                 </span>
               ))}
               
               <button
                 onClick={() => toggleFacilities(index)}
-                className="bg-[#d85f66] text-white rounded-[12px] px-[7px] py-[6px] h-[31px] flex items-center text-[12px] font-semibold  font-opensans"
+                className="bg-red-400 text-white rounded-lg px-3 py-1.5 text-xs font-medium flex items-center"
               >
                 More Facilities
-                <img 
-                  src="/images/img_hicon_bold_down_2.svg" 
-                  alt="expand" 
-                  className="w-[14px] h-[14px] ml-[4px]"
-                />
+                <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
             </div>
 
             {/* Available Seats and Book Button */}
-            <div className="flex items-center space-x-[13px]">
-              <span className="text-[14px] font-bold leading-[20px] text-[#388b68] font-opensans">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm font-medium text-green-600">
                 {bus.availableSeats}
               </span>
               
               <Button 
-                variant="primary"
+                variant="primary"                
                 onClick={() => handleBookNow(bus)}
-                className="bg-[#0a639d] text-white rounded-[12px] px-[16px] py-[18px] h-[60px] w-[166px] flex items-center"
+                className="bg-[#0a639d] text-white rounded-lg px-4 py-2 md:px-6 md:py-3 flex items-center justify-center hover:bg-blue-700 transition-colors"
               >
-                <img 
-                  src="/images/img_hicon_outline_bookmark_3.svg" 
-                  alt="book" 
-                  className="w-[24px] h-[24px] mr-[8px]"
-                />
-                <span className="text-[20px] font-bold leading-[28px] font-opensans">Book Now</span>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                </svg>
+                <span className="text-sm md:text-lg font-medium">Book Now</span>
               </Button>
             </div>
           </div>
