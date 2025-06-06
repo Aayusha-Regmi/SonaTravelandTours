@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
-// Add CSS animation keyframes and all needed styles
+// All DatePicker styles as inline CSS using template literals
 const datepickerStyles = `
   @keyframes slideDown {
     from {
@@ -21,7 +21,7 @@ const datepickerStyles = `
   }
   
   /* Style for the active calendar day */
-  .datepicker-content .bg-[#0a639d] {
+  .datepicker-day-selected {
     box-shadow: 0 0 0 2px rgba(10, 99, 157, 0.3);
   }
 
@@ -162,7 +162,9 @@ const DatePicker = ({
     setAnimate(true);
     setTimeout(() => setAnimate(false), 300);
     setIsOpen(false);
-  };  // Ensure the calendar is visible when opening
+  };
+  
+  // Ensure the calendar is visible when opening
   const hasOpened = useRef(false);
   useEffect(() => {
     if (isOpen && !hasOpened.current) {
@@ -283,14 +285,16 @@ const DatePicker = ({
       const disabled = isDateDisabled(day);
       const isCurrentDay = isToday(day);
       const isSelectedDay = isSelected(day);
-        days.push(        <div key={`day-${day}`} className="h-[30px] flex items-center justify-center">
+      days.push(
+        <div key={`day-${day}`} className="h-[30px] flex items-center justify-center">
           <button
             type="button"
             onClick={() => handleDateClick(day)}
             disabled={disabled}
-            className={`              h-6 w-6 rounded-sm flex items-center justify-center text-[10px] font-medium transition-all duration-200
+            className={`
+              h-6 w-6 rounded-sm flex items-center justify-center text-[10px] font-medium transition-all duration-200
               ${isSelectedDay 
-                ? 'bg-[#0a639d] text-white font-bold shadow-[0_0_0_2px_rgba(10,99,157,0.3)]' 
+                ? 'bg-[#0a639d] text-white font-bold datepicker-day-selected' 
                 : isCurrentDay 
                   ? 'bg-blue-100 text-[#0a639d] font-bold ring-1 ring-[#0a639d]' 
                   : 'hover:bg-gray-100 hover:-translate-y-[1px]'}
@@ -321,8 +325,10 @@ const DatePicker = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-    return (
-    <div className={`relative ${className}`}>      {/* Add style tag with all datepicker styles */}
+
+  return (
+    <div className={`relative datepicker-content ${className}`}>
+      {/* Add style tag with all datepicker styles */}
       <style>
         {datepickerStyles}
       </style>
@@ -336,7 +342,8 @@ const DatePicker = ({
       
       <div className="relative" ref={calendarRef}>
         <button
-          type="button"          className={`w-full px-4 bg-[#f5f5f5] rounded-xl text-sm font-medium flex justify-between items-center 
+          type="button"
+          className={`w-full px-4 bg-[#f5f5f5] rounded-xl text-sm font-medium flex justify-between items-center 
             ${!disabled && 'hover:bg-[#efefef]'} focus:outline-none focus:ring-2 focus:ring-blue-300 
             border border-transparent ${!disabled && 'hover:border-[#0a639d]/20'} 
             transition-all duration-200 shadow-sm ${animate ? 'animate-pulse' : ''} 
@@ -347,7 +354,8 @@ const DatePicker = ({
           }}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
-        >          <div className="flex items-center">
+        >
+          <div className="flex items-center">
             <span className={`${value ? 'text-[#5f5f5f]' : 'text-[#a9a9a9]'}`}>
               {value || placeholder}
             </span>
@@ -361,16 +369,14 @@ const DatePicker = ({
               xmlns="http://www.w3.org/2000/svg"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>          </span>        </button>        {isOpen && (
-          <div className="absolute left-0 right-0 mt-2 z-[9999]">            <div
-              ref={calendarRef}
-              style={{
-                boxShadow: '0 10px 25px -5px rgba(10, 99, 157, 0.2), 0 8px 10px -6px rgba(10, 99, 157, 0.1)',
-                animation: 'slideDown 0.2s ease-out',
-                minWidth: windowWidth < 640 ? '300px' : '350px',
-                width: 'auto'
-              }}
-              className="relative bg-white rounded-xl shadow-2xl p-4 border-2 border-[#0a639d]/20 transition-all duration-200 ease-out max-h-[400px] overflow-auto w-[300px] md:w-[350px]"
+            </svg>
+          </span>
+        </button>
+        
+        {isOpen && (
+          <div className="absolute left-0 right-0 mt-2 z-[9999]">
+            <div
+              className="relative bg-white rounded-xl shadow-2xl p-4 border-2 border-[#0a639d]/20 transition-all duration-200 ease-out max-h-[400px] overflow-auto w-[300px] md:w-[350px] datepicker-calendar"
             >
               {/* Close button inside the calendar frame, top-right with padding */}
               <button 
@@ -383,7 +389,9 @@ const DatePicker = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
               </button>
-                  {/* Calendar header with month and year */}              <div className="mb-2">
+                  
+              {/* Calendar header with month and year */}
+              <div className="mb-2">
                 <div className="flex justify-between items-center bg-gradient-to-r from-[#0a639d] to-[#1a85c9] rounded-lg p-2 text-white shadow-md">
                   <button 
                     type="button"
@@ -408,19 +416,24 @@ const DatePicker = ({
                   </button>
                 </div>
               </div>
-                {/* Day headers */}              <div className="grid grid-cols-7 h-[24px] mb-1">
+                
+              {/* Day headers */}
+              <div className="grid grid-cols-7 h-[24px] mb-1">
                 {days.map(day => (
                   <div key={day} className="flex items-center justify-center text-[9px] font-semibold text-[#0a639d]">
                     {day}
                   </div>
                 ))}
               </div>
-                {/* Calendar grid with fixed height */}
+                
+              {/* Calendar grid with fixed height */}
               <div className="grid grid-cols-7 mb-2 h-[180px] w-full" style={{ columnGap: '3px', rowGap: '1px' }}>
                 {renderDays()}
               </div>
-                {/* Footer buttons */}
-              <div className={`mt-2 pt-2 border-t border-gray-100 flex ${(isReturnDate || label?.toLowerCase().includes('return date')) ? 'justify-center' : 'justify-between'}`}>                <button
+                
+              {/* Footer buttons */}
+              <div className={`mt-2 pt-2 border-t border-gray-100 flex ${(isReturnDate || label?.toLowerCase().includes('return date')) ? 'justify-center' : 'justify-between'}`}>
+                <button
                   type="button"
                   className="px-4 py-2 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all duration-200 focus:outline-none font-medium"
                   onClick={handleReset}
@@ -432,7 +445,7 @@ const DatePicker = ({
                     Reset
                   </div>
                 </button>
-                  {(!isReturnDate && !label?.toLowerCase().includes('return date')) && (
+                {(!isReturnDate && !label?.toLowerCase().includes('return date')) && (
                   <button
                     type="button"
                     className="px-4 py-2 text-xs bg-blue-50 text-[#0a639d] rounded-lg hover:bg-blue-100 transition-all duration-200 focus:outline-none font-medium"
@@ -454,7 +467,8 @@ const DatePicker = ({
                       Today
                     </div>
                   </button>
-                )}</div>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -165,7 +165,7 @@ const BusListings = ({ buses = [], isLoading = false }) => {
           <div className="w-full h-[1px] bg-[#ececec] mb-[40px]"></div>
 
           {/* Bottom Section */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center mt-[200px] justify-between">
             {/* Facilities */}
             <div className="flex items-center space-x-[14px]">
               {bus.facilities.map((facility, facilityIndex) => (
@@ -179,7 +179,7 @@ const BusListings = ({ buses = [], isLoading = false }) => {
               
               <button
                 onClick={() => toggleFacilities(index)}
-                className="bg-[#d85f66] text-white rounded-[12px] px-[7px] py-[6px] h-[31px] flex items-center text-[12px] font-semibold leading-[17px] font-opensans"
+                className="bg-[#d85f66] text-white rounded-[12px] px-[7px] py-[6px] h-[31px] flex items-center text-[12px] font-semibold  font-opensans"
               >
                 More Facilities
                 <img 

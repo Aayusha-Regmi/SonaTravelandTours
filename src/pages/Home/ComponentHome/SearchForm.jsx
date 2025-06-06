@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import InputField from '../../../components/ui/InputField';
 import Button from '../../../components/ui/Button';
-import DatePicker from './UI/DatePicker';
+import DatePicker from './UI/DatePickerNew';
 import LocationDropdown from './UI/LocationDropdown';
 import apiService from '../../../services/clientapi';
 
@@ -235,7 +235,7 @@ const SearchForm = () => {
               />
             </button>
           </div>
-        </div>        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-3">
+        </div>        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-3 datepicker-container">
           <div className={`${tripType === 'twoWay' ? 'w-full sm:w-1/2' : 'w-full'} transition-all duration-300`}>
             <div className="relative">
               <DatePicker
@@ -245,7 +245,7 @@ const SearchForm = () => {
                 onChange={handleInputChange}
                 placeholder={tripType === 'twoWay' ? "Select departure date" : "Select date"}
                 required
-                className="h-[45px] sm:h-[50px]"
+                className="h-full"
               />
             </div>
           </div>
@@ -263,9 +263,8 @@ const SearchForm = () => {
                     const nextDay = new Date(formData.date.split(' ').join(' '));
                     nextDay.setDate(nextDay.getDate() + 1);
                     return nextDay;
-                  })() : new Date()}
-                  disabled={!formData.date}
-                  className="h-[45px] sm:h-[50px]"
+                  })() : new Date()}                  disabled={!formData.date}
+                  className="h-full"
                 />
               </div>
             </div>
