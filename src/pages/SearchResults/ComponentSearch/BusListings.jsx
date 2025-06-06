@@ -3,39 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
 import Chip from './Chip';
 
-const BusListings = ({ buses = [] }) => {
+const BusListings = ({ buses = [], isLoading = false }) => {
   const navigate = useNavigate();
   const [expandedFacilities, setExpandedFacilities] = useState({});
-
+  
   // If no buses passed, use default data
-  const busData = buses.length > 0 ? buses.map(bus => ({
-    id: bus.id,
-    rating: bus.rating || '4.8',
-    name: bus.busName || 'Sona Express',
-    type: bus.busType || 'Tourist A/c, Delux',
-    departureTime: bus.departureTime || '16:00',
-    departureLocation: bus.boardingPoint || 'Bus Park',
-    arrivalTime: bus.arrivalTime || '20:50',
-    arrivalLocation: bus.droppingPoint || 'Bus Park',
-    duration: bus.duration || '9h',
-    price: bus.price || 'Rs. 1200',
-    priceUnit: '/ Seat',
-    availableSeats: `${bus.availableSeats || 12} Seats Available`,
-    facilities: bus.facilities || ['Heated front seats', 'Full A/C & Air Suspension'],
-  })) : Array(4).fill({
-    rating: '4.9',
-    name: 'Name or No of the bus',
-    type: 'Tourist A/c, Delux',
-    departureTime: '16:00',
-    departureLocation: 'Swayambhu',
-    arrivalTime: '20:50',
-    arrivalLocation: 'Bus Park',
-    duration: '9h',
-    price: 'Rs. 1200',
-    priceUnit: '/ Seat',
-    availableSeats: '12 Seats Available',
-    facilities: ['Heated front seats', 'Full A/C & Air Suspension'],
-  });
+  const busData = buses.length > 0 ? buses.map(bus => {
+    // Ensure we have an ID for navigation
+    const busId = bus.id || bus._id || `bus-${Math.random().toString(36).substr(2, 9)}`;
+    
+    return {
+      id: busId,
+      rating: bus.rating || '4.8',
+      name: bus.busName || bus.name || 'Sona Express',
+      type: bus.busType || bus.type || 'Tourist A/c, Delux',
+      departureTime: bus.departureTime || bus.departure_time || '16:00',
+      departureLocation: bus.boardingPoint || bus.boarding_point || bus.source || 'Bus Park',
+      arrivalTime: bus.arrivalTime || bus.arrival_time || '20:50',
+      arrivalLocation: bus.droppingPoint || bus.dropping_point || bus.destination || 'Bus Park',
+      duration: bus.duration || '9h',
+      price: bus.price || (bus.fare ? `Rs. ${bus.fare}` : 'Rs. 1200'),
+      priceUnit: '/ Seat',
+      availableSeats: `${bus.availableSeats || bus.available_seats || 12} Seats Available`,
+      facilities: bus.facilities || ['Heated front seats', 'Full A/C & Air Suspension'],
+      
+      // Store original data for passing to booking
+      originalData: bus
+    };
+  }) : [];
 
   const toggleFacilities = (index) => {
     setExpandedFacilities(prev => ({
@@ -43,11 +38,51 @@ const BusListings = ({ buses = [] }) => {
       [index]: !prev[index]
     }));
   };
+  
   const handleBookNow = (bus) => {
     navigate(`/select-seats/${bus.id}`, { 
-      state: { bus }
+      state: { bus: bus.originalData || bus }
     });
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-[16px] w-[920px]">
+        <div className="animate-spin mb-4">
+          <svg className="w-12 h-12 text-[#0a639d]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+        <p className="text-lg font-semibold text-[#5f5f5f]">Searching for buses...</p>
+      </div>
+    );
+  }
+
+  // Show empty state when no results
+  if (busData.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-[16px] w-[920px]">
+        <img 
+          src="/images/img_illustrationbus9517789629.png" 
+          alt="No buses found" 
+          className="w-56 h-56 mb-6 opacity-60"
+        />
+        <h3 className="text-2xl font-bold text-[#3d3d3d] mb-2">No Buses Found</h3>
+        <p className="text-[#5f5f5f] text-center max-w-md mb-6">
+          We couldn't find any buses for this route on the selected date. Try different dates or locations.
+        </p>
+        <Button
+          variant="primary"
+          onClick={() => navigate('/')}
+          className="bg-[#0a639d] text-white rounded-[12px] px-8 py-3"
+        >
+          Search Again
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-[16px]">

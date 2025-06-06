@@ -20,6 +20,7 @@ const SearchResultsPage = () => {
   const [travelDate, setTravelDate] = useState(searchParams.date || '06/06/2024');
   const [sortBy, setSortBy] = useState('Earliest');
   const [busResults, setBusResults] = useState(searchResults || []);
+  const [isLoading, setIsLoading] = useState(false);
 
   const sortOptions = ['Earliest', 'Latest', 'Lowest price', 'Highest price', 'Newest', 'Top rating'];
 
@@ -29,6 +30,37 @@ const SearchResultsPage = () => {
       console.log('No search data available');
     }
   }, [location.state, searchResults]);
+
+  // Effect to sort bus results when sortBy changes
+  useEffect(() => {
+    if (busResults.length === 0) return;
+    
+    setIsLoading(true);
+    
+    const sortedResults = [...busResults].sort((a, b) => {
+      switch(sortBy) {
+        case 'Earliest':
+          return (a.departureTime || a.departure_time || '').localeCompare(b.departureTime || b.departure_time || '');
+        case 'Latest':
+          return (b.departureTime || b.departure_time || '').localeCompare(a.departureTime || a.departure_time || '');
+        case 'Lowest price':
+          const priceA = a.fare || parseInt((a.price || '').replace(/[^0-9]/g, '')) || 0;
+          const priceB = b.fare || parseInt((b.price || '').replace(/[^0-9]/g, '')) || 0;
+          return priceA - priceB;
+        case 'Highest price':
+          const priceC = a.fare || parseInt((a.price || '').replace(/[^0-9]/g, '')) || 0;
+          const priceD = b.fare || parseInt((b.price || '').replace(/[^0-9]/g, '')) || 0;
+          return priceD - priceC;
+        case 'Top rating':
+          return (parseFloat(b.rating || '0') || 0) - (parseFloat(a.rating || '0') || 0);
+        default:
+          return 0;
+      }
+    });
+    
+    setBusResults(sortedResults);
+    setTimeout(() => setIsLoading(false), 300); // Small delay for UI feedback
+  }, [sortBy]);
 
   const handleSearchAgain = () => {
     navigate('/');
@@ -144,7 +176,7 @@ const SearchResultsPage = () => {
               className="w-[32px] h-[32px]"
             />
             <span className="text-[18px] font-bold leading-[25px] text-[#388b68] font-opensans">
-              20 Buses are available!
+              {busResults.length} Bus{busResults.length !== 1 ? 'es' : ''} found
             </span>
           </div>
 
@@ -184,7 +216,7 @@ const SearchResultsPage = () => {
           <FilterSection />
 
           {/* Bus Listings */}
-          <BusListings buses={busResults} />
+          <BusListings buses={busResults} isLoading={isLoading} />
         </div>
       </main>
 

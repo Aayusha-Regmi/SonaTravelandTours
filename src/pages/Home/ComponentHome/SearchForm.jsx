@@ -4,7 +4,7 @@ import InputField from '../../../components/ui/InputField';
 import Button from '../../../components/ui/Button';
 import DatePicker from './UI/DatePicker';
 import LocationDropdown from './UI/LocationDropdown';
-import apiService from '../../../services/api';
+import apiService from '../../../services/clientapi';
 
 const SearchForm = () => {
   const navigate = useNavigate();
@@ -94,8 +94,7 @@ const SearchForm = () => {
       ...formData,
       [name]: value
     });
-  };
-  const handleSearch = async () => {
+  };  const handleSearch = async () => {
     // Validate form data
     if (!formData.from || !formData.to || !formData.date || (tripType === 'twoWay' && !formData.returnDate)) {
       setError('Please fill in all required fields');
@@ -107,11 +106,12 @@ const SearchForm = () => {
       setError('Departure and destination cannot be the same');
       return;
     }
-      // Validate return date is after departure date for two-way trips
+    
+    // Validate return date is after departure date for two-way trips
     if (tripType === 'twoWay' && formData.date && formData.returnDate) {
       const departDate = new Date(formData.date.split(' ').join(' '));
       const returnDate = new Date(formData.returnDate.split(' ').join(' '));
-        if (returnDate < departDate) {
+      if (returnDate < departDate) {
         setError('Return date must be after departure date');
         return;
       }
@@ -123,15 +123,28 @@ const SearchForm = () => {
     try {
       console.log('Searching with data:', { tripType, ...formData });
       
-      // Call the API service for searching
+      // Call the API service for searching with proper parameters
       const data = await apiService.searchBusRoutes({ tripType, ...formData });
       
       console.log('Search results:', data);
       
+      if (!data || !data.success) {
+        throw new Error(data?.message || 'Failed to find buses for this route');
+      }
+      
+      // Handle the API response format according to documentation
+      const busResults = data.data || [];
+      
+      if (busResults.length === 0) {
+        setError('No buses found for this route and date. Please try different dates or locations.');
+        setIsLoading(false);
+        return;
+      }
+      
       // Navigate to search results page with the data
       navigate('/search-results', { 
         state: { 
-          searchResults: data.results,
+          searchResults: busResults,
           searchParams: { 
             tripType, 
             ...formData,
@@ -144,7 +157,7 @@ const SearchForm = () => {
       
     } catch (err) {
       console.error('Error searching:', err);
-      setError('An error occurred while searching. Please try again.');
+      setError(err.message || 'An error occurred while searching. Please try again.');
     } finally {
       setIsLoading(false);
     }
