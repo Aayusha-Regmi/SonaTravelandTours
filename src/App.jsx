@@ -5,8 +5,8 @@ function App() {
   return (
     <>
       <Routes />
-      {/* API Debugger will only render in development mode */}
-      <APIDebugger />
+     
+      
     </>
   );
 }
