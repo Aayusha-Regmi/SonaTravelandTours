@@ -9,6 +9,7 @@ import Button from '../../components/ui/Button';
 import LocationDropdown from '../Home/ComponentHome/UI/LocationDropdown';
 import DatePicker from '../Home/ComponentHome/UI/DatePickerNew';
 import apiService from '../../services/clientapi';
+import api from '../../services/api';
 
 const SearchResultsPage = () => {
   const navigate = useNavigate();
@@ -26,138 +27,53 @@ const SearchResultsPage = () => {
   });
     // Set default values or values from search params
   const [fromLocation, setFromLocation] = useState(searchParams.fromCity || 'Birgunj');
-  const [toLocation, setToLocation] = useState(searchParams.toCity || 'Kathmandu');
-  const [travelDate, setTravelDate] = useState(searchParams.date || '06/06/2024');
+  const [toLocation, setToLocation] = useState(searchParams.toCity || 'Kathmandu');  const [travelDate, setTravelDate] = useState(searchParams.date || '06/06/2024');
   const [sortBy, setSortBy] = useState('Earliest');
-  
-  // Sample bus data for testing filters - at least 8 buses with different values
-  const sampleBusData = [
-    {
-      id: 'bus-001',
-      busName: 'Sona Express Deluxe',
-      busType: 'Deluxe A/C',
-      departureTime: '06:30',
-      arrivalTime: '12:45',
-      boardingPoint: 'New Bus Park, Kathmandu',
-      droppingPoint: 'Adarsha Nagar, Birgunj',
-      duration: '6h 15m',
-      fare: 1250,
-      rating: '4.8',
-      availableSeats: 22,
-      facilities: ['Full A/C & Air Suspension', 'Reclining seats', 'WiFi onboard', 'Water bottle'],
-    },
-    {
-      id: 'bus-002',
-      busName: 'Nepal Yatayat Super',
-      busType: 'Super Deluxe',
-      departureTime: '08:00',
-      arrivalTime: '14:30',
-      boardingPoint: 'Kalanki, Kathmandu',
-      droppingPoint: 'Ghantaghar, Birgunj',
-      duration: '6h 30m',
-      fare: 1450,
-      rating: '4.5',
-      availableSeats: 15,
-      facilities: ['Full A/C & Air Suspension', 'Reclining seats', 'Phone charging', 'CCTV camera', 'First aid kit'],
-    },
-    {
-      id: 'bus-003',
-      busName: 'Kathmandu Birgunj Tourist',
-      busType: 'Tourist',
-      departureTime: '10:15',
-      arrivalTime: '16:30',
-      boardingPoint: 'Balkhu, Kathmandu',
-      droppingPoint: 'Birta, Birgunj',
-      duration: '6h 15m',
-      fare: 950,
-      rating: '3.7',
-      availableSeats: 8,
-      facilities: ['Reclining seats', 'Reading light'],
-    },
-    {
-      id: 'bus-004',
-      busName: 'Makalu Express',
-      busType: 'AC',
-      departureTime: '12:30',
-      arrivalTime: '19:00',
-      boardingPoint: 'Koteshwor, Kathmandu',
-      droppingPoint: 'Powerhouse, Birgunj',
-      duration: '6h 30m',
-      fare: 1100,
-      rating: '4.2',
-      availableSeats: 19,
-      facilities: ['Full A/C & Air Suspension', 'Phone charging', 'Water bottle'],
-    },
-    {
-      id: 'bus-005',
-      busName: 'Sagarmatha Luxury',
-      busType: 'Luxury',
-      departureTime: '15:45',
-      arrivalTime: '21:45',
-      boardingPoint: 'New Bus Park, Kathmandu',
-      droppingPoint: 'Rangeli, Birgunj',
-      duration: '6h',
-      fare: 1850,
-      rating: '4.9',
-      availableSeats: 12,
-      facilities: ['Full A/C & Air Suspension', 'Reclining seats', 'WiFi onboard', 'Phone charging', 'Water bottle', 'CCTV camera', 'First aid kit', 'Reading light', 'Blankets'],
-    },
-    {
-      id: 'bus-006',
-      busName: 'Buddha Express',
-      busType: 'Deluxe A/C',
-      departureTime: '17:30',
-      arrivalTime: '23:45',
-      boardingPoint: 'Chabahil, Kathmandu',
-      droppingPoint: 'Adarsha Nagar, Birgunj',
-      duration: '6h 15m',
-      fare: 1250,
-      rating: '4.3',
-      availableSeats: 16,
-      facilities: ['Full A/C & Air Suspension', 'Reclining seats', 'Water bottle', 'First aid kit'],
-    },
-    {
-      id: 'bus-007',
-      busName: 'Green City Travels',
-      busType: 'Super Deluxe',
-      departureTime: '19:00',
-      arrivalTime: '01:15',
-      boardingPoint: 'New Bus Park, Kathmandu',
-      droppingPoint: 'Ghantaghar, Birgunj',
-      duration: '6h 15m',
-      fare: 1350,
-      rating: '4.6',
-      availableSeats: 14,
-      facilities: ['Full A/C & Air Suspension', 'Heated front seats', 'Phone charging', 'First aid kit', 'Blankets'],
-    },
-    {
-      id: 'bus-008',
-      busName: 'Highway Express',
-      busType: 'Tourist',
-      departureTime: '22:30',
-      arrivalTime: '04:45',
-      boardingPoint: 'Kalanki, Kathmandu',
-      droppingPoint: 'Birta, Birgunj',
-      duration: '6h 15m',
-      fare: 950,
-      rating: '3.8',
-      availableSeats: 22,
-      facilities: ['Reclining seats', 'Blankets'],
-    }
-  ];
+  const [selectedDepartureTime, setSelectedDepartureTime] = useState('');
+    // Bus data will be fetched from API service
     // Filter states
   const [priceRange, setPriceRange] = useState([500, 2000]);
   const [selectedBoardingPlaces, setSelectedBoardingPlaces] = useState(['New Bus Park, Kathmandu']);
   const [selectedDroppingPlaces, setSelectedDroppingPlaces] = useState(['Adarsha Nagar, Birgunj']);
   const [selectedBusTypes, setSelectedBusTypes] = useState(['Deluxe A/C', 'Super Deluxe']);
   const [selectedFacilities, setSelectedFacilities] = useState([]);
-  const [selectedRatings, setSelectedRatings] = useState([]);
-  
-  // Initialize with sample data or API results
-  const [allBusResults, setAllBusResults] = useState(searchResults.length > 0 ? searchResults : sampleBusData);
-  const [busResults, setBusResults] = useState(searchResults.length > 0 ? searchResults : sampleBusData);
+  const [selectedRatings, setSelectedRatings] = useState([]);  // Initialize bus results state
+  const [allBusResults, setAllBusResults] = useState(searchResults.length > 0 ? searchResults : []);
+  const [busResults, setBusResults] = useState(searchResults.length > 0 ? searchResults : []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Fetch bus data from API when component mounts
+  useEffect(() => {
+    const fetchBusData = async () => {
+      setIsLoading(true);
+      try {
+        // Only fetch if we don't have results already
+        if (searchResults.length === 0) {
+          const searchParams = {
+            fromCity: fromLocation,
+            toCity: toLocation,
+            date: travelDate
+          };
+          const data = await api.searchBuses(searchParams);
+          setAllBusResults(data);
+          setBusResults(data);
+        }
+      } catch (err) {
+        setError('Failed to fetch bus data. Please try again later.');
+        console.error('Error fetching bus data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchBusData();
+  }, [fromLocation, toLocation, travelDate, searchResults]);
+    // Effect to update filter section when filters are removed through filter tags
+  useEffect(() => {
+    // This will ensure the filter sidebar stays in sync with the selected filters
+    applyFilters();
+  }, [selectedBoardingPlaces, selectedDroppingPlaces, selectedBusTypes, selectedFacilities, selectedRatings, priceRange, selectedDepartureTime]);
   
   // Apply filters to bus results
   const applyFilters = useCallback(() => {
@@ -205,7 +121,7 @@ const SearchResultsPage = () => {
       );
     }
     
-    // Filter by rating if any selected
+  // Filter by rating if any selected
     if (selectedRatings.length > 0) {
       filteredResults = filteredResults.filter(bus => {
         const rating = parseFloat(bus.rating || '0');
@@ -221,13 +137,40 @@ const SearchResultsPage = () => {
       });
     }
     
+    // Filter by departure time if selected
+    if (selectedDepartureTime) {
+      filteredResults = filteredResults.filter(bus => {
+        const departureTime = bus.departureTime || '';
+        const [hours, minutes] = departureTime.split(':').map(Number);
+        const timeInMinutes = hours * 60 + (minutes || 0);
+        
+        switch(selectedDepartureTime) {
+          case 'Early Morning':
+            // Before 6 AM (0:00 - 5:59)
+            return timeInMinutes < 360;
+          case 'Morning':
+            // 6 AM - 11:59 AM
+            return timeInMinutes >= 360 && timeInMinutes < 720;
+          case 'Afternoon':
+            // 12 PM - 5 PM
+            return timeInMinutes >= 720 && timeInMinutes < 1020;
+          case 'Evening':
+            // After 5 PM
+            return timeInMinutes >= 1020;
+          default:
+            return true;
+        }
+      });
+    }
+    
     setBusResults(filteredResults);
-  }, [allBusResults, priceRange, selectedBoardingPlaces, selectedDroppingPlaces, selectedBusTypes, selectedFacilities, selectedRatings]);
-  
-  // Apply filters when any filter changes
+  }, [allBusResults, priceRange, selectedBoardingPlaces, selectedDroppingPlaces, selectedBusTypes, selectedFacilities, selectedRatings, selectedDepartureTime]);
+    // Apply filters when any filter changes or when bus results change
   useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
+    if (allBusResults.length > 0) {
+      applyFilters();
+    }
+  }, [applyFilters, allBusResults]);
   
   // Location options - limited to Kathmandu and Birgunj only
   const locationOptions = [
@@ -244,7 +187,36 @@ const SearchResultsPage = () => {
   ];
 
   const sortOptions = ['Earliest', 'Latest', 'Lowest price', 'Highest price', 'Newest', 'Top rating'];
-
+  // Fetch bus data from API when component mounts or search params change
+  useEffect(() => {
+    const fetchBusData = async () => {
+      setIsLoading(true);
+      try {
+        // Create search params object
+        const searchParams = {
+          fromCity: fromLocation,
+          toCity: toLocation,
+          date: travelDate
+        };
+        
+        // Fetch bus data from API
+        const busData = await api.searchBuses(searchParams);
+        setAllBusResults(busData);
+        setBusResults(busData);
+      } catch (error) {
+        setError('Failed to fetch bus data. Please try again later.');
+        console.error('Error fetching bus data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    // Only fetch if we don't already have search results from navigation state
+    if (searchResults.length === 0) {
+      fetchBusData();
+    }
+  }, [fromLocation, toLocation, travelDate]);
+  
   // Redirect to home if no search data
   useEffect(() => {
     if (!location.state && (!searchResults || searchResults.length === 0)) {
@@ -354,7 +326,6 @@ const SearchResultsPage = () => {
     setFromLocation(locationOptions.find(loc => loc.value === newFrom)?.label || newFrom);
     setToLocation(locationOptions.find(loc => loc.value === newTo)?.label || newTo);
   };
-
   const handleSearchAgain = async () => {
     // Validate form data
     if (!formData.from || !formData.to || !formData.date || (tripType === 'twoWay' && !formData.returnDate)) {
@@ -381,34 +352,58 @@ const SearchResultsPage = () => {
     setIsLoading(true);
     setError(null);
     
-    try {
-      console.log('Searching with data:', { tripType, ...formData });
-      
-      // Call the API service for searching with proper parameters
-      const data = await apiService.searchBusRoutes({ tripType, ...formData });
-      
-      console.log('Search results:', data);
-      
-      if (!data || !data.success) {
-        throw new Error(data?.message || 'Failed to find buses for this route');
-      }
-      
-      // Handle the API response format according to documentation
-      const newBusResults = data.data || [];
-      
-      if (newBusResults.length === 0) {
-        setError('No buses found for this route and date. Please try different dates or locations.');
-        setIsLoading(false);
-        return;
-      }
-      
-      // Update current state
-      setBusResults(newBusResults);
-      
-      // Update URL state for browser history
+   const handleSearch = async () => {
+  try {
+    console.log('Searching with data:', { tripType, ...formData });
+
+    setIsLoading(true); // Show loading spinner
+    setError(null);     // Reset previous errors
+
+    // Optional: simulate network delay (remove in production)
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    // Make API call
+    const filteredBuses = await api.searchBuses({
+      fromCity: formData?.from,
+      toCity: formData?.to,
+      date: formData?.date,
+    });
+
+    // Handle if API returns undefined or unexpected format
+    if (!filteredBuses || !Array.isArray(filteredBuses)) {
+      throw new Error('Unexpected response format');
+    }
+
+    // Check if buses were found
+    if (filteredBuses.length === 0) {
+      setError('No buses found for this route and date. Please try different dates or locations.');
+      return;
+    }
+
+    // Update state with results
+    setBusResults(filteredBuses);
+    setAllBusResults(filteredBuses);
+
+    // Optional: update URL state/history
+    handleUpdateSearchState(filteredBuses);
+
+    // Scroll to results section
+    document.getElementById('resultsSection')?.scrollIntoView({ behavior: 'smooth' });
+
+  } catch (err) {
+    console.error('Error searching:', err);
+    setError(err.message || 'An error occurred while searching. Please try again.');
+  } finally {
+    setIsLoading(false); // Stop loading
+  }
+};
+
+
+    // Update URL state for browser history after successful search
+    const handleUpdateSearchState = (results) => {
       navigate('/search-results', { 
         state: { 
-          searchResults: newBusResults,
+          searchResults: results,
           searchParams: { 
             tripType, 
             ...formData,
@@ -419,13 +414,7 @@ const SearchResultsPage = () => {
         },
         replace: true // Replace current history entry to avoid back button issues
       });
-      
-    } catch (err) {
-      console.error('Error searching:', err);
-      setError(err.message || 'An error occurred while searching. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    };
   };
 
   const handleTripTypeChange = (type) => {
@@ -546,12 +535,11 @@ const SearchResultsPage = () => {
                   />
                 </div>
               )}
-            </div>            {/* Search Button */}
-            <div className="order-6 ml-auto">
+            </div>            {/* Search Button */}            <div className="order-6 ml-auto">
               <Button 
                 variant="primary"
                 onClick={handleSearchAgain}
-                className={`bg-blue-600 text-white rounded-lg px-4 py-2 h-[44px] flex items-center hover:bg-blue-700 shadow-sm transition-all focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${
+                className={`bg-blue-600 text-white rounded-lg px-4 py-2 h-[44px] flex items-center hover:bg-blue-700 shadow-sm transition-all focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 cursor-pointer ${
                   isLoading ? 'opacity-80' : ''
                 }`}
                 disabled={isLoading}
@@ -598,8 +586,9 @@ const SearchResultsPage = () => {
               handleSearchAgain();
             }, 300);
           }}
-        />{/* Results Header */}
-        <div className="bg-white rounded-lg p-5 mb-4 flex items-center justify-between shadow-sm">          <div className="flex items-center">
+        />        {/* Results Header */}
+        <div className="bg-white rounded-lg p-5 mb-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center">
             <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
             </svg>
@@ -667,15 +656,43 @@ const SearchResultsPage = () => {
               setSelectedFacilities={setSelectedFacilities}
               selectedRatings={selectedRatings}
               setSelectedRatings={setSelectedRatings}
+              selectedDepartureTime={selectedDepartureTime}
+              setSelectedDepartureTime={setSelectedDepartureTime}
             />
-          </div>
-
-          {/* Bus Listings */}
-          <div className="flex-grow">
-            <BusListings 
+          </div>          {/* Bus Listings */}
+          <div className="flex-grow" id="resultsSection">            <BusListings 
               buses={busResults} 
               isLoading={isLoading} 
               totalBuses={allBusResults.length}
+              travelDate={travelDate}
+              onSearchAgain={handleSearchAgain}
+              selectedBoardingPlaces={selectedBoardingPlaces}
+              selectedDroppingPlaces={selectedDroppingPlaces}
+              selectedBusTypes={selectedBusTypes}
+              selectedFacilities={selectedFacilities}
+              selectedRatings={selectedRatings}
+              priceRange={priceRange}
+              // Pass state setters for filter removal functionality
+              setSelectedBoardingPlaces={setSelectedBoardingPlaces}
+              setSelectedDroppingPlaces={setSelectedDroppingPlaces}
+              setSelectedBusTypes={setSelectedBusTypes}
+              setSelectedFacilities={setSelectedFacilities}
+              setSelectedRatings={setSelectedRatings}
+              setPriceRange={setPriceRange}              selectedDepartureTime={selectedDepartureTime}
+              setSelectedDepartureTime={setSelectedDepartureTime}
+              onClearFilters={() => {
+                // Reset all filters to default values
+                setPriceRange([500, 2000]);
+                setSelectedBoardingPlaces([]);
+                setSelectedDroppingPlaces([]);
+                setSelectedBusTypes([]);
+                setSelectedFacilities([]);
+                setSelectedRatings([]);
+                setSelectedDepartureTime(''); // Clear departure time filter
+                
+                // Trigger a search with the cleared filters
+                setTimeout(() => handleSearchAgain(), 300);
+              }}
             />
           </div>
         </div>

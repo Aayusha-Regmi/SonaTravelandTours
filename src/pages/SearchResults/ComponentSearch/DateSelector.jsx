@@ -12,7 +12,7 @@ const DateSelector = ({ onDateChange, initialDate }) => {
   const currentDate = initialDate ? new Date(initialDate) : new Date('2025-06-06');
   const [selectedDate, setSelectedDate] = useState(formatDateForDisplay(currentDate));
   const [visibleDates, setVisibleDates] = useState([]);
-  const [currentStartDate, setCurrentStartDate] = useState(new Date(currentDate.getTime() - 24 * 60 * 60 * 1000));
+  const [currentStartDate, setCurrentStartDate] = useState(new Date(yesterday));
   const [isSearching, setIsSearching] = useState(false);
   
   // Format date for display

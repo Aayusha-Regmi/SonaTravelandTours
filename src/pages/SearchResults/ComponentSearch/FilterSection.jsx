@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import InputField from '../../../components/ui/InputField';
 import Checkbox from '../../../components/ui/Checkbox';
 import Chip from './Chip';
+import api from '../../../services/api';
 
 const FilterSection = ({
   priceRange = [500, 2000],
@@ -13,95 +14,141 @@ const FilterSection = ({
   selectedBusTypes = [],
   setSelectedBusTypes = () => {},
   selectedFacilities = [],
-  setSelectedFacilities = () => {},
-  selectedRatings = [],
-  setSelectedRatings = () => {}
+  setSelectedFacilities = () => {},  selectedRatings = [],
+  setSelectedRatings = () => {},
+  selectedDepartureTime = '',
+  setSelectedDepartureTime = () => {}
 }) => {
   // Use props for price range
   const [liveTracking, setLiveTracking] = useState(true);
-  const [selectedDepartureTime, setSelectedDepartureTime] = useState('Early Morning');
   const [searchBoardingPlace, setSearchBoardingPlace] = useState('');
   const [searchDroppingPlace, setSearchDroppingPlace] = useState('');
-  const [localBusTypes, setLocalBusTypes] = useState(selectedBusTypes.length > 0 ? selectedBusTypes : ['AC', 'Deluxe']);  const [isFilterExpanded, setIsFilterExpanded] = useState(true);
-    // Initialize boarding places with default selections or from props
-  const boardingPlaceOptions = {
-    'New Bus Park, Kathmandu': false,
-    'Kalanki, Kathmandu': false,
-    'Balkhu, Kathmandu': false,
-    'Koteshwor, Kathmandu': false,
-    'Chabahil, Kathmandu': false,
-  };
+  const [localBusTypes, setLocalBusTypes] = useState(selectedBusTypes.length > 0 ? selectedBusTypes : []);
+  const [isFilterExpanded, setIsFilterExpanded] = useState(true);
+  // Initialize boarding places state
+  const [boardingPlaceOptions, setBoardingPlaceOptions] = useState({});
+  const [boardingPlaces, setBoardingPlaces] = useState({});
   
-  // Mark selected boarding places as true
-  selectedBoardingPlaces.forEach(place => {
-    if (boardingPlaceOptions.hasOwnProperty(place)) {
-      boardingPlaceOptions[place] = true;
-    }
-  });
+  // Fetch boarding places on component mount
+  useEffect(() => {
+    const fetchBoardingPlaces = () => {
+      const apiBoardingPlaces = api.getBoardingPoints();
+      const options = {};
+      
+      // Initialize all places as false
+      apiBoardingPlaces.forEach(place => {
+        options[place] = false;
+      });
+      
+      // Mark selected boarding places as true
+      selectedBoardingPlaces.forEach(place => {
+        if (options.hasOwnProperty(place)) {
+          options[place] = true;
+        }
+      });
+      
+      // If none selected, default to New Bus Park
+      if (selectedBoardingPlaces.length === 0 && options['New Bus Park, Kathmandu']) {
+        options['New Bus Park, Kathmandu'] = true;
+      }
+      
+      setBoardingPlaceOptions(options);
+      setBoardingPlaces(options);
+    };
+    
+    fetchBoardingPlaces();
+  }, [selectedBoardingPlaces]);
+    // Initialize dropping places state
+  const [droppingPlaceOptions, setDroppingPlaceOptions] = useState({});
   
-  // If none selected, default to New Bus Park
-  if (selectedBoardingPlaces.length === 0) {
-    boardingPlaceOptions['New Bus Park, Kathmandu'] = true;
-  }
-  
-  const [boardingPlaces, setBoardingPlaces] = useState(boardingPlaceOptions);
-  
-  // Initialize dropping places with default selections or from props
-  const droppingPlaceOptions = {
-    'Adarsha Nagar, Birgunj': false,
-    'Ghantaghar, Birgunj': false,
-    'Birta, Birgunj': false,
-    'Powerhouse, Birgunj': false,
-    'Rangeli, Birgunj': false,
-  };
-  
-  // Mark selected dropping places as true
-  selectedDroppingPlaces.forEach(place => {
-    if (droppingPlaceOptions.hasOwnProperty(place)) {
-      droppingPlaceOptions[place] = true;
-    }
-  });
-  
-  // If none selected, default to Adarsha Nagar
-  if (selectedDroppingPlaces.length === 0) {
-    droppingPlaceOptions['Adarsha Nagar, Birgunj'] = true;
-  }
+  // Fetch dropping places on component mount
+  useEffect(() => {
+    const fetchDroppingPlaces = () => {
+      const apiDroppingPlaces = api.getDroppingPoints();
+      const options = {};
+      
+      // Initialize all places as false
+      apiDroppingPlaces.forEach(place => {
+        options[place] = false;
+      });
+      
+      // Mark selected dropping places as true
+      selectedDroppingPlaces.forEach(place => {
+        if (options.hasOwnProperty(place)) {
+          options[place] = true;
+        }
+      });
+      
+      // If none selected, default to Adarsha Nagar
+      if (selectedDroppingPlaces.length === 0 && options['Adarsha Nagar, Birgunj']) {
+        options['Adarsha Nagar, Birgunj'] = true;
+      }
+      
+      setDroppingPlaceOptions(options);
+    };
+    
+    fetchDroppingPlaces();
+  }, [selectedDroppingPlaces]);
   
   const [droppingPlaces, setDroppingPlaces] = useState(droppingPlaceOptions);
     // Note: Filters are now applied automatically by the parent component
+    const [localStars, setLocalStars] = useState(selectedRatings.length > 0 ? selectedRatings : []);
+  const [localFacilities, setLocalFacilities] = useState(selectedFacilities.length > 0 ? selectedFacilities : []);
   
-  const [localStars, setLocalStars] = useState(selectedRatings.length > 0 ? selectedRatings : ['3 Stars', '4 Stars']);
-  const [localFacilities, setLocalFacilities] = useState(selectedFacilities.length > 0 ? selectedFacilities : ['Full A/C & Air Suspension', 'Heated front seats']);
+  // Sync local state with props when they change externally (like when filters are removed via tags)
+  useEffect(() => {
+    setLocalBusTypes(selectedBusTypes);
+  }, [selectedBusTypes]);
+  
+  useEffect(() => {
+    setLocalStars(selectedRatings);
+  }, [selectedRatings]);
+  
+  useEffect(() => {
+    setLocalFacilities(selectedFacilities);
+  }, [selectedFacilities]);
+    useEffect(() => {
+    // Update boarding places checkboxes when selectedBoardingPlaces changes externally
+    const newBoardingPlaces = {};
+    Object.keys(boardingPlaces).forEach(place => {
+      newBoardingPlaces[place] = selectedBoardingPlaces.includes(place);
+    });
+    setBoardingPlaces(newBoardingPlaces);
+  }, [selectedBoardingPlaces]);
+  
+  useEffect(() => {
+    // Update dropping places checkboxes when selectedDroppingPlaces changes externally
+    const newDroppingPlaces = {};
+    Object.keys(droppingPlaces).forEach(place => {
+      newDroppingPlaces[place] = selectedDroppingPlaces.includes(place);
+    });
+    setDroppingPlaces(newDroppingPlaces);
+  }, [selectedDroppingPlaces]);
+
+  // Add effect to sync with external changes to selectedDepartureTime
+  useEffect(() => {
+    // This will ensure the FilterSection stays in sync when departure time filter is cleared via tags
+  }, [selectedDepartureTime]);
 
   const departureTimeOptions = [
     { label: 'Early Morning', time: 'Before 6 AM' },
     { label: 'Morning', time: '6 - 11:59 AM' },
     { label: 'Afternoon', time: '12 - 5 PM' },
     { label: 'Evening', time: 'After 5 PM' },
-  ];
-
-  // More realistic bus facilities for Nepal bus routes
-  const busFacilities = [
-    'Full A/C & Air Suspension',
-    'Reclining seats',
-    'Heated front seats',
-    'WiFi onboard',
-    'Phone charging',
-    'Water bottle',
-    'CCTV camera',
-    'First aid kit',
-    'Reading light',
-    'Blankets'
-  ];
+  ];  // Get bus facilities from API
+  const [busFacilities, setBusFacilities] = useState([]);
   
-  // Bus types typically found in Nepal
-  const busTypes = [
-    'AC', 
-    'Deluxe', 
-    'Super Deluxe', 
-    'Tourist', 
-    'Luxury'
-  ];  const handleBoardingPlaceChange = (place, checked) => {
+  // Fetch bus facilities on component mount
+  useEffect(() => {
+    setBusFacilities(api.getBusFacilities());
+  }, []);
+    // Get bus types from API
+  const [busTypes, setBusTypes] = useState([]);
+  
+  // Fetch bus types on component mount
+  useEffect(() => {
+    setBusTypes(api.getBusTypes());
+  }, []);const handleBoardingPlaceChange = (place, checked) => {
     const updatedPlaces = {
       ...boardingPlaces,
       [place]: checked

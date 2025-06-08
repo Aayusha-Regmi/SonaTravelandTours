@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
 import Chip from './Chip';
+import api from '../../../services/api';
 
 // Utility function to convert time string to minutes for comparison
 const timeToMinutes = (timeString) => {
@@ -44,9 +45,61 @@ const calculateDuration = (departureTime, arrivalTime) => {
   return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
 };
 
-const BusListings = ({ buses = [], isLoading = false, totalBuses = 0 }) => {
+const BusListings = ({ 
+  buses = [], 
+  isLoading = false, 
+  totalBuses = 0, 
+  travelDate = '', 
+  onSearchAgain,
+  // Add filter props
+  selectedBoardingPlaces = [],
+  selectedDroppingPlaces = [],
+  selectedBusTypes = [],
+  selectedFacilities = [],
+  selectedRatings = [],
+  selectedDepartureTime = '',
+  priceRange = [0, 5000],
+  // State setters from parent
+  setSelectedBoardingPlaces,
+  setSelectedDroppingPlaces,
+  setSelectedBusTypes,
+  setSelectedFacilities,
+  setSelectedRatings,
+  setSelectedDepartureTime,
+  setPriceRange,
+  // Add function to clear filters
+  onClearFilters = () => {}
+}) => {
   const navigate = useNavigate();
   const [expandedFacilities, setExpandedFacilities] = useState({});
+  const [isSearching, setIsSearching] = useState(false);
+    // Calculate if filters are applied
+  const hasFilters = useMemo(() => {
+    return selectedBoardingPlaces.length > 0 || 
+           selectedDroppingPlaces.length > 0 || 
+           selectedBusTypes.length > 0 || 
+           selectedFacilities.length > 0 || 
+           selectedRatings.length > 0 ||
+           selectedDepartureTime !== '' ||
+           priceRange[0] > 500 || 
+           priceRange[1] < 2000; // Assuming default range is [500, 2000]
+  }, [selectedBoardingPlaces, selectedDroppingPlaces, selectedBusTypes, selectedFacilities, selectedRatings, selectedDepartureTime, priceRange]);
+
+  // Format the travel date for display
+  const formattedDate = useMemo(() => {
+    if (!travelDate) return '';
+    try {
+      const date = new Date(travelDate);
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    } catch (e) {
+      return travelDate;
+    }
+  }, [travelDate]);
   
   // If no buses passed, use default data
   const busData = useMemo(() => {
@@ -73,8 +126,7 @@ const BusListings = ({ buses = [], isLoading = false, totalBuses = 0 }) => {
       
       // Determine if it's an early morning journey (departure before 8 AM)
       const isEarlyMorning = departureMinutes < timeToMinutes('08:00');
-      
-      return {
+        return {
         id: busId,
         rating: bus.rating || '4.8',
         name: bus.busName || bus.name || 'Sona Express',
@@ -88,8 +140,7 @@ const BusListings = ({ buses = [], isLoading = false, totalBuses = 0 }) => {
         duration: duration,
         price: bus.price || (bus.fare ? `Rs. ${bus.fare}` : 'Rs. 1200'),
         priceUnit: '/ Seat',
-        availableSeats: `${bus.availableSeats || bus.available_seats || 12} Seats Available`,
-        facilities: bus.facilities || ['Heated front seats', 'Full A/C & Air Suspension'],
+        availableSeats: `${bus.availableSeats || bus.available_seats || 12} Seats Available`,        facilities: bus.facilities || [],
         isNightJourney,
         isEarlyMorning,
         
@@ -110,8 +161,7 @@ const BusListings = ({ buses = [], isLoading = false, totalBuses = 0 }) => {
     navigate(`/select-seats/${bus.id}`, { 
       state: { bus: bus.originalData || bus }
     });
-  };
-  // Show loading state
+  };  // Show loading state
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-10 bg-white rounded-lg shadow-sm w-full border border-gray-100">
@@ -124,7 +174,19 @@ const BusListings = ({ buses = [], isLoading = false, totalBuses = 0 }) => {
         <p className="text-base font-medium text-gray-600">Searching for buses...</p>
       </div>
     );
-  }
+  }  // Handler for search button click
+  const handleSearchClick = () => {
+    setIsSearching(true);
+    if (onSearchAgain) {
+      Promise.resolve(onSearchAgain())
+        .finally(() => {
+          setTimeout(() => setIsSearching(false), 1000);
+        });
+    } else {
+      navigate('/');
+      setTimeout(() => setIsSearching(false), 1000);
+    }
+  };
 
   // Show empty state when no results
   if (busData.length === 0) {
@@ -143,17 +205,205 @@ const BusListings = ({ buses = [], isLoading = false, totalBuses = 0 }) => {
         </p>
         <Button
           variant="primary"
-          onClick={() => navigate('/')}
-          className="bg-[#0a639d] text-white rounded-lg px-6 py-2.5 hover:bg-blue-700 transition-colors"
+          onClick={handleSearchClick}
+          disabled={isSearching}
+          className={`bg-[#0a639d] text-white rounded-lg px-6 py-2.5 hover:bg-blue-700 transition-colors cursor-pointer ${isSearching ? 'opacity-80' : ''}`}
         >
-          Search Again
+          {isSearching ? 'Searching...' : 'Search Again'}
         </Button>
       </div>
     );
-  }
-
-  return (
+  }  return (
     <div className="space-y-4">
+      {/* Filter summary display with removable filters */}
+      {hasFilters && (
+        <div className="bg-blue-50 rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center justify-between">
+          <div className="flex-1 mb-2 md:mb-0">
+            <span className="text-sm text-blue-800 font-medium">
+              Filtered By:
+            </span>            <div className="flex flex-wrap gap-2 mt-1">
+              {selectedDepartureTime && (
+                <span 
+                  className="bg-white text-blue-800 text-xs font-medium rounded-full px-3 py-1 border border-blue-200 flex items-center"
+                >
+                  <span>Departure: {selectedDepartureTime}</span>
+                  <button 
+                    onClick={() => {
+                      if (typeof setSelectedDepartureTime === 'function') {
+                        setSelectedDepartureTime('');
+                        if (onSearchAgain) {
+                          setTimeout(() => onSearchAgain(), 300);
+                        }
+                      }
+                    }}
+                    className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none"
+                    aria-label={`Remove ${selectedDepartureTime} filter`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              )}
+              
+              {selectedBoardingPlaces.map((place, index) => (
+                <span 
+                  key={`boarding-${index}`}
+                  className="bg-white text-blue-800 text-xs font-medium rounded-full px-3 py-1 border border-blue-200 flex items-center"
+                >
+                  <span>Boarding: {place}</span>                  <button 
+                    onClick={() => {
+                      const newPlaces = selectedBoardingPlaces.filter(p => p !== place);
+                      if (typeof setSelectedBoardingPlaces === 'function') {
+                        setSelectedBoardingPlaces(newPlaces);
+                        if (onSearchAgain) {
+                          setTimeout(() => onSearchAgain(), 300);
+                        }
+                      }
+                    }}
+                    className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none"
+                    aria-label={`Remove ${place} filter`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+              
+              {selectedDroppingPlaces.map((place, index) => (
+                <span 
+                  key={`dropping-${index}`}
+                  className="bg-white text-blue-800 text-xs font-medium rounded-full px-3 py-1 border border-blue-200 flex items-center"
+                >
+                  <span>Dropping: {place}</span>                  <button 
+                    onClick={() => {
+                      const newPlaces = selectedDroppingPlaces.filter(p => p !== place);
+                      if (typeof setSelectedDroppingPlaces === 'function') {
+                        setSelectedDroppingPlaces(newPlaces);
+                        if (onSearchAgain) {
+                          setTimeout(() => onSearchAgain(), 300);
+                        }
+                      }
+                    }}
+                    className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none"
+                    aria-label={`Remove ${place} filter`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+              
+              {selectedBusTypes.map((type, index) => (
+                <span 
+                  key={`type-${index}`}
+                  className="bg-white text-blue-800 text-xs font-medium rounded-full px-3 py-1 border border-blue-200 flex items-center"
+                >
+                  <span>Type: {type}</span>                  <button 
+                    onClick={() => {
+                      const newTypes = selectedBusTypes.filter(t => t !== type);
+                      if (typeof setSelectedBusTypes === 'function') {
+                        setSelectedBusTypes(newTypes);
+                        if (onSearchAgain) {
+                          setTimeout(() => onSearchAgain(), 300);
+                        }
+                      }
+                    }}
+                    className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none"
+                    aria-label={`Remove ${type} filter`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+              
+              {selectedFacilities.map((facility, index) => (
+                <span 
+                  key={`facility-${index}`}
+                  className="bg-white text-blue-800 text-xs font-medium rounded-full px-3 py-1 border border-blue-200 flex items-center"
+                >
+                  <span>Facility: {facility}</span>                  <button 
+                    onClick={() => {
+                      const newFacilities = selectedFacilities.filter(f => f !== facility);
+                      if (typeof setSelectedFacilities === 'function') {
+                        setSelectedFacilities(newFacilities);
+                        if (onSearchAgain) {
+                          setTimeout(() => onSearchAgain(), 300);
+                        }
+                      }
+                    }}
+                    className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none"
+                    aria-label={`Remove ${facility} filter`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+              
+              {selectedRatings.map((rating, index) => (
+                <span 
+                  key={`rating-${index}`}
+                  className="bg-white text-blue-800 text-xs font-medium rounded-full px-3 py-1 border border-blue-200 flex items-center"
+                >
+                  <span>Rating: {rating}</span>                  <button 
+                    onClick={() => {
+                      const newRatings = selectedRatings.filter(r => r !== rating);
+                      if (typeof setSelectedRatings === 'function') {
+                        setSelectedRatings(newRatings);
+                        if (onSearchAgain) {
+                          setTimeout(() => onSearchAgain(), 300);
+                        }
+                      }
+                    }}
+                    className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none"
+                    aria-label={`Remove ${rating} filter`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+                {(priceRange[0] > 500 || priceRange[1] < 2000) && (
+                <span 
+                  className="bg-white text-blue-800 text-xs font-medium rounded-full px-3 py-1 border border-blue-200 flex items-center"
+                >
+                  <span>Price: Rs. {priceRange[0]} - Rs. {priceRange[1]}</span>
+                  <button 
+                    onClick={() => {
+                      if (typeof setPriceRange === 'function') {
+                        setPriceRange([500, 2000]); // Reset to default price range
+                        if (onSearchAgain) {
+                          setTimeout(() => onSearchAgain(), 300);
+                        }
+                      }
+                    }}
+                    className="ml-1 text-blue-500 hover:text-blue-700 focus:outline-none"
+                    aria-label="Reset price filter"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={onClearFilters}
+            className="text-sm text-blue-600 font-medium cursor-pointer"
+          >
+            Clear All
+          </button>
+        </div>
+      )}
+      
       {busData.map((bus, index) => (
         <div key={index} className="bg-white rounded-lg p-4 md:p-6 w-full shadow-sm border border-gray-100">
           <div className="flex flex-col lg:flex-row justify-between">
