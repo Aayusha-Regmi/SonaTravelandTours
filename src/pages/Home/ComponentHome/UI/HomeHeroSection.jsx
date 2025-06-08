@@ -12,11 +12,22 @@ const HeroSection = () => {
   return (
     <section className="relative h-[400px] md:h-[450px] lg:h-[500px] overflow-hidden">
       {/* Background Image */}
-      <div className="absolute inset-0 z-0">
+      {/* <div className="absolute inset-0 z-0">
         <img 
           src="/images/img_busroadgenerativeai22087319731_1.png" 
           alt="Bus on Road" 
           className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-black/5"></div>
+      </div> */}
+      <div className="absolute inset-0 z-0">
+        <video
+          src="/images/busrun.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover animate-fade-in"
         />
         {/* Enhanced overlay with gradient for better text contrast */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-black/5"></div>
