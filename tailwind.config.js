@@ -35,6 +35,7 @@ module.exports = {
         '20px': '20px',
         '30px': '30px',
         '58px': '58px',
+          3: '0.75rem',
         '22': '5.5rem', // This will create ml-22 = 88px
       },
       fontFamily: {

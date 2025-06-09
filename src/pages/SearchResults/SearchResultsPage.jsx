@@ -8,7 +8,6 @@ import DateSelector from './ComponentSearch/DateSelector';
 import Button from '../../components/ui/Button';
 import LocationDropdown from '../Home/ComponentHome/UI/LocationDropdown';
 import DatePicker from '../Home/ComponentHome/UI/DatePickerNew';
-import apiService from '../../services/clientapi';
 import api from '../../services/api';
 
 const SearchResultsPage = () => {
@@ -35,7 +34,7 @@ const SearchResultsPage = () => {
   const [priceRange, setPriceRange] = useState([500, 2000]);
   const [selectedBoardingPlaces, setSelectedBoardingPlaces] = useState(['New Bus Park, Kathmandu']);
   const [selectedDroppingPlaces, setSelectedDroppingPlaces] = useState(['Adarsha Nagar, Birgunj']);
-  const [selectedBusTypes, setSelectedBusTypes] = useState(['Deluxe A/C', 'Super Deluxe']);
+  //const [selectedBusTypes, setSelectedBusTypes] = useState(['Deluxe A/C', 'Super Deluxe']);
   const [selectedFacilities, setSelectedFacilities] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);  // Initialize bus results state
   const [allBusResults, setAllBusResults] = useState(searchResults.length > 0 ? searchResults : []);
@@ -73,7 +72,7 @@ const SearchResultsPage = () => {
   useEffect(() => {
     // This will ensure the filter sidebar stays in sync with the selected filters
     applyFilters();
-  }, [selectedBoardingPlaces, selectedDroppingPlaces, selectedBusTypes, selectedFacilities, selectedRatings, priceRange, selectedDepartureTime]);
+  }, [selectedBoardingPlaces, selectedDroppingPlaces, selectedFacilities, selectedRatings, priceRange, selectedDepartureTime]);
   
   // Apply filters to bus results
   const applyFilters = useCallback(() => {
@@ -103,14 +102,14 @@ const SearchResultsPage = () => {
       );
     }
     
-    // Filter by bus types if any selected
-    if (selectedBusTypes.length > 0) {
-      filteredResults = filteredResults.filter(bus => 
-        selectedBusTypes.some(type => 
-          (bus.busType || bus.type || '').includes(type)
-        )
-      );
-    }
+    // // Filter by bus types if any selected
+    // if (selectedBusTypes.length > 0) {
+    //   filteredResults = filteredResults.filter(bus => 
+    //     selectedBusTypes.some(type => 
+    //       (bus.busType || bus.type || '').includes(type)
+    //     )
+    //   );
+    // }
     
     // Filter by facilities if any selected
     if (selectedFacilities.length > 0) {
@@ -164,7 +163,7 @@ const SearchResultsPage = () => {
     }
     
     setBusResults(filteredResults);
-  }, [allBusResults, priceRange, selectedBoardingPlaces, selectedDroppingPlaces, selectedBusTypes, selectedFacilities, selectedRatings, selectedDepartureTime]);
+  }, [allBusResults, priceRange, selectedBoardingPlaces, selectedDroppingPlaces,selectedFacilities, selectedRatings, selectedDepartureTime]);
     // Apply filters when any filter changes or when bus results change
   useEffect(() => {
     if (allBusResults.length > 0) {
@@ -186,8 +185,9 @@ const SearchResultsPage = () => {
     }
   ];
 
-  const sortOptions = ['Earliest', 'Latest', 'Lowest price', 'Highest price', 'Newest', 'Top rating'];
-  // Fetch bus data from API when component mounts or search params change
+  const sortOptions = ['Earliest', 'Latest', 'Lowest price', 'Highest price','Top rating'];  
+  
+  // Fetch bus data from API when component mounts or search params change  
   useEffect(() => {
     const fetchBusData = async () => {
       setIsLoading(true);
@@ -198,6 +198,15 @@ const SearchResultsPage = () => {
           toCity: toLocation,
           date: travelDate
         };
+        
+        // Update form data when travelDate changes to keep forms in sync
+        if (travelDate !== formData.date) {
+          // This ensures both the DatePicker and DateSelector show the same date
+          setFormData(prev => ({
+            ...prev,
+            date: travelDate
+          }));
+        }
         
         // Fetch bus data from API
         const busData = await api.searchBuses(searchParams);
@@ -216,13 +225,41 @@ const SearchResultsPage = () => {
       fetchBusData();
     }
   }, [fromLocation, toLocation, travelDate]);
-  
-  // Redirect to home if no search data
+    // Redirect to home if no search data
   useEffect(() => {
     if (!location.state && (!searchResults || searchResults.length === 0)) {
       console.log('No search data available');
     }
   }, [location.state, searchResults]);
+  
+  // Ensure date format consistency on page load/refresh
+  useEffect(() => {
+    if (travelDate) {
+      // Convert travelDate to standard format if needed
+      try {
+        const dateObj = new Date(travelDate);
+        if (!isNaN(dateObj.getTime())) {
+          const formattedDate = dateObj.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          });
+          
+          // Only update if format is different to avoid loops
+          if (formattedDate !== travelDate) {
+            setTravelDate(formattedDate);
+            setFormData(prev => ({
+              ...prev,
+              date: formattedDate
+            }));
+          }
+        }
+      } catch (e) {
+        console.error('Date parsing error:', e);
+      }
+    }
+  }, []);
 
   // Effect to sort bus results when sortBy changes
   useEffect(() => {
@@ -252,9 +289,8 @@ const SearchResultsPage = () => {
     });
     
     setBusResults(sortedResults);
-    setTimeout(() => setIsLoading(false), 300); // Small delay for UI feedback
+    setTimeout(() => setIsLoading(false), 100); // Small delay for UI feedback
   }, [sortBy]);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
@@ -271,6 +307,11 @@ const SearchResultsPage = () => {
           [name]: value,
           returnDate: '' // Clear the return date
         });
+        
+        // Always sync travelDate with form data
+        if (name === 'date') {
+          setTravelDate(value);
+        }
         return;
       }
     }
@@ -294,8 +335,7 @@ const SearchResultsPage = () => {
       });
       return;
     }
-    
-    setFormData({
+      setFormData({
       ...formData,
       [name]: value
     });
@@ -306,9 +346,39 @@ const SearchResultsPage = () => {
       setFromLocation(selectedLocation?.label || value);
     } else if (name === 'to') {
       const selectedLocation = locationOptions.find(loc => loc.value === value);
-      setToLocation(selectedLocation?.label || value);
-    } else if (name === 'date') {
+      setToLocation(selectedLocation?.label || value);    } else if (name === 'date') {
+      // Ensure travelDate and formData.date are always in sync
       setTravelDate(value);
+      
+      // Special handling for date reset
+      if (e.isReset) {
+        // When date is reset, set today's date for a consistent reset behavior
+        const today = new Date();
+        const formattedToday = today.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+        
+        setTravelDate(formattedToday);
+        setFormData(prev => ({
+          ...prev,
+          date: formattedToday
+        }));
+        
+        // Wait a bit then refresh results
+        setTimeout(() => handleSearchAgain(), 300);
+        return;
+      }
+      
+      // If this is a date change from the DatePicker, we might want to refresh results
+      // But only if it's a direct user interaction (not a programmatic update)
+      if (e.isTrusted) {
+        // When DatePicker changes, update both travelDate and formData.date
+        // and trigger a search to refresh results
+        setTimeout(() => handleSearchAgain(), 100);
+      }
     }
   };
   
@@ -332,14 +402,10 @@ const SearchResultsPage = () => {
       setError('Please fill in all required fields');
       return;
     }
-    
-    // Make sure from and to are not the same
     if (formData.from === formData.to) {
       setError('Departure and destination cannot be the same');
       return;
     }
-    
-    // Validate return date is after departure date for two-way trips
     if (tripType === 'twoWay' && formData.date && formData.returnDate) {
       const departDate = new Date(formData.date.split(' ').join(' '));
       const returnDate = new Date(formData.returnDate.split(' ').join(' '));
@@ -348,73 +414,70 @@ const SearchResultsPage = () => {
         return;
       }
     }
-    
     setIsLoading(true);
     setError(null);
-    
-   const handleSearch = async () => {
-  try {
-    console.log('Searching with data:', { tripType, ...formData });
-
-    setIsLoading(true); // Show loading spinner
-    setError(null);     // Reset previous errors
-
-    // Optional: simulate network delay (remove in production)
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    // Make API call
-    const filteredBuses = await api.searchBuses({
-      fromCity: formData?.from,
-      toCity: formData?.to,
-      date: formData?.date,
-    });
-
-    // Handle if API returns undefined or unexpected format
-    if (!filteredBuses || !Array.isArray(filteredBuses)) {
-      throw new Error('Unexpected response format');
-    }
-
-    // Check if buses were found
-    if (filteredBuses.length === 0) {
-      setError('No buses found for this route and date. Please try different dates or locations.');
-      return;
-    }
-
-    // Update state with results
-    setBusResults(filteredBuses);
-    setAllBusResults(filteredBuses);
-
-    // Optional: update URL state/history
-    handleUpdateSearchState(filteredBuses);
-
-    // Scroll to results section
-    document.getElementById('resultsSection')?.scrollIntoView({ behavior: 'smooth' });
-
-  } catch (err) {
-    console.error('Error searching:', err);
-    setError(err.message || 'An error occurred while searching. Please try again.');
-  } finally {
-    setIsLoading(false); // Stop loading
-  }
-};
-
-
-    // Update URL state for browser history after successful search
-    const handleUpdateSearchState = (results) => {
-      navigate('/search-results', { 
-        state: { 
-          searchResults: results,
-          searchParams: { 
-            tripType, 
-            ...formData,
-            // Include city names from location codes
-            fromCity: locationOptions.find(loc => loc.value === formData.from)?.label || formData.from,
-            toCity: locationOptions.find(loc => loc.value === formData.to)?.label || formData.to
-          } 
-        },
-        replace: true // Replace current history entry to avoid back button issues
+    try {
+      // Make API call
+      const filteredBuses = await api.searchBuses({
+        fromCity: formData?.from,
+        toCity: formData?.to,
+        date: formData?.date,
       });
-    };
+      if (!filteredBuses || !Array.isArray(filteredBuses)) {
+        throw new Error('Unexpected response format');
+      }
+      if (filteredBuses.length === 0) {
+        setError('No buses found for this route and date. Please try different dates or locations.');
+        setBusResults([]);
+        setAllBusResults([]);
+        setIsLoading(false);
+        return;
+      }
+      setBusResults(filteredBuses);
+      setAllBusResults(filteredBuses);
+      handleUpdateSearchState(filteredBuses);
+      document.getElementById('resultsSection')?.scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+      // On error, show error and fallback to default data instantly
+      setError('Failed to fetch bus data. Showing default results.');
+      const defaultData = await api.getDefaultBuses ? await api.getDefaultBuses() : [
+        {
+          id: 'default1',
+          busName: 'Sona Express',
+          busType: 'Deluxe A/C',
+          departureTime: '16:00',
+          arrivalTime: '20:50',
+          boardingPoint: 'New Bus Park, Kathmandu',
+          droppingPoint: 'Adarsha Nagar, Birgunj',
+          price: 'Rs. 1200',
+          availableSeats: 12,
+          facilities: ['AC', 'WiFi'],
+          rating: '4.8',
+        }
+      ];
+      setBusResults(defaultData);
+      setAllBusResults(defaultData);
+      handleUpdateSearchState(defaultData);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Update URL state for browser history after successful search
+  const handleUpdateSearchState = (results) => {
+    navigate('/search-results', { 
+      state: { 
+        searchResults: results,
+        searchParams: { 
+          tripType, 
+          ...formData,
+          // Include city names from location codes
+          fromCity: locationOptions.find(loc => loc.value === formData.from)?.label || formData.from,
+          toCity: locationOptions.find(loc => loc.value === formData.to)?.label || formData.to
+        } 
+      },
+      replace: true // Replace current history entry to avoid back button issues
+    });
   };
 
   const handleTripTypeChange = (type) => {
@@ -474,10 +537,10 @@ const SearchResultsPage = () => {
                 required
               />
             </div>            {/* Swap Button */}
-            <div className="self-center order-3">
+            <div className="self-center order-3 mt-3">
               <button 
                 onClick={handleSwapLocations}
-                className="bg-white rounded-full p-2 shadow-md hover:bg-gray-50 transition-colors duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-300 active:bg-gray-100"
+                className="bg-white rounded-full p-2 mt-3 shadow-md hover:bg-gray-50 transition-colors duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-300 active:bg-gray-100"
                 title="Swap locations"
                 aria-label="Swap departure and destination locations"
               >
@@ -507,7 +570,7 @@ const SearchResultsPage = () => {
                 <DatePicker
                   label={tripType === 'twoWay' ? "Departure" : "Date"}
                   name="date"
-                  value={formData.date}
+                  value={formData.date || travelDate}
                   onChange={handleInputChange}
                   placeholder="Select date"
                   required
@@ -536,12 +599,11 @@ const SearchResultsPage = () => {
                 </div>
               )}
             </div>            {/* Search Button */}            <div className="order-6 ml-auto">
-              <Button 
+              <Button
                 variant="primary"
                 onClick={handleSearchAgain}
-                className={`bg-blue-600 text-white rounded-lg px-4 py-2 h-[44px] flex items-center hover:bg-blue-700 shadow-sm transition-all focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 cursor-pointer ${
-                  isLoading ? 'opacity-80' : ''
-                }`}
+                className="w-full bg-blue-600 text-white rounded-lg px-4 py-2 h-[44px] hover:bg-blue-700 shadow-sm transition-all focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 cursor-pointer flex items-center justify-center"
+                style={{ opacity: isLoading ? 0.8 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -556,10 +618,10 @@ const SearchResultsPage = () => {
                   </>
                 ) : (
                   <>
-                    <svg 
-                      className="w-4 h-4 mr-2" 
-                      fill="none" 
-                      stroke="currentColor" 
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -578,15 +640,19 @@ const SearchResultsPage = () => {
               target: {
                 name: 'date',
                 value: dateString
-              }
+              },
+              isTrusted: true // Mark as user interaction
             });
+            
+            // Update travelDate state to keep both components in sync
+            setTravelDate(dateString);
             
             // Automatically trigger search after a short delay
             setTimeout(() => {
               handleSearchAgain();
-            }, 300);
+            }, 100);
           }}
-        />        {/* Results Header */}
+        />{/* Results Header */}
         <div className="bg-white rounded-lg p-5 mb-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center">
             <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -650,8 +716,8 @@ const SearchResultsPage = () => {
               setSelectedBoardingPlaces={setSelectedBoardingPlaces}
               selectedDroppingPlaces={selectedDroppingPlaces}
               setSelectedDroppingPlaces={setSelectedDroppingPlaces}
-              selectedBusTypes={selectedBusTypes}
-              setSelectedBusTypes={setSelectedBusTypes}
+              // selectedBusTypes={selectedBusTypes}
+              // setSelectedBusTypes={setSelectedBusTypes}
               selectedFacilities={selectedFacilities}
               setSelectedFacilities={setSelectedFacilities}
               selectedRatings={selectedRatings}
@@ -668,14 +734,14 @@ const SearchResultsPage = () => {
               onSearchAgain={handleSearchAgain}
               selectedBoardingPlaces={selectedBoardingPlaces}
               selectedDroppingPlaces={selectedDroppingPlaces}
-              selectedBusTypes={selectedBusTypes}
+              // selectedBusTypes={selectedBusTypes}
               selectedFacilities={selectedFacilities}
               selectedRatings={selectedRatings}
               priceRange={priceRange}
               // Pass state setters for filter removal functionality
               setSelectedBoardingPlaces={setSelectedBoardingPlaces}
               setSelectedDroppingPlaces={setSelectedDroppingPlaces}
-              setSelectedBusTypes={setSelectedBusTypes}
+              // setSelectedBusTypes={setSelectedBusTypes}
               setSelectedFacilities={setSelectedFacilities}
               setSelectedRatings={setSelectedRatings}
               setPriceRange={setPriceRange}              selectedDepartureTime={selectedDepartureTime}
@@ -691,7 +757,7 @@ const SearchResultsPage = () => {
                 setSelectedDepartureTime(''); // Clear departure time filter
                 
                 // Trigger a search with the cleared filters
-                setTimeout(() => handleSearchAgain(), 300);
+                setTimeout(() => handleSearchAgain(), 100);
               }}
             />
           </div>

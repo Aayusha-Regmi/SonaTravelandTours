@@ -24,7 +24,8 @@ const FilterSection = ({
   const [searchBoardingPlace, setSearchBoardingPlace] = useState('');
   const [searchDroppingPlace, setSearchDroppingPlace] = useState('');
   const [localBusTypes, setLocalBusTypes] = useState(selectedBusTypes.length > 0 ? selectedBusTypes : []);
-  const [isFilterExpanded, setIsFilterExpanded] = useState(true);
+  // No longer needed as we're removing the expand/collapse button
+// const [isFilterExpanded, setIsFilterExpanded] = useState(true);
   // Initialize boarding places state
   const [boardingPlaceOptions, setBoardingPlaceOptions] = useState({});
   const [boardingPlaces, setBoardingPlaces] = useState({});
@@ -205,26 +206,19 @@ const FilterSection = ({
   };
   
   // Filter boarding places based on search input
-  const filteredBoardingPlaces = Object.entries(boardingPlaces).filter(
+  const filteredBoardingPlaces = Object.entries(boardingPlaceOptions).filter(
     ([place]) => place.toLowerCase().includes(searchBoardingPlace.toLowerCase())
-  );
-  
+  ).map(([place]) => [place, boardingPlaces[place] || false]);
+
   // Filter dropping places based on search input
-  const filteredDroppingPlaces = Object.entries(droppingPlaces).filter(
+  const filteredDroppingPlaces = Object.entries(droppingPlaceOptions).filter(
     ([place]) => place.toLowerCase().includes(searchDroppingPlace.toLowerCase())
-  );
-  return (    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-5 max-h-[85vh] overflow-auto">
-      {/* Header with expand/collapse button */}
-      <div className="flex justify-between items-center mb-4">
+  ).map(([place]) => [place, droppingPlaces[place] || false]);  return (    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-5">
+      {/* Header */}
+      <div className="mb-4">
         <h2 className="text-lg font-semibold text-gray-800">
           Filters
         </h2>
-        <button 
-          onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-          className="text-blue-600 text-sm font-medium hover:underline"
-        >
-          {isFilterExpanded ? 'Collapse All' : 'Expand All'}
-        </button>
       </div>
       
       <div className="w-full h-px bg-gray-200 mb-5"></div>
@@ -302,9 +296,9 @@ const FilterSection = ({
         </p>
       </div>
 
-      <div className="w-full h-px bg-gray-200 mb-5"></div>
+      {/* <div className="w-full h-px bg-gray-200 mb-5">
 
-      {/* Bus Type */}
+      Bus Type
       <div className="mb-5">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">
           Bus Type
@@ -324,7 +318,7 @@ const FilterSection = ({
             </button>
           ))}
         </div>
-      </div>
+      </div> */}
 
       <div className="w-full h-px bg-gray-200 mb-5"></div>
 
@@ -378,9 +372,7 @@ const FilterSection = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
-        </div>
-
-        <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+        </div>        <div className="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
           {filteredBoardingPlaces.length > 0 ? (
             filteredBoardingPlaces.map(([place, checked]) => (
               <div key={place} className="flex items-center">
@@ -423,9 +415,7 @@ const FilterSection = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
-        </div>
-
-        <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+        </div>        <div className="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
           {filteredDroppingPlaces.length > 0 ? (
             filteredDroppingPlaces.map(([place, checked]) => (
               <div key={place} className="flex items-center">

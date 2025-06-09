@@ -27,15 +27,15 @@ const Button = ({
     medium: 'px-4 py-2 text-base',
     large: 'px-6 py-3 text-lg',
   };
+    // Use base classes depending on whether it's a search button or not
+  const finalClasses = `${className.includes('search') ? baseClassSearch : baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? 'cursor-not-allowed' : ''} ${className}`;
   
-  const buttonClasses = `${baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? 'cursor-not-allowed' : ''} ${className}`;
-  const buttonClassSearch = `${baseClassSearch} ${variants[variant]} ${sizes[size]} ${disabled ? 'cursor-not-allowed' : ''} ${className}`;
   return (
     <button 
       type={type} 
       onClick={onClick} 
       disabled={disabled} 
-      className={buttonClasses || buttonClassSearch} 
+      className={finalClasses}
       {...props}
     >
       {icon && <span className="mr-2">{icon}</span>}

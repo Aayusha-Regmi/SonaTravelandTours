@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import InputField from '../../../components/ui/InputField';
 import Button from '../../../components/ui/Button';
 import DatePicker from './UI/DatePickerNew';
 import LocationDropdown from './UI/LocationDropdown';
-import apiService from '../../../services/clientapi';
+import api from '../../../services/api';
 
 const SearchForm = () => {
   const navigate = useNavigate();
+  const searchFormRef = useRef(null);
   const [tripType, setTripType] = useState('oneWay');  const [formData, setFormData] = useState({
     from: '',
     to: '',
@@ -31,15 +32,40 @@ const SearchForm = () => {
       description: 'Stops: Adarsha Nagar, Ghantaghar, Birta, Powerhouse, Rangeli'
     }
   ];
-
   // Fetch available routes when component mounts
   useEffect(() => {
     fetchRoutes();
   }, []);
   
+  // Add effect to handle form visibility when user interacts with form inputs
+  useEffect(() => {
+    // Attach click handlers to form elements that might open dropdowns
+    const handleFormElementFocus = () => {
+      ensureFormInView();
+    };
+
+    const formContainer = searchFormRef.current;
+    if (formContainer) {
+      // Add listeners to all interactive elements in the form
+      const interactiveElements = formContainer.querySelectorAll('button, input, select');
+      interactiveElements.forEach(element => {
+        element.addEventListener('click', handleFormElementFocus);
+        element.addEventListener('focus', handleFormElementFocus);
+      });
+
+      return () => {
+        // Clean up listeners
+        interactiveElements.forEach(element => {
+          element.removeEventListener('click', handleFormElementFocus);
+          element.removeEventListener('focus', handleFormElementFocus);
+        });
+      };
+    }
+  }, []);
+  
   const fetchRoutes = async () => {
     try {
-      const data = await apiService.getRoutes();
+      const data = await api.getRoutes();
       
       setRouteOptions(data);
     } catch (err) {
@@ -100,13 +126,13 @@ const SearchForm = () => {
       setError('Please fill in all required fields');
       return;
     }
-    
+
     // Make sure from and to are not the same
     if (formData.from === formData.to) {
       setError('Departure and destination cannot be the same');
       return;
     }
-    
+
     // Validate return date is after departure date for two-way trips
     if (tripType === 'twoWay' && formData.date && formData.returnDate) {
       const departDate = new Date(formData.date.split(' ').join(' '));
@@ -116,45 +142,49 @@ const SearchForm = () => {
         return;
       }
     }
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       console.log('Searching with data:', { tripType, ...formData });
-      
-      // Call the API service for searching with proper parameters
-      const data = await apiService.searchBusRoutes({ tripType, ...formData });
-      
-      console.log('Search results:', data);
-      
-      if (!data || !data.success) {
-        throw new Error(data?.message || 'Failed to find buses for this route');
-      }
-      
-      // Handle the API response format according to documentation
-      const busResults = data.data || [];
-      
-      if (busResults.length === 0) {
+
+      // Use the local api.js service for bus search
+      const busResults = await api.searchBuses({
+        fromCity: formData.from,
+        toCity: formData.to,
+        date: formData.date,
+        returnDate: formData.returnDate,
+        tripType: tripType
+      });
+
+      // Defensive: handle if API returns undefined or not an array
+      if (!busResults || !Array.isArray(busResults)) {
         setError('No buses found for this route and date. Please try different dates or locations.');
         setIsLoading(false);
         return;
       }
+
+      if (busResults.length === 0) {
+        setError('No buses found for this route and date. Please try different dates or locations.');
+        setIsLoading(false);
+        return;
+      }      // Navigate to search results page with the data
       
-      // Navigate to search results page with the data
-      navigate('/search-results', { 
-        state: { 
+      // First scroll to top
+      window.scrollTo(0, 0);
+      
+      navigate('/search-results', {
+        state: {
           searchResults: busResults,
-          searchParams: { 
-            tripType, 
+          searchParams: {
+            tripType,
             ...formData,
-            // Include city names from location codes
             fromCity: locationOptions.find(loc => loc.value === formData.from)?.label || formData.from,
             toCity: locationOptions.find(loc => loc.value === formData.to)?.label || formData.to
-          } 
-        } 
+          },
+        }
       });
-      
     } catch (err) {
       console.error('Error searching:', err);
       setError(err.message || 'An error occurred while searching. Please try again.');
@@ -169,8 +199,44 @@ const SearchForm = () => {
       from: prevData.to,
       to: prevData.from
     }));
-  };  return (
-    <div className="bg-white rounded-xl p-4 sm:p-5 md:p-7 shadow-lg border-t border-gray-100 w-full max-w-5xl mx-auto -mt-[100px] sm:-mt-[130px] md:-mt-[180px] relative z-40">
+  };  // Helper function to ensure form is visible when dropdown opens
+  const ensureFormInView = () => {
+    if (searchFormRef.current) {
+      const rect = searchFormRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      // Only scroll if the top of the form is out of view
+      if (rect.top < 20) { // 20px buffer from top
+        const scrollY = window.scrollY || window.pageYOffset;
+        const newScrollY = scrollY + rect.top - 20; // Position with small buffer from top
+        
+        window.scrollTo({
+          top: Math.max(0, newScrollY),
+          behavior: 'smooth'
+        });
+      }
+      // Don't scroll for cases where the form extends below viewport
+      // Let the individual dropdowns handle that with their specific positioning
+    }
+  };
+  
+  // Handle window resize events
+  useEffect(() => {
+    const handleResize = () => {
+      // Ensure form is in view after resize completes
+      if (searchFormRef.current) {
+        setTimeout(ensureFormInView, 100);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return (
+    <div ref={searchFormRef} className="bg-white rounded-xl p-4 sm:p-5 md:p-7 shadow-lg border-t border-gray-100 w-full max-w-5xl mx-auto -mt-[100px] sm:-mt-[130px] md:-mt-[180px] relative z-40">
       {/* Trip Type Selector */}
       <div className="flex mb-4 sm:mb-6">
         <div className="bg-[#ececec] rounded-xl flex w-[200px] sm:w-[250px] h-[45px] sm:h-[55px]">
@@ -220,11 +286,10 @@ const SearchForm = () => {
             placeholder="Select your destination"
             options={locationOptions.filter(option => option.value !== formData.from)}
             required
-          />          {/* Swap Button - Positioned between From and To fields */}
-          <div className="absolute left-0 md:left-[-8%] top-[30px] md:-translate-x-[50%] transform z-20">
+          />          {/* Swap Button - Positioned between From and To fields */}          <div className="absolute left-0 md:left-[-8%] top-[30px] md:-translate-x-[50%] transform z-[100]">
             <button 
               onClick={handleSwapLocations}
-              className="bg-white rounded-full p-1 sm:p-2 shadow-md hover:bg-gray-50 transition-colors duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-300 active:bg-gray-100"
+              className="bg-white rounded-full mt-[-5px] ml-[-8px] p-1 sm:p-2 shadow-lg hover:bg-gray-50 transition-colors duration-300 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-300 active:bg-gray-100"
               title="Swap locations"
               aria-label="Swap departure and destination locations"
             >

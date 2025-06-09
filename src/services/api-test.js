@@ -1,7 +1,7 @@
 // API Test Helper for Sona Travel and Tours
 // This file helps test API connections during development
 
-import apiService from './clientapi';
+import api from './api';
 
 /**
  * Test the bus search API
@@ -19,7 +19,7 @@ export const testBusSearch = async () => {
   console.log('Testing bus search API with data:', testData);
   
   try {
-    const response = await apiService.searchBusRoutes(testData);
+    const response = await api.searchBusRoutes(testData);
     console.log('API Response:', response);
     
     if (response.success) {

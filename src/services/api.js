@@ -118,32 +118,7 @@ const sampleBusData = [
   }
 ];
 
-/**
- * Simulates searching for buses based on search parameters
- * In real application, this would make an API call to the backend
- * @param {Object} searchParams - Search parameters
- * @param {string} searchParams.fromCity - Origin city
- * @param {string} searchParams.toCity - Destination city
- * @param {string} searchParams.date - Travel date
- * @param {string} [searchParams.returnDate] - Return date for round trips
- * @returns {Promise} - Promise resolving to array of bus data
- */
-const searchBuses = (searchParams) => {
-  return new Promise((resolve) => {
-    // Simulate API call delay
-    setTimeout(() => {
-      // Filter buses based on search parameters
-      // In a real application, this would be handled by the backend
-      const filteredBuses = sampleBusData.filter(bus => {
-        // Filter logic here based on searchParams
-        // For now, return all sample buses since this is a simulation
-        return true;
-      });
-      
-      resolve(filteredBuses);
-    }, 800); // Simulate network delay
-  });
-};
+
 
 /**
  * Get all available facilities for bus filtering
@@ -179,7 +154,9 @@ const getBoardingPoints = () => {
     'Kalanki, Kathmandu',
     'Balkhu, Kathmandu',
     'Koteshwor, Kathmandu',
-    'Chabahil, Kathmandu'
+    'Chabahil, Kathmandu',
+    // Add more for demo
+    
   ];
 };
 
@@ -193,7 +170,8 @@ const getDroppingPoints = () => {
     'Ghantaghar, Birgunj',
     'Birta, Birgunj',
     'Powerhouse, Birgunj',
-    'Rangeli, Birgunj'
+    'Rangeli, Birgunj',
+   
   ];
 };
 
@@ -203,12 +181,9 @@ const getDroppingPoints = () => {
  * @returns {Promise} - Promise resolving to bus details or null if not found
  */
 const getBusDetails = (busId) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const bus = sampleBusData.find(b => b.id === busId) || null;
-      resolve(bus);
-    }, 300);
-  });
+  // Return bus details instantly
+  const bus = sampleBusData.find(b => b.id === busId) || null;
+  return Promise.resolve(bus);
 };
 
 /**
@@ -219,21 +194,16 @@ const getBusDetails = (busId) => {
  * @returns {Promise} - Promise resolving to booking information
  */
 const bookSeats = (busId, selectedSeats, passengerInfo) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Simulate API call to book seats
-      const bookingId = `BK-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-      
-      resolve({
-        bookingId,
-        busId,
-        selectedSeats,
-        passengerInfo,
-        status: 'Confirmed',
-        bookingDate: new Date().toISOString(),
-        paymentStatus: 'Pending'
-      });
-    }, 1000);
+  // Return booking info instantly
+  const bookingId = `BK-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+  return Promise.resolve({
+    bookingId,
+    busId,
+    selectedSeats,
+    passengerInfo,
+    status: 'Confirmed',
+    bookingDate: new Date().toISOString(),
+    paymentStatus: 'Pending'
   });
 };
 
@@ -244,41 +214,46 @@ const bookSeats = (busId, selectedSeats, passengerInfo) => {
  * @returns {Promise} - Promise resolving to available seats information
  */
 const getAvailableSeats = (busId, date) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Generate 40 seats with some randomly booked
-      const totalSeats = 40;
-      const seats = [];
-      
-      for (let i = 1; i <= totalSeats; i++) {
-        const seatNumber = i.toString().padStart(2, '0');
-        // Randomly determine if seat is booked (30% chance)
-        const isBooked = Math.random() < 0.3;
-        const seatType = i % 3 === 0 ? 'Sleeper' : 'Seater';
-        const gender = isBooked ? (Math.random() < 0.5 ? 'Male' : 'Female') : null;
-        
-        seats.push({
-          seatNumber,
-          isBooked,
-          price: seatType === 'Sleeper' ? 1500 : 1200,
-          type: seatType,
-          gender
-        });
-      }
-      
-      resolve({
-        busId,
-        travelDate: date,
-        totalSeats,
-        availableSeats: seats.filter(seat => !seat.isBooked).length,
-        seats
-      });
-    }, 800);
+  // Generate 40 seats with some randomly booked
+  const totalSeats = 40;
+  const seats = [];
+  for (let i = 1; i <= totalSeats; i++) {
+    const seatNumber = i.toString().padStart(2, '0');
+    const isBooked = Math.random() < 0.3;
+    const seatType = i % 3 === 0 ? 'Sleeper' : 'Seater';
+    const gender = isBooked ? (Math.random() < 0.5 ? 'Male' : 'Female') : null;
+    seats.push({
+      seatNumber,
+      isBooked,
+      price: seatType === 'Sleeper' ? 1500 : 1200,
+      type: seatType,
+      gender
+    });
+  }
+  return Promise.resolve({
+    busId,
+    travelDate: date,
+    totalSeats,
+    availableSeats: seats.filter(seat => !seat.isBooked).length,
+    seats
   });
+};
+
+const searchBuses = async (searchParams) => {
+  // Optionally filter sampleBusData here based on searchParams
+  return sampleBusData;
+};
+
+const getRoutes = async () => {
+  return [
+    { id: 1, name: 'Kathmandu', code: 'KTM' },
+    { id: 2, name: 'Birgunj', code: 'BRG' }
+  ];
 };
 
 export default {
   searchBuses,
+  getRoutes,
   getBusFacilities,
   getBusTypes,
   getBoardingPoints,

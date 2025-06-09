@@ -98,17 +98,16 @@ const DatePicker = ({
   ];
   
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  
-  const formatDate = (date) => {
+    const formatDate = (date) => {
     if (!date) return "";
     
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    
-    // Format: 01 Jun 2025 (add leading zero to day)
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return `${day < 10 ? '0' + day : day} ${monthNames[month - 1]} ${year}`;
+    // Format: Mon, Jun 1, 2025 (include day of week to match DateSelector format)
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
   
   const getDaysInMonth = (month, year) => {
@@ -155,10 +154,13 @@ const DatePicker = ({
     const newDate = new Date(year, month, 1);
     setCurrentMonth(newDate);
   };
-  
-  const handleReset = () => {
+    const handleReset = () => {
     setSelectedDate(null);
-    onChange({ target: { name, value: '' } });
+    // Add an isReset flag to indicate this is a date reset
+    onChange({ 
+      target: { name, value: '' },
+      isReset: true 
+    });
     setAnimate(true);
     setTimeout(() => setAnimate(false), 300);
     setIsOpen(false);
@@ -166,6 +168,8 @@ const DatePicker = ({
   
   // Ensure the calendar is visible when opening
   const hasOpened = useRef(false);
+  const calendarObserver = useRef(null);
+
   useEffect(() => {
     if (isOpen && !hasOpened.current) {
       if (selectedDate) {
@@ -182,34 +186,69 @@ const DatePicker = ({
       }
       hasOpened.current = true;
     }
+    
     if (!isOpen) {
       hasOpened.current = false;
+      // Clean up any observer when dropdown closes
+      if (calendarObserver.current) {
+        calendarObserver.current.disconnect();
+        calendarObserver.current = null;
+      }
+      return;
     }
-    // Improved scroll logic
-    if (isOpen) {
-      setTimeout(() => {
-        if (calendarRef.current) {
-          const rect = calendarRef.current.getBoundingClientRect();
-          const scrollY = window.scrollY || window.pageYOffset;
-          const padding = 24; // px
-          let scrollTo = null;
-          if (rect.top < padding) {
-            // If calendar is above the viewport, scroll down
-            scrollTo = rect.top + scrollY - padding;
-          } else if (rect.bottom > window.innerHeight) {
-            // If calendar is below the viewport, scroll up
-            scrollTo = rect.bottom + scrollY - window.innerHeight + padding;
-          }
-          if (scrollTo !== null) {
-            window.scrollTo({
-              top: scrollTo,
-              behavior: 'smooth',
-            });
-          }
+    
+    // Handle calendar positioning when it opens
+    if (isOpen && calendarRef.current) {
+      // Use a short delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const calendarDropdown = document.getElementById('calendar-dropdown');
+        
+        if (!calendarDropdown) return;
+        
+        // Set up a MutationObserver to get accurate height after calendar renders
+        if (!calendarObserver.current) {
+          calendarObserver.current = new MutationObserver(() => {
+            ensureCalendarVisible(calendarDropdown);
+          });
+          
+          calendarObserver.current.observe(calendarDropdown, { 
+            attributes: true, 
+            childList: true, 
+            subtree: true 
+          });
         }
-      }, 150);
+        
+        // Initial positioning check
+        ensureCalendarVisible(calendarDropdown);
+      }, 50);
+      
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, selectedDate, minDate]);
+  }, [isOpen, selectedDate, minDate]);  // Helper function to ensure calendar is visible
+  const ensureCalendarVisible = (calendarElement) => {
+    if (!calendarElement || !calendarRef.current) return;
+    
+    // Get real dimensions
+    const calendarRect = calendarElement.getBoundingClientRect();
+    const inputRect = calendarRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const scrollY = window.scrollY || window.pageYOffset;
+    const padding = 35; // Increased padding to ensure full visibility    // Calculate if calendar extends beyond viewport
+    const calendarHeight = calendarRect.height || 520; // Increased fallback height if measurement fails
+    const calendarBottom = inputRect.top + calendarHeight;
+    const bottomOverflow = Math.max(0, calendarBottom - viewportHeight);
+    
+    // Only scroll if necessary (calendar gets cut off)
+    if (bottomOverflow > 0) {
+      // Precisely calculate minimum scroll needed to show entire calendar
+      const scrollAmount = scrollY + bottomOverflow + padding;
+      
+      window.scrollTo({
+        top: scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
   
   const handleDateClick = (day) => {
     const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
@@ -371,12 +410,10 @@ const DatePicker = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </span>
-        </button>
-        
-        {isOpen && (
-          <div className="absolute left-0 right-0 mt-2 z-[9999]">
-            <div
-              className="relative bg-white rounded-xl shadow-2xl p-4 border-2 border-[#0a639d]/20 transition-all duration-200 ease-out max-h-[400px] overflow-auto w-[300px] md:w-[350px] datepicker-calendar"
+        </button>            {isOpen && (
+          <div className="absolute left-0 right-0 mt-2 z-[9999]">            <div
+              className="relative bg-white rounded-xl shadow-2xl p-4 border-2 border-[#0a639d]/20 transition-all duration-200 ease-out max-h-[500px] overflow-auto w-[300px] md:w-[350px] datepicker-calendar"
+              id="calendar-dropdown"
             >
               {/* Close button inside the calendar frame, top-right with padding */}
               <button 
@@ -425,14 +462,12 @@ const DatePicker = ({
                   </div>
                 ))}
               </div>
-                
-              {/* Calendar grid with fixed height */}
-              <div className="grid grid-cols-7 mb-2 h-[180px] w-full" style={{ columnGap: '3px', rowGap: '1px' }}>
+                  {/* Calendar grid with fixed height */}
+              <div className="grid grid-cols-7 mb-3 h-[190px] w-full" style={{ columnGap: '3px', rowGap: '2px' }}>
                 {renderDays()}
               </div>
-                
-              {/* Footer buttons */}
-              <div className={`mt-2 pt-2 border-t border-gray-100 flex ${(isReturnDate || label?.toLowerCase().includes('return date')) ? 'justify-center' : 'justify-between'}`}>
+                  {/* Footer buttons */}
+              <div className={`mt-3 pt-2 border-t border-gray-100 pb-1 flex ${(isReturnDate || label?.toLowerCase().includes('return date')) ? 'justify-center' : 'justify-between'}`}>
                 <button
                   type="button"
                   className="px-4 py-2 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all duration-200 focus:outline-none font-medium"

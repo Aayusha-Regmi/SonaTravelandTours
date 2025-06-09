@@ -10,7 +10,7 @@ const Button = ({
   type = 'button',
   ...props 
 }) => {
-  const baseClasses = 'font-opensans font-bold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer';
+  const baseClassSelectSeat = 'font-opensans font-bold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer';
   
   const variants = {
     primary: 'bg-[#0a639d] text-white hover:bg-[#084d7a] disabled:bg-gray-400',
@@ -24,14 +24,14 @@ const Button = ({
     large: 'px-6 py-3 text-lg',
   };
 
-  const buttonClasses = `${baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? 'cursor-not-allowed' : ''} ${className}`;
+  const buttonClassSelectSeat = `${baseClassSelectSeat} ${variants[variant]} ${sizes[size]} ${disabled ? 'cursor-not-allowed' : ''} ${className}`;
 
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={buttonClasses}
+      className={buttonClassSelectSeat}
       {...props}
     >
       {children}

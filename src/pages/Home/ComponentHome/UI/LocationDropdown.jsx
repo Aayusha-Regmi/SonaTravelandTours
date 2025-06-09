@@ -50,8 +50,7 @@ const LocationDropdown = ({
     onChange({ target: { name, value: option.value } });
     setIsOpen(false);
   };
-  
-  // Close dropdown when clicking outside
+    // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -64,6 +63,78 @@ const LocationDropdown = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+    // Handle scroll into view when dropdown opens
+  const dropdownObserver = useRef(null);
+  
+  useEffect(() => {
+    // Clean up observer when component unmounts
+    return () => {
+      if (dropdownObserver.current) {
+        dropdownObserver.current.disconnect();
+        dropdownObserver.current = null;
+      }
+    };
+  }, []);
+  
+  useEffect(() => {
+    if (!isOpen) {
+      // Clean up observer when dropdown closes
+      if (dropdownObserver.current) {
+        dropdownObserver.current.disconnect();
+        dropdownObserver.current = null;
+      }
+      return;
+    }
+    
+    // Handle dropdown positioning when it opens
+    if (dropdownRef.current) {
+      setTimeout(() => {
+        const dropdown = dropdownRef.current.querySelector('.location-dropdown-menu');
+        if (!dropdown) return;
+        
+        // Set up a MutationObserver to get accurate height after dropdown renders fully
+        if (!dropdownObserver.current) {
+          dropdownObserver.current = new MutationObserver(() => {
+            ensureDropdownVisible(dropdown);
+          });
+          
+          dropdownObserver.current.observe(dropdown, {
+            attributes: true,
+            childList: true,
+            subtree: true
+          });
+        }
+        
+        // Initial positioning check
+        ensureDropdownVisible(dropdown);
+      }, 50);
+    }
+  }, [isOpen]);
+  
+  // Helper function to ensure dropdown is visible
+  const ensureDropdownVisible = (dropdownElement) => {
+    if (!dropdownElement || !dropdownRef.current) return;    // Get real measurements
+    const dropdownRect = dropdownElement.getBoundingClientRect();
+    const inputRect = dropdownRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const scrollY = window.scrollY || window.pageYOffset;
+    const padding = 35; // Increased padding to ensure full visibility
+    
+    // Calculate if dropdown extends beyond viewport
+    const dropdownBottom = inputRect.top + dropdownRect.height + 8; // 8px for dropdown margin
+    const bottomOverflow = Math.max(0, dropdownBottom - viewportHeight);
+    
+    // Only scroll if necessary (dropdown gets cut off)
+    if (bottomOverflow > 0) {
+      // Precisely calculate minimum scroll needed
+      const scrollAmount = scrollY + bottomOverflow + padding;
+      
+      window.scrollTo({
+        top: scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
     // Handle keyboard navigation
   const handleKeyDown = (e, option) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -97,9 +168,8 @@ const LocationDropdown = ({
           />
         </span>
       </button>
-      
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-full bg-white rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto border border-gray-200">
+        {isOpen && (
+        <div className="absolute top-full left-0 mt-2 w-full bg-white rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto border border-gray-200 location-dropdown-menu">
           {/* Search box */}
           <div className="sticky top-0 bg-white p-2 border-b border-gray-100">
             <div className="relative">
