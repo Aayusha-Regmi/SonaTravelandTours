@@ -1,4 +1,5 @@
 // API Debug Component for Sona Travel and Tours
+//this functionality is not necessary to be shown on application. its just design for production phase.
 import React, { useState } from 'react';
 import { testBusSearch, testAPIConnection } from '../../services/api-test';
 
