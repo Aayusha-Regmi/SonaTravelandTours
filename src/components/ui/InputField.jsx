@@ -21,11 +21,10 @@ const InputField = ({
   const inputId = id || name;
   
   return (
-    <div className={`mb-4 ${containerClassName}`}>
-      {label && (
+    <div className={`mb-4 ${containerClassName}`}>      {label && (
         <label 
           htmlFor={inputId} 
-          className={`block text-[#5f5f5f] font-bold text-xl mb-2 ${labelClassName}`}
+          className={`block text-[#5f5f5f] font-medium text-sm mb-1.5 ${labelClassName}`}
         >
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -40,7 +39,7 @@ const InputField = ({
           onChange={onChange}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full px-4 py-3 bg-[#f5f5f5] rounded-xl text-lg font-semibold ${
+          className={`w-full px-3 py-2.5 bg-[#f5f5f5] rounded-lg text-sm font-normal ${
             error ? 'border border-red-500' : ''
           } ${icon ? 'pr-10' : ''} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} ${className}`}
           {...props}

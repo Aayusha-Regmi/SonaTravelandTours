@@ -53,18 +53,26 @@ const Header = () => {
               </Link>
             </div>
           </div>
-        </nav>        <div className="hidden md:block">
-          <Button 
-            variant="primary" 
-            className="bg-[#0a639d] rounded-lg h-[45px] px-4 flex items-center hover:bg-[#07456e] transition-colors"
+        </nav>        <div className="hidden md:flex items-center space-x-3">
+          <Link 
+            to="/login"
+            className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors px-3 py-2"
           >
-            <img 
-              src="/images/img_hicon_outline_profile_1.svg" 
-              alt="Profile Icon" 
-              className="w-5 h-5 mr-2"
-            />
-            <span className="text-lg font-bold">Sign Up</span>
-          </Button>
+            Login
+          </Link>
+          <Link to="/signup">
+            <Button 
+              variant="primary" 
+              className="bg-[#0a639d] rounded-lg h-[45px] px-4 flex items-center hover:bg-[#07456e] transition-colors"
+            >
+              <img 
+                src="/images/img_hicon_outline_profile_1.svg" 
+                alt="Profile Icon" 
+                className="w-5 h-5 mr-2"
+              />
+              <span className="text-lg font-bold">Sign Up</span>
+            </Button>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -150,21 +158,31 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Testimonials
+              </Link>            </div>
+            
+            {/* Authentication options for Mobile */}
+            <div className="space-y-3 pt-4 border-t border-[#ececec]/60">
+              <Link 
+                to="/login" 
+                className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors block"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                <Button 
+                  variant="primary" 
+                  className="bg-[#0a639d] rounded-lg h-[50px] w-full flex items-center justify-center hover:bg-[#07456e] transition-colors"
+                >
+                  <img 
+                    src="/images/img_hicon_outline_profile_1.svg" 
+                    alt="Profile Icon" 
+                    className="w-5 h-5 mr-2"
+                  />
+                  <span className="text-base sm:text-lg font-bold">Sign Up</span>
+                </Button>
               </Link>
             </div>
-            
-            <Button 
-              variant="primary" 
-              className="bg-[#0a639d] rounded-lg h-[50px] w-full flex items-center justify-center hover:bg-[#07456e] transition-colors mt-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <img 
-                src="/images/img_hicon_outline_profile_1.svg" 
-                alt="Profile Icon" 
-                className="w-5 h-5 mr-2"
-              />
-              <span className="text-base sm:text-lg font-bold">Sign Up</span>
-            </Button>
           </nav>
         </div>
       )}
