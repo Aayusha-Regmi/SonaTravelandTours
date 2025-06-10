@@ -145,7 +145,7 @@ const LoginPage = () => {
       </div>
 
       {/* Right side - Illustration */}
-      <div className="hidden lg:flex flex-1 items-center justify-center ">
+      <div className="hidden lg:flex flex-1 mr-24 items-center justify-center ">
         <div className="max-w-2xl">          <img
             src="/images/login_img.png"
             alt="Travel illustration"
