@@ -1,17 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Button from '../../components/ui/Button';
+import { formatContactForDisplay } from '../../utils/authUtils';
 
 const OTPVerificationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { email, phoneNumber } = location.state || {};
+  const { contact, contactType, name } = location.state || {};
+  
+  // Redirect if no contact info
+  useEffect(() => {
+    if (!contact || !contactType) {
+      navigate('/signup');
+    }
+  }, [contact, contactType, navigate]);
   
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+
+  const isEmail = contactType === 'email';
+  const maskedContact = contact ? formatContactForDisplay(contact, isEmail) : '';
 
   useEffect(() => {
     if (timer > 0) {
@@ -68,15 +79,15 @@ const OTPVerificationPage = () => {
       setIsLoading(false);
     }
   };
-
   const handleResendOtp = () => {
     if (canResend) {
       setTimer(60);
       setCanResend(false);
       setOtp(['', '', '', '', '', '']);
       setError('');
-      // TODO: Implement resend OTP logic
-      console.log('Resending OTP...');
+      
+      // TODO: Implement resend OTP logic with contact type
+      console.log(`Resending OTP to ${contact} via ${isEmail ? 'email' : 'SMS'}...`);
     }
   };
 
@@ -93,21 +104,19 @@ const OTPVerificationPage = () => {
                 className="h-10 w-auto"
               />
             </div>
-          </div>
-
-          {/* Form Header */}
+          </div>          {/* Form Header */}
           <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Sign in to your account</h2>
-            <p className="text-sm text-gray-600 mt-2">Verification Code</p>
+            <h2 className="text-xl font-semibold text-gray-900">Verify Your Account</h2>
+            <p className="text-sm text-gray-600 mt-2">Enter Verification Code</p>
           </div>
 
           {/* Info Text */}
           <div className="text-center mb-6">
             <p className="text-sm text-gray-600">
-              We have sent you a verification code to
+              We have sent you a verification code {isEmail ? 'via email' : 'via SMS'} to
             </p>
             <p className="text-sm font-medium text-gray-900">
-              {email || phoneNumber || 'your registered contact'}
+              {maskedContact}
             </p>
           </div>
 

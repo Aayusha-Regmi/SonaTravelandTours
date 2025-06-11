@@ -2,37 +2,89 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
+import { validateLoginInput, validateField, detectInputType } from '../../utils/authUtils';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
+  const navigate = useNavigate();  const [formData, setFormData] = useState({
+    emailOrPhone: '',
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-
+  const [errors, setErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+
+    // Real-time validation for touched fields
+    if (touchedFields[name]) {
+      const fieldError = validateField(name === 'email' ? 'emailOrPhone' : name, value, formData);
+      setErrors(prev => ({
+        ...prev,
+        [name === 'email' ? 'emailOrPhone' : name]: fieldError
+      }));
+    }
   };
 
+  const handleInputBlur = (fieldName) => {
+    setTouchedFields(prev => ({
+      ...prev,
+      [fieldName]: true
+    }));
+
+    const value = fieldName === 'email' ? formData.emailOrPhone : formData[fieldName];
+    const fieldError = validateField(fieldName === 'email' ? 'emailOrPhone' : fieldName, value, formData);
+    setErrors(prev => ({
+      ...prev,
+      [fieldName === 'email' ? 'emailOrPhone' : fieldName]: fieldError
+    }));
+  };
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+
+    // Validate all fields
+    const validation = validateLoginInput(formData.emailOrPhone, formData.password);
+    
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      setIsLoading(false);
+      return;
+    }
+
+    // Clear any existing errors
+    setErrors({});
 
     try {
-      // TODO: Implement actual login logic
+      const inputType = detectInputType(formData.emailOrPhone);
+      const loginData = {
+        password: formData.password,
+        ...(inputType === 'email' 
+          ? { email: formData.emailOrPhone }
+          : { phone: formData.emailOrPhone }
+        )
+      };
+
+      console.log('Login data:', loginData);
+      
+      // TODO: Implement actual login logic with API call
       setTimeout(() => {
         setIsLoading(false);
         navigate('/');
       }, 1000);
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setErrors({ general: 'Login failed. Please try again.' });
       setIsLoading(false);
     }
   };
@@ -55,17 +107,15 @@ const LoginPage = () => {
                 className="h-10 w-auto"
               />
             </div>
-          </div>
-
-          {/* Form Header */}
+          </div>          {/* Form Header */}
           <div className="text-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Sign in to your account</h2>
           </div>
 
-          {/* Error Message */}
-          {error && (
+          {/* Error Messages */}
+          {errors.general && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+              {errors.general}
             </div>
           )}
 
@@ -73,14 +123,15 @@ const LoginPage = () => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <InputField
-                label="Email address/mobile"
-                type="email"
+                label="Email address or phone number"
+                type="text"
                 name="email"
-                value={formData.email}
+                value={formData.emailOrPhone}
                 onChange={handleInputChange}
-                placeholder="Enter your email or mobile"
-                required
+                onBlur={() => handleInputBlur('email')}
+                placeholder="Enter your email or 10-digit phone number"
                 className="w-full"
+                error={errors.emailOrPhone}
               />
             </div>
 
@@ -91,9 +142,10 @@ const LoginPage = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
+                onBlur={() => handleInputBlur('password')}
                 placeholder="Enter your password"
-                required
                 className="w-full"
+                error={errors.password}
               />
             </div>
 
@@ -101,7 +153,7 @@ const LoginPage = () => {
               type="submit"
               variant="primary"
               className="w-full bg-[#0a639d] hover:bg-[#085283] text-white py-3 rounded-lg font-medium"
-              disabled={isLoading}
+              disabled={isLoading || Object.keys(errors).some(key => errors[key] && key !== 'general')}
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
@@ -146,7 +198,8 @@ const LoginPage = () => {
 
       {/* Right side - Illustration */}
       <div className="hidden lg:flex flex-1 mr-24 items-center justify-center ">
-        <div className="max-w-2xl">          <img
+        <div className="max-w-2xl">         
+           <img
             src="/images/login_img.png"
             alt="Travel illustration"
             className="w-full h-auto"

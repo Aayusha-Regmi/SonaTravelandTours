@@ -2,44 +2,112 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
+import { validateSignupInput, validateField, detectInputType } from '../../utils/authUtils';
 
 const SignupPage = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const navigate = useNavigate();  const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    phoneNumber: '',
-    password: ''
+    emailOrPhone: '',
+    password: '',
+    confirmPassword: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-
+  const [errors, setErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+
+    // Real-time validation for touched fields
+    if (touchedFields[name]) {
+      const fieldError = validateField(name, value, formData);
+      setErrors(prev => ({
+        ...prev,
+        [name]: fieldError
+      }));
+    }
+
+    // Special handling for confirm password when password changes
+    if (name === 'password' && touchedFields.confirmPassword && formData.confirmPassword) {
+      const confirmPasswordError = validateField('confirmPassword', formData.confirmPassword, { ...formData, password: value });
+      setErrors(prev => ({
+        ...prev,
+        confirmPassword: confirmPasswordError
+      }));
+    }
   };
 
+  const handleInputBlur = (fieldName) => {
+    setTouchedFields(prev => ({
+      ...prev,
+      [fieldName]: true
+    }));
+
+    const value = formData[fieldName];
+    const fieldError = validateField(fieldName, value, formData);
+    setErrors(prev => ({
+      ...prev,
+      [fieldName]: fieldError
+    }));
+  };
   const handleSignup = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+
+    // Validate all fields
+    const validation = validateSignupInput(
+      formData.name, 
+      formData.emailOrPhone, 
+      formData.password, 
+      formData.confirmPassword
+    );
+    
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      setIsLoading(false);
+      return;
+    }
+
+    // Clear any existing errors
+    setErrors({});
 
     try {
-      // TODO: Implement actual signup logic
+      const inputType = detectInputType(formData.emailOrPhone);
+      const signupData = {
+        name: formData.name,
+        password: formData.password,
+        ...(inputType === 'email' 
+          ? { email: formData.emailOrPhone }
+          : { phone: formData.emailOrPhone }
+        )
+      };
+
+      console.log('Signup data:', signupData);
+      
+      // TODO: Implement actual signup logic with API call
       setTimeout(() => {
         setIsLoading(false);
         navigate('/otp-verification', { 
           state: { 
-            email: formData.email,
-            phoneNumber: formData.phoneNumber 
+            contact: formData.emailOrPhone,
+            contactType: inputType,
+            name: formData.name
           }
         });
       }, 1000);
     } catch (err) {
-      setError('Signup failed. Please try again.');
+      setErrors({ general: 'Signup failed. Please try again.' });
       setIsLoading(false);
     }
   };
@@ -67,12 +135,10 @@ const SignupPage = () => {
           {/* Form Header */}
           <div className="text-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Create your account</h2>
-          </div>
-
-          {/* Error Message */}
-          {error && (
+          </div>          {/* Error Messages */}
+          {errors.general && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+              {errors.general}
             </div>
           )}
 
@@ -80,40 +146,29 @@ const SignupPage = () => {
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
               <InputField
-                label="Name"
+                label="Full Name"
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
+                onBlur={() => handleInputBlur('name')}
                 placeholder="Enter your full name"
-                required
                 className="w-full"
+                error={errors.name}
               />
             </div>
 
             <div>
               <InputField
-                label="Email"
-                type="email"
-                name="email"
-                value={formData.email}
+                label="Email or Phone Number"
+                type="text"
+                name="emailOrPhone"
+                value={formData.emailOrPhone}
                 onChange={handleInputChange}
-                placeholder="Enter your email"
-                required
+                onBlur={() => handleInputBlur('emailOrPhone')}
+                placeholder="Enter your email or 10-digit phone number"
                 className="w-full"
-              />
-            </div>
-
-            <div>
-              <InputField
-                label="Phone number"
-                type="tel"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-                placeholder="Enter your phone number"
-                required
-                className="w-full"
+                error={errors.emailOrPhone}
               />
             </div>
 
@@ -124,9 +179,24 @@ const SignupPage = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                placeholder="Create a password"
-                required
+                onBlur={() => handleInputBlur('password')}
+                placeholder="Create a password (min. 6 characters)"
                 className="w-full"
+                error={errors.password}
+              />
+            </div>
+
+            <div>
+              <InputField
+                label="Confirm Password"
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                onBlur={() => handleInputBlur('confirmPassword')}
+                placeholder="Confirm your password"
+                className="w-full"
+                error={errors.confirmPassword}
               />
             </div>
 
@@ -134,7 +204,7 @@ const SignupPage = () => {
               type="submit"
               variant="primary"
               className="w-full bg-[#0a639d] hover:bg-[#085283] text-white py-3 rounded-lg font-medium"
-              disabled={isLoading}
+              disabled={isLoading || Object.keys(errors).some(key => errors[key] && key !== 'general')}
             >
               {isLoading ? 'Creating account...' : 'Sign up'}
             </Button>
