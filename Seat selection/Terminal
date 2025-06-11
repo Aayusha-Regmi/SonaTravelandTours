@@ -1,0 +1,8 @@
+# Navigate to the project directory (if not already there)
+cd /home/ubuntu/app/niki_s_application
+
+# Install dependencies (if not already installed)
+npm install
+
+# Run the application
+npm start
