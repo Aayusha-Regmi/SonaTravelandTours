@@ -63,10 +63,16 @@ The **Sona Travel and Tours Bus Seat Selection System** is a comprehensive React
 
 ### Build Tools & Development
 - **Vite** - Lightning-fast build tool and development server
-- **PostCSS** - CSS post-processing for enhanced styling capabilities
-- **ESLint** - Code linting for consistent code quality
+- **TailwindCSS** - Utility-first CSS framework with extensive customization
+- **React Router** - Declarative routing for React applications
 
-## 🛠️ Installation
+## 📋 Prerequisites
+
+- Node.js (v14.x or higher)
+- npm or yarn
+
+
+##  Installation
 
 ### Prerequisites
 - **Node.js** (v16.x or higher)
