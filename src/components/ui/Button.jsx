@@ -9,11 +9,13 @@ const Button = ({
   disabled = false, 
   type = 'button',
   className = '',
-  icon = null,
+  icon,
+  buttonType = 'default', // Add this prop to explicitly control styling
   ...props 
 }) => {
   const baseClasses = 'font-semibold rounded transition-colors duration-200 focus:outline-none flex items-center justify-center';
   const baseClassSearch = 'font-medium rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center';
+   const baseClassesSelectSeat = 'font-bold rounded-[12px] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center font-opensans';
   const variants = {
     primary: 'bg-[#0a639d] text-white hover:bg-[#085283] disabled:bg-gray-400',
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 disabled:bg-gray-100',
@@ -25,10 +27,16 @@ const Button = ({
   const sizes = {
     small: 'px-3 py-1 text-sm',
     medium: 'px-4 py-2 text-base',
-    large: 'px-6 py-3 text-lg',
-  };
-    // Use base classes depending on whether it's a search button or not
-  const finalClasses = `${className.includes('search') ? baseClassSearch : baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? 'cursor-not-allowed' : ''} ${className}`;
+    large: 'px-6 py-3 text-lg',  };
+    // Determine which base classes to use based on buttonType prop
+  let finalClasses;
+  if (buttonType === 'selectseat') {
+    finalClasses = `${baseClassesSelectSeat} ${variants[variant]} ${sizes[size]} ${disabled ? 'cursor-not-allowed' : ''} ${className}`;
+  } else if (buttonType === 'search') {
+    finalClasses = `${baseClassSearch} ${variants[variant]} ${sizes[size]} ${disabled ? 'cursor-not-allowed' : ''} ${className}`;
+  } else {
+    finalClasses = `${baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? 'cursor-not-allowed' : ''} ${className}`;
+  }
   
   return (
     <button 
@@ -47,12 +55,13 @@ const Button = ({
 Button.propTypes = {
   children: PropTypes.node,
   onClick: PropTypes.func,
-  variant: PropTypes.oneOf(['primary', 'secondary', 'outline']),
+  variant: PropTypes.oneOf(['primary', 'secondary', 'outline', 'danger', 'warning']),
   size: PropTypes.oneOf(['small', 'medium', 'large']),
   disabled: PropTypes.bool,
   type: PropTypes.oneOf(['button', 'submit', 'reset']),
   className: PropTypes.string,
-  icon: PropTypes.node
+  icon: PropTypes.node,
+  buttonType: PropTypes.oneOf(['default', 'search', 'selectseat'])
 };
 
 export default Button;

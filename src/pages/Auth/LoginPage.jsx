@@ -11,8 +11,7 @@ const LoginPage = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [touchedFields, setTouchedFields] = useState({});
-  const handleInputChange = (e) => {
+  const [touchedFields, setTouchedFields] = useState({});  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -29,25 +28,24 @@ const LoginPage = () => {
 
     // Real-time validation for touched fields
     if (touchedFields[name]) {
-      const fieldError = validateField(name === 'email' ? 'emailOrPhone' : name, value, formData);
+      const fieldError = validateField(name, value, formData);
       setErrors(prev => ({
         ...prev,
-        [name === 'email' ? 'emailOrPhone' : name]: fieldError
+        [name]: fieldError
       }));
     }
   };
-
   const handleInputBlur = (fieldName) => {
     setTouchedFields(prev => ({
       ...prev,
       [fieldName]: true
     }));
 
-    const value = fieldName === 'email' ? formData.emailOrPhone : formData[fieldName];
-    const fieldError = validateField(fieldName === 'email' ? 'emailOrPhone' : fieldName, value, formData);
+    const value = formData[fieldName];
+    const fieldError = validateField(fieldName, value, formData);
     setErrors(prev => ({
       ...prev,
-      [fieldName === 'email' ? 'emailOrPhone' : fieldName]: fieldError
+      [fieldName]: fieldError
     }));
   };
   const handleLogin = async (e) => {
@@ -120,15 +118,14 @@ const LoginPage = () => {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
+          <form onSubmit={handleLogin} className="space-y-4">            <div>
               <InputField
                 label="Email address or phone number"
                 type="text"
-                name="email"
+                name="emailOrPhone"
                 value={formData.emailOrPhone}
                 onChange={handleInputChange}
-                onBlur={() => handleInputBlur('email')}
+                onBlur={() => handleInputBlur('emailOrPhone')}
                 placeholder="Enter your email or 10-digit phone number"
                 className="w-full"
                 error={errors.emailOrPhone}

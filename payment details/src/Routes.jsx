@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Import page components
-import PaymentPage from './pages/Payment';
+import PaymentPage from './pages/Payment/Payment';
 
 const AppRoutes = () => {
   return (

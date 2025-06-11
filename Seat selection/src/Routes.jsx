@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // Import page components
-import BusSeatSelectionPage from './pages/BusSeatSelection';
+import BusSeatSelectionPage from './pages/BusSeatSelection/SeatSelection';
 
 const AppRoutes = () => {
   return (

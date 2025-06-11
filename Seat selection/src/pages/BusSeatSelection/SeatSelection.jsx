@@ -1,10 +1,10 @@
-// /home/ubuntu/app/niki_s_application/src/pages/BusSeatSelection/index.jsx
+
 import React, { useState, useEffect } from 'react';
-import Header from '../../components/common/Header';
-import Footer from '../../components/common/Footer';
-import Button from '../../components/ui/Button';
-import Stepper from '../../components/ui/Stepper';
-import Card from '../../components/ui/Card';
+import Header from '../../../components/common/Header';
+import Footer from '../../../components/common/Footer';
+import Button from '../../../components/ui/Button';
+import Stepper from '../../../components/common/BookingStepComponent/Stepper';
+import Card from './ComponentSeatSelection/CardSeatSelection';
 
 const BusSeatSelection = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);

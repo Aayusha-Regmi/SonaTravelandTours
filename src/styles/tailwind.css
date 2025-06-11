@@ -56,6 +56,9 @@
     /* Background Colors */
     --color-background-light: #f5f5f5;
     --color-background-white: #ffffff;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f5;
+    --bg-muted: #ececec;
     
     /* Text Colors */
     --color-text-dark: #3d3d3d;
@@ -66,11 +69,19 @@
     --text-secondary: #5f5f5f;
     --text-muted: #8f8f8f;
     --text-light: #b0b0b0;
+    --text-disabled: #b0b0b0;
+    --text-success: #388b68;
 
     /* Border Colors */
     --border-light: #ececec;
     --border-medium: #b0b0b0;
     --border-dark: #5f5f5f;
+     /* Status Colors */
+    --status-booked: #df7a80;
+    --status-selected: #5a9f82;
+    --status-available: #b0b0b0;
+    --status-line: #efbdc0;
+    --status-connector: #9bbfd7;
   }
 }
 
@@ -97,6 +108,9 @@
 }
 
 @layer utilities {
+    .font-opensans {
+    font-family: 'Open Sans', sans-serif;
+  }
   .text-shadow {
     text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
   }

@@ -6,6 +6,8 @@ module.exports = {
       colors: {
         primary: {
           blue: "#0a639d",
+           'blue-dark': "var(--primary-blue-dark)",
+          'blue-light': "var(--primary-blue-light)",
           orange: "#ff8f1f",
           dark: "#07456e",
         },
@@ -23,11 +25,31 @@ module.exports = {
           light: "#f5f5f5",
           white: "#ffffff",
         },
+         bg: {
+          primary: "var(--bg-primary)",
+          secondary: "var(--bg-secondary)",
+          muted: "var(--bg-muted)",
+        },
+          status: {
+          booked: "var(--status-booked)",
+          selected: "var(--status-selected)",
+          available: "var(--status-available)",
+          line: "var(--status-line)",
+          connector: "var(--status-connector)",
+        },
         text: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+          disabled: "var(--text-disabled)",
+          success: "var(--text-success)",
           dark: "#3d3d3d",
           gray: "#5f5f5f",
           lightGray: "#b0b0b0",
           placeholder: "#d9d9d9",
+        },
+         border: {
+          light: "var(--border-light)",
         },
       },
       spacing: {

@@ -7,7 +7,7 @@ import SearchResultsPage from './pages/SearchResults/SearchResultsPage';
 import LoginPage from './pages/Auth/LoginPage';
 import SignupPage from './pages/Auth/SignupPage';
 import OTPVerificationPage from './pages/Auth/OTPVerificationPage';
-
+import SeatSelection from './pages/BusSeatSelection/SeatSelection';
 
 const AppRoutes = () => {
   return (
@@ -18,7 +18,7 @@ const AppRoutes = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/otp-verification" element={<OTPVerificationPage />} />
-
+        <Route path="/select-seats/:busId" element={<SeatSelection />} />
       </Routes>
     </Router>
   );

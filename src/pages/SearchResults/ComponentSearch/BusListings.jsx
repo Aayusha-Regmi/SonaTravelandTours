@@ -101,8 +101,7 @@ const BusListings = ({
       return travelDate;
     }
   }, [travelDate]);
-  
-  // If no buses passed, use default data
+    // If no buses passed, use default data
   const busData = useMemo(() => {
     if (buses.length === 0) return [];
     
@@ -127,6 +126,17 @@ const BusListings = ({
       
       // Determine if it's an early morning journey (departure before 8 AM)
       const isEarlyMorning = departureMinutes < timeToMinutes('08:00');
+      
+      // Generate dynamic available seats count based on bus ID (same logic as SeatSelection)
+      const generateAvailableSeats = (busId) => {
+        const seed = busId ? parseInt(busId.toString().replace(/\D/g, '')) || 1 : 1;
+        const totalSeats = 32; // Total seats in the bus layout
+        const bookedCount = Math.floor((seed % 8) + 3); // Between 3-10 booked seats
+        return totalSeats - bookedCount;
+      };
+      
+      const calculatedAvailableSeats = generateAvailableSeats(busId);
+      
         return {
         id: busId,
         rating: bus.rating || '4.8',
@@ -141,7 +151,8 @@ const BusListings = ({
         duration: duration,
         price: bus.price || (bus.fare ? `Rs. ${bus.fare}` : 'Rs. 1200'),
         priceUnit: '/ Seat',
-        availableSeats: `${bus.availableSeats || bus.available_seats || 12} Seats Available`,        facilities: bus.facilities || [],
+        availableSeats: `${calculatedAvailableSeats} Seats Available`,        
+        facilities: bus.facilities || [],
         isNightJourney,
         isEarlyMorning,
         
@@ -157,12 +168,16 @@ const BusListings = ({
       [index]: !prev[index]
     }));
   };
-  
   const handleBookNow = (bus) => {
+    console.log('Navigating to seat selection for bus:', bus);
+    if (!bus || !bus.id) {
+      console.error('Bus data or ID is missing:', bus);
+      return;
+    }
     navigate(`/select-seats/${bus.id}`, { 
-      state: { bus: bus.originalData || bus }
+      state: { bus: bus }
     });
-  };  // Show loading state
+  };// Show loading state
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-10 bg-white rounded-lg shadow-sm w-full border border-gray-100">
@@ -538,10 +553,12 @@ const BusListings = ({
                 <span className="text-sm font-medium text-green-600">
                   {bus.availableSeats}
                 </span>
-                
-                <Button 
+                  <Button 
                   variant="primary"                
-                  onClick={() => handleBookNow(bus)}
+                  onClick={() => {
+                    console.log('Book Now clicked for bus:', bus);
+                    handleBookNow(bus);
+                  }}
                   className="bg-[#0a639d] text-white rounded-lg px-4 py-2 md:px-6 md:py-3 flex items-center justify-center hover:bg-blue-700 transition-colors"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

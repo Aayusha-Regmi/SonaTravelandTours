@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const Card = ({ 
+const CardSeatSelection = ({ 
   children, 
   className = '', 
   padding = 'default',
@@ -30,7 +30,7 @@ const Card = ({
   );
 };
 
-Card.propTypes = {
+CardSeatSelection.propTypes = {
   children: PropTypes.node,
   className: PropTypes.string,
   padding: PropTypes.oneOf(['none', 'small', 'default', 'large']),
@@ -38,4 +38,4 @@ Card.propTypes = {
   rounded: PropTypes.bool,
 };
 
-export default Card;
+export default CardSeatSelection;
