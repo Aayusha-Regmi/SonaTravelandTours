@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import ProgressBar from '../../components/ui/ProgressBar';
-import BookingStepComponent from '../../components/common/BookingStepComponent';
+import BusDetail from '../../components/common/BookingStepComponent/BusDetail';
 
 const PaymentPage = () => {
   const [promoCode, setPromoCode] = useState('');
@@ -63,7 +63,7 @@ const PaymentPage = () => {
       <Header />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Bus Information Section */}
-        <BookingStepComponent
+        <BusDetail
           busName="Name or No of the bus"
           busType="Tourist A/c, Delux"
           date="06/06/2024"

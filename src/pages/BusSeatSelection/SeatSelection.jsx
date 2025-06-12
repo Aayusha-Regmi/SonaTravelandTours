@@ -4,7 +4,8 @@ import { useLocation, useParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import Button from '../../components/ui/Button';
-import Stepper from '../../components/common/BookingStepComponents/Stepper';
+import ProgressBar from '../../components/common/BookingStepComponents/ProgressBar';
+import BusDetail from '../../components/common/BookingStepComponents/BusDetail';
 import Card from './ComponentSeatSelection/CardSeatSelection';
 
 const SeatSelection = () => {
@@ -189,69 +190,21 @@ const SeatSelection = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">        {/* Bus Details Card */}
-        <Card className="mb-6 h-auto w-full shadow-lg border border-gray-200 rounded-xl bg-white">
-          <div className="flex items-center justify-between h-full px-8 py-6">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800 mb-1 tracking-tight">
-                {busData.name || 'Bus Name'}
-              </h2>
-              <p className="text-sm font-medium text-gray-500">
-                {busData.type || 'Tourist A/c, Delux'}
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-600 mb-1">
-                06/06/2024
-              </p>
-              <p className="text-xl font-bold text-gray-800">
-                {busData.departureTimeFormatted || '16:00'}
-              </p>
-            </div>
-            
-            <div className="flex items-center space-x-6">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                  {busData.departureLocation || 'Kathmandu'}
-                </h3>
-                <p className="text-sm font-medium text-gray-500">
-                  Boarding place
-                </p>
-              </div>
-              
-              <div className="flex items-center space-x-3 px-4">
-                <div className="w-16 h-0.5 bg-gradient-to-r from-red-300 to-red-400 rounded-full"></div>
-                <div className="bg-gradient-to-r from-red-400 to-red-500 p-2 rounded-full shadow-md">
-                  <img 
-                    src="/images/img_group_red_300.svg" 
-                    alt="Bus icon" 
-                    className="w-5 h-5 filter brightness-0 invert"
-                  />
-                </div>
-                <div className="w-16 h-0.5 bg-gradient-to-r from-red-400 to-red-300 rounded-full"></div>
-              </div>
-              
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                  {busData.arrivalLocation || 'Birgunj'}
-                </h3>
-                <p className="text-sm font-medium text-gray-500">
-                  Dropping place
-                </p>
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <p className="text-sm font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-                {busData.duration || '9h'}
-              </p>
-            </div>
-          </div>
-        </Card>        {/* Stepper */}
+        <main className="max-w-7xl mt-11 mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        {/* Bus Details Component */}
+        <BusDetail 
+          busName={busData.name || 'Bus Name'}
+          busType={busData.type || 'Tourist A/c, Delux'}
+          date="06/06/2024"
+          time={busData.departureTimeFormatted || '16:00'}
+          boardingPlace={busData.departureLocation || 'Kathmandu'}
+          droppingPlace={busData.arrivalLocation || 'Birgunj'}
+          duration={busData.duration || '9h'}
+        />
+
+        {/* Stepper */}
         <div className="mb-8 flex justify-center">
-          <Stepper steps={steps} currentStep={currentStep} />
+         <ProgressBar steps={steps} currentStep={currentStep} />
         </div>        {/* Seat Selection Card */}
         <Card className="mb-6 min-h-[500px] w-full relative shadow-lg border border-gray-200 rounded-xl bg-white overflow-hidden">
           {/* Legend */}

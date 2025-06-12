@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const BookingStepComponent = ({ 
+const BusDetail = ({ 
   busName, 
   busType, 
   date, 
@@ -70,7 +70,7 @@ const BookingStepComponent = ({
   );
 };
 
-BookingStepComponent.propTypes = {
+BusDetail.propTypes = {
   busName: PropTypes.string.isRequired,
   busType: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
@@ -80,4 +80,4 @@ BookingStepComponent.propTypes = {
   duration: PropTypes.string.isRequired,
 };
 
-export default BookingStepComponent;
+export default BusDetail;
