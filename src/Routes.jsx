@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 // Import page components
 import HomePage from './pages/Home/Home';
@@ -20,9 +20,11 @@ const AppRoutes = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/otp-verification" element={<OTPVerificationPage />} />        {/* SeatSelection Step Pages Routes */}
-        <Route path="/search-results" element={<SearchResultsPage />} />
-        <Route path="/select-seats/:busId" element={<SeatSelection />} />
-        <Route path="/passenger-details" element={<PassengerDetail />} />
+        <Route path="/search-results" element={<SearchResultsPage />} />        <Route 
+          path="/select-seats/:busId" 
+          element={<SeatSelection />} 
+        />
+        <Route path="/passenger-detail" element={<PassengerDetail />} />
         <Route path="/payment" element={<PaymentPage />} />
       </Routes>
     </Router>

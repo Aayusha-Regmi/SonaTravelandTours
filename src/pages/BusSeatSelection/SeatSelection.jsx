@@ -162,8 +162,8 @@ const SeatSelection = () => {
     
     if (bookingResult && bookingResult.success) {
       toast.success(`Seats ${selectedSeats.join(', ')} selected successfully!`);
-      // Navigate to passenger details page
-      navigate('/passenger-details', {
+      // Navigate to passenger details page with booking data
+      navigate('/passenger-detail', {
         state: {
           bus: busData,
           selectedSeats,
@@ -174,8 +174,7 @@ const SeatSelection = () => {
     } else {
       toast.error('Failed to process seat selection. Please try again.');
     }
-  };
-  const bookSeats = async (selectedSeats) => {
+  };  const bookSeats = async (selectedSeats) => {
     try {
       // Simulate API call with dummy data
       console.log('Booking seats:', selectedSeats, 'for bus:', busId);
@@ -190,12 +189,10 @@ const SeatSelection = () => {
       };
       
       console.log('Booking successful:', mockResponse);
-      alert(`Seats ${selectedSeats.join(', ')} booked successfully! Booking ID: ${mockResponse.bookingId}`);
-      
       return mockResponse;
     } catch (error) {
       console.error('Error booking seats:', error);
-      alert('Failed to book seats. Please try again.');
+      return { success: false, error: error.message };
     }
   };
   return (
