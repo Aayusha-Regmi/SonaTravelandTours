@@ -62,47 +62,44 @@ const Dropdown = ({
   }, []);
   
   return (
-    <div className={`relative ${containerClassName}`} ref={dropdownRef}>
-      {label && (
+    <div className={`relative ${containerClassName}`} ref={dropdownRef}>      {label && (
         <label 
           htmlFor={inputId} 
-          className={`block text-[20px] font-semibold leading-[28px] text-[#8f8f8f] font-opensans mb-2 ${labelClassName}`}
+          className={`block text-[#5f5f5f] font-medium text-sm mb-1.5 ${labelClassName}`}
         >
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       
-      <div className="relative">
-        <button
+      <div className="relative">        <button
           type="button"
           id={inputId}
           onClick={toggleDropdown}
           disabled={disabled}
           className={`
-            w-full px-4 py-3 rounded-[12px] bg-[#f5f5f5] border-none
-            text-left text-[18px] font-opensans leading-[25px]
+            w-full px-3 py-2.5 rounded-lg bg-[#f5f5f5]
+            text-left text-sm font-normal
             focus:outline-none focus:ring-2 focus:ring-[#0a639d]
             disabled:bg-gray-100 disabled:cursor-not-allowed
             flex items-center justify-between
-            ${error ? 'border border-red-500' : ''}
+            ${error ? 'border border-red-500' : 'border-none'}
             ${className}
           `}
           {...props}
-        >
-          {isObjectOptions ? (
+        >{isObjectOptions ? (
             <div>
-              <div className={selectedOption ? 'text-[#3d3d3d] font-bold' : 'text-[#8f8f8f] font-semibold'}>
+              <div className={selectedOption ? 'text-[#3d3d3d] text-sm font-normal' : 'text-[#8f8f8f] text-sm font-normal'}>
                 {selectedOption ? selectedOption.label : placeholder}
               </div>
               {selectedOption && selectedOption.description && (
-                <div className="text-[16px] text-[#8f8f8f] font-opensans">
+                <div className="text-sm text-[#8f8f8f]">
                   {selectedOption.description}
                 </div>
               )}
             </div>
           ) : (
-            <span className={selectedOption ? 'text-[#3d3d3d] font-bold' : 'text-[#8f8f8f] font-semibold'}>
+            <span className={selectedOption ? 'text-[#3d3d3d] text-sm font-normal' : 'text-[#8f8f8f] text-sm font-normal'}>
               {selectedOption || placeholder}
             </span>
           )}
