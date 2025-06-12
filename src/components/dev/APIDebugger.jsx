@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { testBusSearch, testAPIConnection } from '../../services/api-test';
 
 /**
- * Component for testing API connections during development
- * Only renders in development mode
+ * *Component for testing API connections during development
+ * *Only renders in development mode
  */
 const APIDebugger = () => {
   const [isOpen, setIsOpen] = useState(false);
