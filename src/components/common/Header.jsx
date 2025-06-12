@@ -23,7 +23,9 @@ const Header = () => {
               className="h-10 w-auto"
             />
           </Link>
-        </div>        {/* Desktop Navigation */}        <nav className="hidden md:flex items-center space-x-7 relative z-10">
+        </div>
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-7 relative z-10">
           <Link to="/" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Home
           </Link>
@@ -53,7 +55,8 @@ const Header = () => {
               </Link>
             </div>
           </div>
-        </nav>        <div className="hidden md:flex items-center space-x-3">
+        </nav>       
+        <div className="hidden md:flex items-center space-x-3">
           <Link 
             to="/login"
             className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors px-3 py-2"
