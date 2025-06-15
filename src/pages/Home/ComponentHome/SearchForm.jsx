@@ -234,20 +234,19 @@ const SearchForm = () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-
   return (
-    <div ref={searchFormRef} className="bg-white rounded-xl p-4 sm:p-5 md:p-7 shadow-lg border-t border-gray-100 w-full max-w-5xl mx-auto -mt-[100px] sm:-mt-[130px] md:-mt-[180px] relative z-40">
+    <div ref={searchFormRef} className="bg-white/10 backdrop-blur-xl rounded-xl p-4 sm:p-5 md:p-7 shadow-lg border border-white/20 w-full max-w-5xl mx-auto -mt-[100px] sm:-mt-[130px] md:-mt-[180px] relative z-40">
       {/* Trip Type Selector */}
       <div className="flex mb-4 sm:mb-6">
-        <div className="bg-[#ececec] rounded-xl flex w-[200px] sm:w-[250px] h-[45px] sm:h-[55px]">
-          <button            className={`w-1/2 h-full rounded-xl flex items-center justify-center font-medium text-sm ${
-              tripType === 'oneWay' ? 'bg-[#0a639d] text-white' : 'text-[#5f5f5f]'
+        <div className="bg-white/20 backdrop-blur-xl rounded-xl flex w-[200px] sm:w-[250px] h-[45px] sm:h-[55px] border border-white/30">
+          <button            className={`w-1/2 h-full rounded-xl flex items-center justify-center font-medium text-sm transition-all duration-300 ${
+              tripType === 'oneWay' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'text-white/80 hover:text-white'
             }`}
             onClick={() => handleTripTypeChange('oneWay')}
           >
             One Way
-          </button>          <button            className={`w-1/2 h-full rounded-xl flex items-center justify-center font-medium text-sm ${
-              tripType === 'twoWay' ? 'bg-[#0a639d] text-white' : 'text-[#5f5f5f]'
+          </button>          <button            className={`w-1/2 h-full rounded-xl flex items-center justify-center font-medium text-sm transition-all duration-300 ${
+              tripType === 'twoWay' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'text-white/80 hover:text-white'
             }`}
             onClick={() => handleTripTypeChange('twoWay')}
           >
@@ -258,7 +257,7 @@ const SearchForm = () => {
       
       {/* Error message display */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg mb-4">
+        <div className="bg-red-500/20 backdrop-blur-xl border border-red-300/50 text-red-100 px-4 py-2 rounded-lg mb-4">
           {error}
         </div>
       )}      {/* Search Form */}
@@ -289,7 +288,7 @@ const SearchForm = () => {
           />          {/* Swap Button - Positioned between From and To fields */}          <div className="absolute left-0 md:left-[-8%] top-[30px] md:-translate-x-[50%] transform z-[100]">
             <button 
               onClick={handleSwapLocations}
-              className="bg-white rounded-full mt-[-5px] ml-[-8px] p-1 sm:p-2 shadow-lg hover:bg-gray-50 transition-colors duration-300 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-300 active:bg-gray-100"
+              className="bg-white/20 backdrop-blur-xl rounded-full mt-[-5px] ml-[-8px] p-1 sm:p-2 shadow-lg border border-white/30 hover:bg-white/30 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-cyan-400 active:bg-white/40"
               title="Swap locations"
               aria-label="Swap departure and destination locations"
             >
@@ -337,10 +336,9 @@ const SearchForm = () => {
         </div>
           <div className="flex items-end">
           <Button 
-            onClick={handleSearch}
-            className={`h-[50px] mt-[28px] sm:h-[50px] sm:mb-[15px] w-full rounded-lg flex items-center justify-center ${
-              isLoading ? 'bg-[#2b7ab5]' : 'bg-[#0a639d]'
-            } shadow-md hover:bg-[#07456e] transition-all duration-200`}
+            onClick={handleSearch}            className={`h-[50px] mt-[28px] sm:h-[50px] sm:mb-[15px] w-full rounded-lg flex items-center justify-center ${
+              isLoading ? 'bg-gradient-to-r from-blue-600 to-cyan-600' : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
+            } shadow-lg transition-all duration-300 border border-white/20`}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -351,7 +349,7 @@ const SearchForm = () => {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 </span>
-                <span className="text-sm sm:text-base font-medium">Searching...</span>
+                <span className="text-sm sm:text-base font-medium text-white">Searching...</span>
               </>
             ) : (
               <>

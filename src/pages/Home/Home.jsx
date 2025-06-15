@@ -5,9 +5,7 @@ import HeroSection from './ComponentHome/UI/HomeHeroSection';
 import SearchForm from './ComponentHome/SearchForm';
 import NowBookingSection from './ComponentHome/NowBookingSection';
 import BookingSteps from './ComponentHome/BookingSteps';
-import TopBusRoutes from './ComponentHome/TopBusRoutes';
-import TrendingOffers from './ComponentHome/TrendingOffers';
-import ServiceHighlights from './ComponentHome/ServiceHighlights';
+import UnifiedSections from './ComponentHome/UnifiedSections';
 import AppPromotion from './ComponentHome/AppPromotion';
 import PaymentMethods from './ComponentHome/PaymentMethods';
 
@@ -20,10 +18,8 @@ const HomePage = () => {
         <HeroSection />
         <SearchForm />
         <NowBookingSection />
-        <BookingSteps />
-        <TopBusRoutes />
-        <TrendingOffers />
-        <ServiceHighlights />
+        <BookingSteps />        
+        <UnifiedSections />
         <AppPromotion />
         <PaymentMethods />
       </main>

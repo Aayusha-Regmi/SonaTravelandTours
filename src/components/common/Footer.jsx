@@ -43,14 +43,12 @@ const Footer = () => {  return (
           {/* Information */}
           <div>
             <h3 className="text-[#3d3d3d] text-[28px] font-bold mb-8">Information</h3>
-            <ul className="space-y-6">
-              <li>
-                <Link to="/terms" className="text-[#5f5f5f] text-lg font-semibold hover:text-[#0a639d]">
+            <ul className="space-y-6">              <li>
+                <Link to="/terms-conditions" className="text-[#5f5f5f] text-lg font-semibold hover:text-[#0a639d]">
                   Terms & Conditions
                 </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className="text-[#5f5f5f] text-lg font-semibold hover:text-[#0a639d]">
+              </li>              <li>
+                <Link to="/privacy-policy" className="text-[#5f5f5f] text-lg font-semibold hover:text-[#0a639d]">
                   Privacy Policy
                 </Link>
               </li>
