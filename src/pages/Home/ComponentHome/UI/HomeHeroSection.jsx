@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { toast } from 'react-toastify';
 import Button from '@/components/ui/Button';
-import Toast from '@/components/ui/Toast';
 
 const HeroSection = () => {
-  const [showToast, setShowToast] = useState(false);
-
-  const handleUnavailableService = () => {
-    setShowToast(true);
+  const handleUnavailableService = (serviceName) => {
+    toast.info(`${serviceName} booking will be available soon! Stay tuned for updates.`, {
+      position: "top-right",
+      autoClose: 4000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "light"
+    });
   };
 
   return (
@@ -54,31 +60,23 @@ const HeroSection = () => {
                 className="h-[45px] sm:h-[50px] w-[80px] sm:w-[100px] rounded-lg bg-[#0a639d] flex items-center justify-center shadow-md hover:bg-[#07456e] transition-colors"
               >
                 <span className="text-sm sm:text-base font-medium text-white">Bus</span>
-              </Button>
-              <Button 
-                onClick={handleUnavailableService}
+              </Button>              <Button 
+                onClick={() => handleUnavailableService('Flight')}
                 className="h-[45px] sm:h-[50px] w-[80px] sm:w-[100px] rounded-lg bg-[#ececec] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
                 variant="secondary"
               >
                 <span className="text-sm sm:text-base font-medium text-[#b0b0b0]">Flight</span>
               </Button>
               <Button 
-                onClick={handleUnavailableService}
+                onClick={() => handleUnavailableService('Hotel')}
                 className="h-[45px] sm:h-[50px] w-[80px] sm:w-[100px] rounded-lg bg-[#ececec] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
                 variant="secondary"
               >
                 <span className="text-sm sm:text-base font-medium text-[#b0b0b0]">Hotel</span>
               </Button>
             </div>
-          </div>
-        </div>
+          </div>        </div>
       </div>
-
-      <Toast 
-        message="Services Available Soon"
-        isVisible={showToast}
-        onClose={() => setShowToast(false)}
-      />
     </section>
   );
 };

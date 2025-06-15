@@ -1,6 +1,7 @@
 // /home/ubuntu/app/niki_s_application/src/pages/BusSeatSelection/index.jsx
 import React, { useState, useEffect } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import Button from '../../components/ui/Button';
@@ -11,6 +12,7 @@ import Card from './ComponentSeatSelection/CardSeatSelection';
 const SeatSelection = () => {
   const location = useLocation();
   const { busId } = useParams();
+  const navigate = useNavigate();
   const busData = location.state?.bus || {};
 
   const [selectedSeats, setSelectedSeats] = useState([]);
@@ -149,10 +151,9 @@ const SeatSelection = () => {
     if (seatType === 'booked') return '/images/img_mdicarseat_red_300_01.svg';
     if (isSelected) return '/images/img_mdicarseat_blue_gray_500.svg';
     return '/images/img_mdicarseat_gray_400.svg';
-  };
-  const handleProceedToPassengerDetails = async () => {
+  };  const handleProceedToPassengerDetails = async () => {
     if (selectedSeats.length === 0) {
-      alert('Please select at least one seat to continue.');
+      toast.error('Please select at least one seat to continue.');
       return;
     }
     
@@ -160,11 +161,20 @@ const SeatSelection = () => {
     const bookingResult = await bookSeats(selectedSeats);
     
     if (bookingResult && bookingResult.success) {
-      // In a real app, you would navigate to passenger details page
-      alert(`Proceeding to passenger details with seats: ${selectedSeats.join(', ')}\nTotal Price: Rs. ${totalPrice}`);
+      toast.success(`Seats ${selectedSeats.join(', ')} selected successfully!`);
+      // Navigate to passenger details page with booking data
+      navigate('/passenger-detail', {
+        state: {
+          bus: busData,
+          selectedSeats,
+          totalPrice,
+          bookingId: bookingResult.bookingId
+        }
+      });
+    } else {
+      toast.error('Failed to process seat selection. Please try again.');
     }
-  };
-  const bookSeats = async (selectedSeats) => {
+  };  const bookSeats = async (selectedSeats) => {
     try {
       // Simulate API call with dummy data
       console.log('Booking seats:', selectedSeats, 'for bus:', busId);
@@ -179,12 +189,10 @@ const SeatSelection = () => {
       };
       
       console.log('Booking successful:', mockResponse);
-      alert(`Seats ${selectedSeats.join(', ')} booked successfully! Booking ID: ${mockResponse.bookingId}`);
-      
       return mockResponse;
     } catch (error) {
       console.error('Error booking seats:', error);
-      alert('Failed to book seats. Please try again.');
+      return { success: false, error: error.message };
     }
   };
   return (
