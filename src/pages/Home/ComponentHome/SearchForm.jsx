@@ -233,136 +233,213 @@ const SearchForm = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
-  return (
-    <div ref={searchFormRef} className="bg-white/10 backdrop-blur-xl rounded-xl p-4 sm:p-5 md:p-7 shadow-lg border border-white/20 w-full max-w-5xl mx-auto -mt-[100px] sm:-mt-[130px] md:-mt-[180px] relative z-40">
-      {/* Trip Type Selector */}
-      <div className="flex mb-4 sm:mb-6">
-        <div className="bg-white/20 backdrop-blur-xl rounded-xl flex w-[200px] sm:w-[250px] h-[45px] sm:h-[55px] border border-white/30">
-          <button            className={`w-1/2 h-full rounded-xl flex items-center justify-center font-medium text-sm transition-all duration-300 ${
-              tripType === 'oneWay' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'text-white/80 hover:text-white'
+  }, []);  return (
+    <div className="relative w-full max-w-7xl mx-auto -mt-[100px] sm:-mt-[130px] md:-mt-[180px] z-40">
+      {/* Trip Type Selector - positioned above the main form */}
+      <div className="flex justify-start mb-[-10px] relative z-10">
+        <div className="backdrop-blur-md bg-white/40 rounded-t-2xl flex overflow-hidden shadow-lg border border-white/50">
+          <button            className={`px-6 py-3 flex items-center justify-center font-medium text-sm transition-all duration-300 ${
+              tripType === 'oneWay' 
+                ? 'bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-md' 
+                : 'bg-white/30 text-gray-800 hover:bg-white/50'
             }`}
             onClick={() => handleTripTypeChange('oneWay')}
           >
+            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
             One Way
-          </button>          <button            className={`w-1/2 h-full rounded-xl flex items-center justify-center font-medium text-sm transition-all duration-300 ${
-              tripType === 'twoWay' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' : 'text-white/80 hover:text-white'
+          </button>
+          <button             className={`px-6 py-3 flex items-center justify-center font-medium text-sm transition-all duration-300 ${
+              tripType === 'twoWay' 
+                ? 'bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-md' 
+                : 'bg-white/30 text-gray-800 hover:bg-white/50'
             }`}
             onClick={() => handleTripTypeChange('twoWay')}
           >
-            Two Ways
+            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            Two Way
           </button>
         </div>
-      </div>
+      </div>      
+      {/* Main Search Form */}
+      <div ref={searchFormRef} className="backdrop-blur-xl bg-white/30 rounded-3xl p-10 shadow-2xl border border-white/40 w-full relative z-0">
       
       {/* Error message display */}
       {error && (
-        <div className="bg-red-500/20 backdrop-blur-xl border border-red-300/50 text-red-100 px-4 py-2 rounded-lg mb-4">
+        <div className="backdrop-blur-md bg-red-500/20 border border-red-300/30 text-red-800 px-4 py-2 rounded-xl mb-4 shadow-lg">
           {error}
         </div>
-      )}      {/* Search Form */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 sm:gap-y-6 gap-x-4 lg:gap-x-20">
-        {/* From field with relative positioning for parent */}
-        <div className="relative">
-          <LocationDropdown
-            label="From"
-            name="from"
-            value={formData.from}
-            onChange={handleInputChange}
-            placeholder="Select your boarding place"
-            options={locationOptions}
-            required
-          />
-        </div>
-
-        {/* To field with relative positioning for parent */}
-        <div className="relative">
-          <LocationDropdown
-            label="To"
-            name="to"
-            value={formData.to}
-            onChange={handleInputChange}
-            placeholder="Select your destination"
-            options={locationOptions.filter(option => option.value !== formData.from)}
-            required
-          />          {/* Swap Button - Positioned between From and To fields */}          <div className="absolute left-0 md:left-[-8%] top-[30px] md:-translate-x-[50%] transform z-[100]">
-            <button 
-              onClick={handleSwapLocations}
-              className="bg-white/20 backdrop-blur-xl rounded-full mt-[-5px] ml-[-8px] p-1 sm:p-2 shadow-lg border border-white/30 hover:bg-white/30 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-cyan-400 active:bg-white/40"
-              title="Swap locations"
-              aria-label="Swap departure and destination locations"
-            >
-              <img 
-                src="/images/img_hicon_linear_arrow_swap_horizontal.svg" 
-                alt="Swap" 
-                className="w-8 h-8 sm:w-10 sm:h-10 transition-transform duration-300 ease-in-out hover:rotate-180"
-              />
-            </button>
-          </div>
-        </div>        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-3 datepicker-container">
-          <div className={`${tripType === 'twoWay' ? 'w-full sm:w-1/2' : 'w-full'} transition-all duration-300`}>
-            <div className="relative">
-              <DatePicker
-                label={tripType === 'twoWay' ? "Departure Date" : "Date"}
-                name="date"
-                value={formData.date}
-                onChange={handleInputChange}
-                placeholder={tripType === 'twoWay' ? "Select departure date" : "Select date"}
-                required
-                className="h-full"
-              />
+      )}{/* Search Form */}
+      <div className={`grid gap-8 items-end relative ${
+        tripType === 'twoWay' 
+          ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-5' 
+          : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+      }`}>
+        {/* Date Field(s) */}
+        {tripType === 'twoWay' ? (
+          <>            
+          {/* Departure Date */}
+            <div className="lg:col-span-1">
+              <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+                <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">DATE</label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center flex-1">
+                    <DatePicker
+                      name="date"
+                      value={formData.date}
+                      onChange={handleInputChange}
+                      placeholder="Choose Departure Date"
+                      required
+                      className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>            {/* Return Date */}
+            <div className="lg:col-span-1">
+              <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+                <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">RETURN</label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center flex-1">
+                    <DatePicker
+                      name="returnDate"
+                      value={formData.returnDate}
+                      onChange={handleInputChange}
+                      placeholder="Choose Return Date"
+                      required
+                      minDate={formData.date ? (() => {
+                        const nextDay = new Date(formData.date.split(' ').join(' '));
+                        nextDay.setDate(nextDay.getDate() + 1);
+                        return nextDay;
+                      })() : new Date()}
+                      disabled={!formData.date}
+                      className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (          
+          /* Single Date for One Way */
+          <div className="lg:col-span-1">
+            <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+              <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">DATE</label>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center flex-1">
+                  <DatePicker
+                    name="date"
+                    value={formData.date}
+                    onChange={handleInputChange}
+                    placeholder="Choose Departure Date"
+                    required
+                    className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-          {tripType === 'twoWay' && (
-            <div className="w-full sm:w-1/2 transition-all duration-300">
-              <div className="relative">
-                <DatePicker
-                  label="Return Date"
-                  name="returnDate"
-                  value={formData.returnDate}
+        )}        {/* From Field */}        
+        <div className="lg:col-span-1 relative">
+          <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border-2 border-orange-400/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+            <label className="text-orange-600 text-xs font-bold mb-2 uppercase tracking-wider">FROM</label>
+            <div className="flex items-center justify-between">              <div className="flex items-center flex-1">
+                <svg className="w-5 h-5 text-orange-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <LocationDropdown
+                  name="from"
+                  value={formData.from}
                   onChange={handleInputChange}
-                  placeholder={!formData.date ? "First select departure date" : "Select return date"}
+                  placeholder="Choose Departure Place"
+                  options={locationOptions}
                   required
-                  minDate={formData.date ? (() => {
-                    const nextDay = new Date(formData.date.split(' ').join(' '));
-                    nextDay.setDate(nextDay.getDate() + 1);
-                    return nextDay;
-                  })() : new Date()}                  disabled={!formData.date}
-                  className="h-full"
+                  className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
                 />
               </div>
             </div>
-          )}
-        </div>
-          <div className="flex items-end">
+          </div>        
+          </div>
+
+        {/* To Field */}        
+        <div className="lg:col-span-1 relative">
+          <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+            <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">TO</label>
+            <div className="flex items-center justify-between">              <div className="flex items-center flex-1">
+                <svg className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <LocationDropdown
+                  name="to"
+                  value={formData.to}
+                  onChange={handleInputChange}
+                  placeholder="Choose Destination Place"
+                  options={locationOptions.filter(option => option.value !== formData.from)}
+                  required
+                  className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
+                />
+              </div>
+            </div>
+          </div>        </div>
+
+        {/* Search Button */}
+        <div className="lg:col-span-1">
           <Button 
-            onClick={handleSearch}            className={`h-[50px] mt-[28px] sm:h-[50px] sm:mb-[15px] w-full rounded-lg flex items-center justify-center ${
-              isLoading ? 'bg-gradient-to-r from-blue-600 to-cyan-600' : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-            } shadow-lg transition-all duration-300 border border-white/20`}
+            onClick={handleSearch}
+            className={`h-[85px] w-full rounded-2xl flex items-center justify-center ${
+              isLoading 
+                ? 'bg-gradient-to-r from-orange-600 to-orange-500' 
+                : 'bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500'
+            } shadow-2xl transition-all duration-300 border-0 text-white font-bold text-lg uppercase tracking-wide backdrop-blur-sm`}
             disabled={isLoading}
           >
             {isLoading ? (
-              <>
-                <span className="animate-spin mr-2">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <>                
+              <span className="animate-spin mr-2">
+                  <svg className="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 </span>
-                <span className="text-sm sm:text-base font-medium text-white">Searching...</span>
-              </>
-            ) : (
+                <span>Searching...</span>
+              </>            ) : (
               <>
-                <img 
-                  src="/images/img_hicon_outline_search_1.svg" 
-                  alt="Search" 
-                  className="w-5 h-5 sm:w-6 sm:h-6 mr-1 sm:mr-2"
-                />
-                <span className="text-sm sm:text-base font-medium">Search</span>
-              </>
-            )}
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span>SEARCH</span>
+              </>            )}
           </Button>
+        </div>          
+        {/* Overlay Swap Button - Positioned between FROM and TO fields */}
+        <div className={`absolute top-1/2 transform -translate-y-1/2 z-20 hidden lg:block ${
+          tripType === 'twoWay' 
+            ? 'left-[60%] -translate-x-1/2' 
+            : 'left-[50%] -translate-x-1/2'
+        }`}>
+          <button
+            type="button"
+            onClick={handleSwapLocations}
+            className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center backdrop-blur-sm border-4 border-white group"
+            disabled={!formData.from && !formData.to}
+            title="Swap locations"
+          >
+            <svg 
+              className="w-5 h-5 text-white transform group-hover:rotate-180 transition-transform duration-300" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m0-4l4-4" />
+            </svg>
+          </button>
         </div>
+      </div>
       </div>
     </div>
   );
