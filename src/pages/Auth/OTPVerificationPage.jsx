@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import { formatContactForDisplay } from '../../utils/authUtils';
+import { API_URLS } from '../../config/api';
 
 const OTPVerificationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { contact, contactType, name } = location.state || {};
+  const { contact, contactType, action, name } = location.state || {};
   
   // Redirect if no contact info
   useEffect(() => {
@@ -55,7 +56,6 @@ const OTPVerificationPage = () => {
       if (prevInput) prevInput.focus();
     }
   };
-
   const handleVerify = async (e) => {
     e.preventDefault();
     const otpString = otp.join('');
@@ -69,25 +69,94 @@ const OTPVerificationPage = () => {
     setError('');
 
     try {
-      // TODO: Implement actual OTP verification logic
-      setTimeout(() => {
-        setIsLoading(false);
-        navigate('/login');
-      }, 1000);
+      console.log('Verifying OTP:', { contact, contactType, otp: otpString, action });
+        // API call to verify OTP
+      const response = await fetch(API_URLS.AUTH.VERIFY_OTP, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          mobileNumber: contact,
+          otp: otpString,
+          action: action || 'signup'
+        })
+      });
+
+      const result = await response.json();
+      console.log('OTP Verification Response:', result);
+
+      if (response.ok && result.success) {
+        // OTP verified successfully
+        if (action === 'signup') {
+          // Navigate to complete signup page
+          navigate('/signup/complete', {
+            state: {
+              contact,
+              contactType,
+              verified: true
+            }
+          });
+        } else {
+          // For login or other actions, navigate to home
+          navigate('/');
+        }
+      } else {
+        // OTP verification failed
+        let errorMessage = 'Invalid OTP. Please try again.';
+        
+        if (result.message) {
+          errorMessage = result.message;
+        }
+        
+        setError(errorMessage);
+      }
     } catch (err) {
-      setError('Invalid OTP. Please try again.');
+      console.error('OTP verification error:', err);
+      
+      let errorMessage = 'Network error. Please check your connection and try again.';
+      
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        errorMessage = 'Unable to connect to server. Please try again later.';
+      }
+      
+      setError(errorMessage);
+    } finally {
       setIsLoading(false);
     }
-  };
-  const handleResendOtp = () => {
+  };  const handleResendOtp = async () => {
     if (canResend) {
       setTimer(60);
       setCanResend(false);
       setOtp(['', '', '', '', '', '']);
       setError('');
       
-      // TODO: Implement resend OTP logic with contact type
-      console.log(`Resending OTP to ${contact} via ${isEmail ? 'email' : 'SMS'}...`);
+      try {
+        console.log(`Resending OTP to ${contact} via ${isEmail ? 'email' : 'SMS'}...`);
+          // API call to resend OTP
+        const response = await fetch(API_URLS.AUTH.RESEND_OTP, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            mobileNumber: contact,
+            action: action || 'signup'
+          })
+        });
+
+        const result = await response.json();
+        console.log('Resend OTP Response:', result);
+
+        if (!response.ok || !result.success) {
+          setError(result.message || 'Failed to resend OTP. Please try again.');
+        }
+      } catch (err) {
+        console.error('Resend OTP error:', err);
+        setError('Failed to resend OTP. Please try again.');
+      }
     }
   };
 

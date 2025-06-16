@@ -1,20 +1,71 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
-import { validateSignupInput, validateField, detectInputType } from '../../utils/authUtils';
+import { API_URLS } from '../../config/api';
 
 const SignupPage = () => {
-  const navigate = useNavigate();  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { contact, contactType, verified } = location.state || {};
+  
+  // Redirect if not coming from OTP verification
+  useEffect(() => {
+    if (!contact || !contactType || !verified) {
+      navigate('/signup');
+    }
+  }, [contact, contactType, verified, navigate]);
+  const [formData, setFormData] = useState({
     name: '',
-    emailOrPhone: '',
+    email: '', // Optional email field
     password: '',
     confirmPassword: ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  });  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
-  const handleInputChange = (e) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const validateName = (name) => {
+    if (!name.trim()) {
+      return 'Name is required';
+    }
+    if (name.trim().length < 2) {
+      return 'Name must be at least 2 characters long';
+    }
+    return '';
+  };
+
+  const validateEmail = (email) => {
+    if (!email.trim()) {
+      return ''; // Email is optional
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
+  const validatePassword = (password) => {
+    if (!password) {
+      return 'Password is required';
+    }
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters long';
+    }
+    return '';
+  };
+
+  const validateConfirmPassword = (confirmPassword, password) => {
+    if (!confirmPassword) {
+      return 'Please confirm your password';
+    }
+    if (confirmPassword !== password) {
+      return 'Passwords do not match';
+    }
+    return '';
+  };  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -31,7 +82,25 @@ const SignupPage = () => {
 
     // Real-time validation for touched fields
     if (touchedFields[name]) {
-      const fieldError = validateField(name, value, formData);
+      let fieldError = '';
+      
+      switch (name) {
+        case 'name':
+          fieldError = validateName(value);
+          break;
+        case 'email':
+          fieldError = validateEmail(value);
+          break;
+        case 'password':
+          fieldError = validatePassword(value);
+          break;
+        case 'confirmPassword':
+          fieldError = validateConfirmPassword(value, formData.password);
+          break;
+        default:
+          break;
+      }
+      
       setErrors(prev => ({
         ...prev,
         [name]: fieldError
@@ -40,14 +109,13 @@ const SignupPage = () => {
 
     // Special handling for confirm password when password changes
     if (name === 'password' && touchedFields.confirmPassword && formData.confirmPassword) {
-      const confirmPasswordError = validateField('confirmPassword', formData.confirmPassword, { ...formData, password: value });
+      const confirmPasswordError = validateConfirmPassword(formData.confirmPassword, value);
       setErrors(prev => ({
         ...prev,
         confirmPassword: confirmPasswordError
       }));
     }
   };
-
   const handleInputBlur = (fieldName) => {
     setTouchedFields(prev => ({
       ...prev,
@@ -55,59 +123,164 @@ const SignupPage = () => {
     }));
 
     const value = formData[fieldName];
-    const fieldError = validateField(fieldName, value, formData);
+    let fieldError = '';
+    
+    switch (fieldName) {
+      case 'name':
+        fieldError = validateName(value);
+        break;
+      case 'email':
+        fieldError = validateEmail(value);
+        break;
+      case 'password':
+        fieldError = validatePassword(value);
+        break;
+      case 'confirmPassword':
+        fieldError = validateConfirmPassword(value, formData.password);
+        break;
+      default:
+        break;
+    }
+    
     setErrors(prev => ({
       ...prev,
       [fieldName]: fieldError
     }));
+  };  const isFormReadyToSubmit = () => {
+    // Only check required fields: name, password, confirmPassword
+    // Email is optional, phone is already verified
+    const hasContent = formData.name.trim().length > 0 && 
+                      formData.password.length > 0 && 
+                      formData.confirmPassword.length > 0;
+    
+    console.log('Form ready check:', {
+      hasContent,
+      formData: {
+        name: formData.name.trim(),
+        email: formData.email.trim() || '(optional)',
+        password: '***',
+        confirmPassword: '***'
+      },
+      verifiedPhone: contact
+    });
+    
+    return hasContent;
   };
   const handleSignup = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Validate all fields
-    const validation = validateSignupInput(
-      formData.name, 
-      formData.emailOrPhone, 
-      formData.password, 
-      formData.confirmPassword
-    );
-    
-    if (!validation.isValid) {
-      setErrors(validation.errors);
+    // Validate all fields using our local validation
+    const nameError = validateName(formData.name);
+    const emailError = validateEmail(formData.email);
+    const passwordError = validatePassword(formData.password);
+    const confirmPasswordError = validateConfirmPassword(formData.confirmPassword, formData.password);
+
+    const validationErrors = {};
+    if (nameError) validationErrors.name = nameError;
+    if (emailError) validationErrors.email = emailError;
+    if (passwordError) validationErrors.password = passwordError;
+    if (confirmPasswordError) validationErrors.confirmPassword = confirmPasswordError;
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       setIsLoading(false);
       return;
     }
 
     // Clear any existing errors
-    setErrors({});
-
-    try {
-      const inputType = detectInputType(formData.emailOrPhone);
+    setErrors({});    try {
+      // Split the name into firstName and lastName as expected by backend
+      const nameParts = formData.name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || 'User'; // Default lastName if not provided
+      
       const signupData = {
-        name: formData.name,
-        password: formData.password,
-        ...(inputType === 'email' 
-          ? { email: formData.emailOrPhone }
-          : { phone: formData.emailOrPhone }
-        )
+        firstName: firstName,
+        lastName: lastName,
+        address: "Not specified", // Default address since we don't collect it in UI
+        contactNumber: contact, // Use the verified phone number
+        email: formData.email.trim() || `user${Date.now()}@temp.com`, // Use provided email or generate temp email
+        role: "user", // Always set to user for this site
+        password: formData.password
       };
 
-      console.log('Signup data:', signupData);
+      console.log('Complete signup data:', { ...signupData, password: '[HIDDEN]' });
       
-      // TODO: Implement actual signup logic with API call
-      setTimeout(() => {
+      // API call to register endpoint
+      const response = await fetch(API_URLS.AUTH.REGISTER, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(signupData)
+      });      const result = await response.json();
+      console.log('Signup Response:', result);
+      console.log('Response Status:', response.status);
+      console.log('Response Headers:', response.headers);
+
+      if (response.ok && result.success) {
+        // Registration successful
+        console.log('Registration successful:', result.message);
+        
+        // Store authentication token if provided
+        if (result.data && result.data.token) {
+          localStorage.setItem('authToken', result.data.token);
+          localStorage.setItem('loginSuccess', 'true');
+          localStorage.setItem('userMessage', result.message);
+          
+          // Navigate to home page
+          navigate('/');
+        } else {
+          // Navigate to login if no token provided
+          navigate('/login', {
+            state: {
+              message: 'Registration successful! Please login with your credentials.'
+            }
+          });
+        }
+      } else {
+        // Registration failed
+        let errorMessage = 'Registration failed. Please try again.';
+        
+        if (result.message) {
+          errorMessage = result.message;
+        }
+          // Handle specific errors
+        if (result.message && result.message.toLowerCase().includes('email already exists')) {
+          setErrors({
+            email: 'This email is already registered. Please use a different email or login.'
+          });
+        } else if (result.message && result.message.toLowerCase().includes('phone already exists')) {
+          setErrors({
+            general: 'This phone number is already registered. Please login instead.'
+          });
+        } else if (result.message && result.message.toLowerCase().includes('missing required fields')) {
+          // Show detailed error about missing fields
+          console.error('Missing required fields error:', result);
+          setErrors({
+            general: `Missing required fields: ${result.message}. Please check the console for details.`
+          });
+        } else if (result.error && typeof result.error === 'object') {
+          // Handle field-specific errors from API
+          setErrors(result.error);
+        } else {
+          setErrors({
+            general: errorMessage
+          });
+        }
         setIsLoading(false);
-        navigate('/otp-verification', { 
-          state: { 
-            contact: formData.emailOrPhone,
-            contactType: inputType,
-            name: formData.name
-          }
-        });
-      }, 1000);
-    } catch (err) {
-      setErrors({ general: 'Signup failed. Please try again.' });
+      }} catch (err) {
+      console.error('Signup error:', err);
+      
+      let errorMessage = 'Network error. Please check your connection and try again.';
+      
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        errorMessage = 'Unable to connect to server. Please try again later.';
+      }
+      
+      setErrors({ general: errorMessage });
       setIsLoading(false);
     }
   };
@@ -130,12 +303,13 @@ const SignupPage = () => {
                 className="h-10 w-auto"
               />
             </div>
-          </div>
-
-          {/* Form Header */}
+          </div>          {/* Form Header */}
           <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Create your account</h2>
-          </div>          {/* Error Messages */}
+            <h2 className="text-xl font-semibold text-gray-900">Complete your registration</h2>
+            <p className="text-sm text-gray-600 mt-2">
+              Phone number verified: {contact}
+            </p>
+          </div>{/* Error Messages */}
           {errors.general && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {errors.general}
@@ -156,57 +330,99 @@ const SignupPage = () => {
                 className="w-full"
                 error={errors.name}
               />
+            </div>            <div>
+              <InputField
+                label="Email Address (Optional)"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                onBlur={() => handleInputBlur('email')}
+                placeholder="Enter your email (optional)"
+                className="w-full"
+                error={errors.email}
+              />
+            </div>            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  onBlur={() => handleInputBlur('password')}
+                  placeholder="Create a password (min. 6 characters)"
+                  className={`w-full px-3 py-3 pr-10 border rounded-lg focus:ring-2 focus:ring-[#0a639d] focus:border-[#0a639d] placeholder-gray-400 ${
+                    errors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.46 8.46m1.418 1.418l4.242 4.242m0 0L15.54 15.54m-1.418-1.418L8.46 8.46m5.658 5.658l1.418 1.418" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
             </div>
 
             <div>
-              <InputField
-                label="Email or Phone Number"
-                type="text"
-                name="emailOrPhone"
-                value={formData.emailOrPhone}
-                onChange={handleInputChange}
-                onBlur={() => handleInputBlur('emailOrPhone')}
-                placeholder="Enter your email or 10-digit phone number"
-                className="w-full"
-                error={errors.emailOrPhone}
-              />
-            </div>
-
-            <div>
-              <InputField
-                label="Password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                onBlur={() => handleInputBlur('password')}
-                placeholder="Create a password (min. 6 characters)"
-                className="w-full"
-                error={errors.password}
-              />
-            </div>
-
-            <div>
-              <InputField
-                label="Confirm Password"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                onBlur={() => handleInputBlur('confirmPassword')}
-                placeholder="Confirm your password"
-                className="w-full"
-                error={errors.confirmPassword}
-              />
-            </div>
-
-            <Button
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  onBlur={() => handleInputBlur('confirmPassword')}
+                  placeholder="Confirm your password"
+                  className={`w-full px-3 py-3 pr-10 border rounded-lg focus:ring-2 focus:ring-[#0a639d] focus:border-[#0a639d] placeholder-gray-400 ${
+                    errors.confirmPassword ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.46 8.46m1.418 1.418l4.242 4.242m0 0L15.54 15.54m-1.418-1.418L8.46 8.46m5.658 5.658l1.418 1.418" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
+            </div><Button
               type="submit"
               variant="primary"
               className="w-full bg-[#0a639d] hover:bg-[#085283] text-white py-3 rounded-lg font-medium"
-              disabled={isLoading || Object.keys(errors).some(key => errors[key] && key !== 'general')}
+              disabled={isLoading || !isFormReadyToSubmit()}
             >
-              {isLoading ? 'Creating account...' : 'Sign up'}
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
 
@@ -245,15 +461,17 @@ const SignupPage = () => {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Right side - Illustration */}
+      </div>      {/* Right side - Illustration */}
       <div className="hidden lg:flex flex-1 mr-24 items-center justify-center">
         <div className="max-w-2xl">
           <img
-            src="/images/login_img.png"
-            alt="Travel illustration"
+            src="/images/img_coupletakingselfiewhiletravelingbytrain232149304471.png"
+            alt="Travel signup illustration"
             className="w-full h-auto"
+            onError={(e) => {
+              // Fallback to another travel image if the main one doesn't load
+              e.target.src = "/images/img_beautifullandscapetouristbustraveltransportbackground87582536524.png";
+            }}
           />
         </div>
       </div>

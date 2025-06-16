@@ -3,15 +3,22 @@ import { useNavigate, Link } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import { validateLoginInput, validateField, detectInputType } from '../../utils/authUtils';
+import { API_URLS } from '../../config/api';
 
 const LoginPage = () => {
-  const navigate = useNavigate();  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState({
     emailOrPhone: '',
     password: ''
   });
+  
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [touchedFields, setTouchedFields] = useState({});  const handleInputChange = (e) => {
+  const [touchedFields, setTouchedFields] = useState({});
+  const [roleMessage, setRoleMessage] = useState(''); // Add role message state
+
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -26,6 +33,11 @@ const LoginPage = () => {
       }));
     }
 
+    // Clear role message when user starts typing
+    if (roleMessage) {
+      setRoleMessage('');
+    }
+
     // Real-time validation for touched fields
     if (touchedFields[name]) {
       const fieldError = validateField(name, value, formData);
@@ -35,6 +47,7 @@ const LoginPage = () => {
       }));
     }
   };
+
   const handleInputBlur = (fieldName) => {
     setTouchedFields(prev => ({
       ...prev,
@@ -48,6 +61,7 @@ const LoginPage = () => {
       [fieldName]: fieldError
     }));
   };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -61,11 +75,13 @@ const LoginPage = () => {
       return;
     }
 
-    // Clear any existing errors
+    // Clear any existing errors and role messages
     setErrors({});
+    setRoleMessage('');
 
     try {
       const inputType = detectInputType(formData.emailOrPhone);
+      
       const loginData = {
         password: formData.password,
         ...(inputType === 'email' 
@@ -74,15 +90,165 @@ const LoginPage = () => {
         )
       };
 
-      console.log('Login data:', loginData);
+      console.log('=== LOGIN DEBUG INFO ===');
+      console.log('Environment Variables:');
+      console.log('  VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+      console.log('  VITE_AUTH_LOGIN_ENDPOINT:', import.meta.env.VITE_AUTH_LOGIN_ENDPOINT);
+      console.log('API URL:', API_URLS.AUTH.LOGIN);
+      console.log('Login Data:', { ...loginData, password: '[HIDDEN]' });
+      console.log('========================');
+
+      // API call to login endpoint
+      console.log('Making request to:', API_URLS.AUTH.LOGIN);
       
-      // TODO: Implement actual login logic with API call
-      setTimeout(() => {
+      const response = await fetch(API_URLS.AUTH.LOGIN, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(loginData)
+      });
+
+      console.log('Response Status:', response.status);
+      console.log('Response OK:', response.ok);
+
+      let result;
+      try {
+        result = await response.json();
+        console.log('Response Body:', result);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        setErrors({ 
+          general: 'Server returned invalid response. Please try again later.' 
+        });
         setIsLoading(false);
-        navigate('/');
-      }, 1000);
+        return;
+      }
+
+      if (response.ok) {
+        // Check if we have a successful response based on your API structure
+        if (result.success && result.statusCode === 200) {
+          // Login successful
+          console.log('Login successful:', result.message);
+          
+          // Store authentication token from result.data.token
+          if (result.data && result.data.token) {
+            localStorage.setItem('authToken', result.data.token);
+            console.log('Token stored successfully');
+            
+            // Decode JWT token to check user role
+            try {
+              const token = result.data.token;
+              const payload = JSON.parse(atob(token.split('.')[1]));
+              console.log('Token payload:', payload);
+              
+              const userRole = payload.role || payload.user_type || 'user';
+              console.log('User role:', userRole);
+              
+              // Check role-based access
+              if (userRole === 'user' || userRole === 'customer') {
+                // Allow user/customer to proceed
+                localStorage.setItem('loginSuccess', 'true');
+                localStorage.setItem('userMessage', result.message);
+                localStorage.setItem('userRole', userRole);
+                
+                setIsLoading(false);
+                navigate('/');
+              } else if (userRole === 'admin') {
+                // Admin role - show message and redirect link
+                setRoleMessage('You have admin privileges. Please use the admin portal to access your dashboard.');
+                localStorage.removeItem('authToken'); // Don't store token for wrong portal
+                setIsLoading(false);
+              } else if (userRole === 'counter') {
+                // Counter role - show message and redirect link
+                setRoleMessage('You have counter privileges. Please use the counter portal to access your dashboard.');
+                localStorage.removeItem('authToken'); // Don't store token for wrong portal
+                setIsLoading(false);
+              } else {
+                // Unknown role
+                setErrors({ 
+                  general: 'Your account role is not recognized. Please contact support.' 
+                });
+                localStorage.removeItem('authToken');
+                setIsLoading(false);
+              }
+            } catch (tokenError) {
+              console.error('Error decoding token:', tokenError);
+              setErrors({ 
+                general: 'Authentication token is invalid. Please try logging in again.' 
+              });
+              localStorage.removeItem('authToken');
+              setIsLoading(false);
+            }
+          } else {
+            setErrors({ 
+              general: 'Login response missing authentication token.' 
+            });
+            setIsLoading(false);
+          }
+        } else {
+          // API returned 200 but success is false
+          console.log('Login failed:', result.message);
+          setErrors({ 
+            general: result.message || 'Login failed. Please check your credentials.' 
+          });
+          setIsLoading(false);
+        }
+      } else {
+        // Login failed - show API error
+        console.log('Login failed with status:', response.status);
+        
+        let errorMessage = 'Login failed. Please check your credentials.';
+        
+        if (result.message) {
+          errorMessage = result.message;
+        } else if (result.error) {
+          errorMessage = result.error;
+        }
+        
+        // Handle specific status codes
+        switch (response.status) {
+          case 401:
+            errorMessage = 'Invalid email/phone or password. Please try again.';
+            break;
+          case 404:
+            errorMessage = 'User not found. Please check your credentials or sign up.';
+            break;
+          case 422:
+            errorMessage = 'Invalid input. Please check your email/phone format.';
+            break;
+          default:
+            errorMessage = result.message || `Login failed (${response.status})`;
+        }
+        
+        setErrors({ general: errorMessage });
+        setIsLoading(false);
+      }
+
     } catch (err) {
-      setErrors({ general: 'Login failed. Please try again.' });
+      console.error('Login error details:', err);
+      console.error('Error name:', err.name);
+      console.error('Error message:', err.message);
+      
+      let errorMessage = 'Network error. Please check your connection and try again.';
+      
+      // Handle different types of network errors
+      if (err.name === 'TypeError') {
+        if (err.message.includes('fetch')) {
+          errorMessage = 'CORS or Network error: Unable to connect to server. This usually means the API is not configured to accept requests from this domain.';
+        } else if (err.message.includes('NetworkError')) {
+          errorMessage = 'Network connection failed. Please check your internet and try again.';
+        } else if (err.message.includes('CORS')) {
+          errorMessage = 'CORS error: Server is not allowing requests from this domain.';
+        }
+      } else if (err.name === 'AbortError') {
+        errorMessage = 'Request timeout. Please try again.';
+      } else if (err.message.includes('SSL') || err.message.includes('certificate')) {
+        errorMessage = 'Secure connection failed. Please try again.';
+      }
+      
+      setErrors({ general: errorMessage });
       setIsLoading(false);
     }
   };
@@ -96,7 +262,8 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left side - Form */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">          {/* Logo */}
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
+          {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
               <img 
@@ -105,7 +272,9 @@ const LoginPage = () => {
                 className="h-10 w-auto"
               />
             </div>
-          </div>          {/* Form Header */}
+          </div>
+
+          {/* Form Header */}
           <div className="text-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Sign in to your account</h2>
           </div>
@@ -117,8 +286,42 @@ const LoginPage = () => {
             </div>
           )}
 
+          {/* Role-based Messages */}
+          {roleMessage && (
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="text-blue-800 text-sm font-medium mb-2">
+                {roleMessage}
+              </div>
+              {roleMessage.includes('admin') && (
+                <div className="text-blue-600 text-sm">
+                  <a 
+                    href="/admin" 
+                    className="underline hover:text-blue-800"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Go to Admin Portal →
+                  </a>
+                </div>
+              )}
+              {roleMessage.includes('counter') && (
+                <div className="text-blue-600 text-sm">
+                  <a 
+                    href="/counter" 
+                    className="underline hover:text-blue-800"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Go to Counter Portal →
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-4">            <div>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
               <InputField
                 label="Email address or phone number"
                 type="text"
@@ -194,7 +397,7 @@ const LoginPage = () => {
       </div>
 
       {/* Right side - Illustration */}
-      <div className="hidden lg:flex flex-1 mr-24 items-center justify-center ">
+      <div className="hidden lg:flex flex-1 mr-24 items-center justify-center">
         <div className="max-w-2xl">         
            <img
             src="/images/login_img.png"

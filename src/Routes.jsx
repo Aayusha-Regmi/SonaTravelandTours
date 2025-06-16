@@ -6,6 +6,7 @@ import HomePage from './pages/Home/Home';
 import SearchResultsPage from './pages/SearchResults/SearchResultsPage';
 import LoginPage from './pages/Auth/LoginPage';
 import SignupPage from './pages/Auth/SignupPage';
+import PhoneSignupPage from './pages/Auth/PhoneSignupPage';
 import OTPVerificationPage from './pages/Auth/OTPVerificationPage';
 import SeatSelection from './pages/BusSeatSelection/SeatSelection';
 import PaymentPage from './pages/Payment/PaymentPage';
@@ -17,11 +18,11 @@ import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
 const AppRoutes = () => {
   return (    <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        {/* Auth Routes */}
+        <Route path="/" element={<HomePage />} />        {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/otp-verification" element={<OTPVerificationPage />} />        {/* SeatSelection Step Pages Routes */}
+        <Route path="/signup" element={<PhoneSignupPage />} />
+        <Route path="/signup/complete" element={<SignupPage />} />
+        <Route path="/otp-verification" element={<OTPVerificationPage />} />{/* SeatSelection Step Pages Routes */}
         <Route path="/search-results" element={<SearchResultsPage />} />        <Route 
           path="/select-seats/:busId" 
           element={<SeatSelection />} 
