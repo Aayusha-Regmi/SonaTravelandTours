@@ -13,6 +13,7 @@ import PassengerDetail from './pages/BookingPassengerDetails/PassengerDetail';
 import ContactUs from './pages/ContactUs/ContactUs';
 import TermsConditions from './pages/TermsConditions/TermsConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
+import FAQs from './pages/FAQs/FAQs';
 
 const AppRoutes = () => {
   return (    <Router>
@@ -29,10 +30,10 @@ const AppRoutes = () => {
         <Route path="/passenger-detail" element={<PassengerDetail />} />
         <Route path="/payment" element={<PaymentPage />} />
        
-           
-        <Route path="/contact" element={<ContactUs />} />
+             <Route path="/contact" element={<ContactUs />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/faqs" element={<FAQs />} />
       </Routes>
     </Router>
   );
