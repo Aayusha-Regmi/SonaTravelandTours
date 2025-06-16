@@ -163,10 +163,8 @@ const PassengerDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-['Inter',system-ui,sans-serif]">
-      <Header />
-      
-      {/* Bus Detail Component */}
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-8">
+      <Header />      {/* Bus Detail Component */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pt-20 sm:pt-22 md:pt-24">
         <BusDetail
           busName="Name or No of the bus"
           busType="Tourist A/c, Delux"
@@ -175,41 +173,36 @@ const PassengerDetail = () => {
           boardingPlace="Kathmandu"
           droppingPlace="Birgunj"
           duration="9h"
-        />
-
-        {/* Progress Bar */}
-        <div className="mb-8">
+        />        {/* Progress Bar */}
+        <div className="mb-6 sm:mb-8 px-2 sm:px-0">
           <ProgressBar steps={steps} currentStep={1} />
         </div>
 
         {/* Passenger Details Form */}
-        <div className="bg-white rounded-2xl shadow-lg shadow-blue-100/50 p-4 sm:p-6 lg:p-8 border border-gray-100">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-blue-100/50 p-3 sm:p-4 md:p-6 lg:p-8 border border-gray-100">
           {passengers.map((passenger, index) => (
-            <div key={passenger.id} className={`relative p-4 sm:p-6 rounded-2xl mb-12 sm:mb-16 last:mb-0 ${index % 2 === 0 ? 'bg-gradient-to-br from-blue-50/30 to-indigo-50/20' : 'bg-gradient-to-br from-gray-50 to-slate-50/50'} border-2 border-transparent hover:border-blue-200/50 transition-all duration-300`}>
-              {/* Seat Header */}
-              <div className="mb-4 sm:mb-6">
-                <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#0a639d] rounded-xl flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-md">
+            <div key={passenger.id} className={`relative p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl mb-8 sm:mb-12 md:mb-16 last:mb-0 ${index % 2 === 0 ? 'bg-gradient-to-br from-blue-50/30 to-indigo-50/20' : 'bg-gradient-to-br from-gray-50 to-slate-50/50'} border-2 border-transparent hover:border-blue-200/50 transition-all duration-300`}>              {/* Seat Header */}
+              <div className="mb-3 sm:mb-4 md:mb-6">
+                <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-2 sm:mb-3 md:mb-4">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#0a639d] rounded-lg sm:rounded-xl flex items-center justify-center text-white font-bold text-sm sm:text-base md:text-lg shadow-md">
                     {passenger.id}
                   </div>
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#0a639d] tracking-tight">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#0a639d] tracking-tight">
                       Seat {passenger.id}
                     </h2>
-                    <div className="w-16 sm:w-20 h-1 bg-[#0a639d] rounded-full mt-1 sm:mt-2"></div>
+                    <div className="w-12 sm:w-16 md:w-20 h-0.5 sm:h-1 bg-[#0a639d] rounded-full mt-1 sm:mt-1 md:mt-2"></div>
                   </div>
                 </div>
-              </div>
-
-              {/* Passenger Details Section */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 mb-3 sm:mb-4 shadow-sm border border-gray-100/50">
-                <h3 className="text-base sm:text-lg font-bold text-[#2b2b2b] mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
-                  <div className="w-1 sm:w-1.5 h-5 sm:h-6 bg-[#0a639d] rounded-full"></div>
+              </div>              {/* Passenger Details Section */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 mb-2 sm:mb-3 md:mb-4 shadow-sm border border-gray-100/50 relative z-10">
+                <h3 className="text-sm sm:text-base md:text-lg font-bold text-[#2b2b2b] mb-3 sm:mb-4 md:mb-6 flex items-center gap-1.5 sm:gap-2 md:gap-3">
+                  <div className="w-0.5 sm:w-1 md:w-1.5 h-4 sm:h-5 md:h-6 bg-[#0a639d] rounded-full"></div>
                   Passenger Details
                 </h3>
 
                 {/* Form Fields Row 1 */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
                   <InputField
                     label="Full Name"
                     value={passenger.fullName}
@@ -227,10 +220,8 @@ const PassengerDetail = () => {
                     required
                     error={errors[`${index}-gender`]}
                   />
-                </div>
-
-                {/* Form Fields Row 2 */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                </div>                {/* Form Fields Row 2 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
                   <InputField
                     label="Email"
                     type="email"
@@ -249,11 +240,9 @@ const PassengerDetail = () => {
                     required
                     error={errors[`${index}-phoneNumber`]}
                   />
-                </div>
-
-                {/* City of Residence */}
-                <div className="mb-4 sm:mb-6">
-                  <div className="w-full lg:w-1/2">
+                </div>                {/* City of Residence */}
+                <div className="mb-3 sm:mb-4 md:mb-6 relative z-[200]" style={{zIndex: 200}}>
+                  <div className="w-full md:w-1/2 relative z-[200]">
                     <Dropdown
                       label="City of Residence"
                       options={cityOptions}
@@ -262,19 +251,18 @@ const PassengerDetail = () => {
                       placeholder="Select city"
                       required
                       error={errors[`${index}-cityOfResidence`]}
+                      containerClassName="relative z-[200]"
                     />
                   </div>
                 </div>
-              </div>
-
-              {/* Boarding/Dropping Details */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm border border-gray-100/50">
-                <h3 className="text-base sm:text-lg font-bold text-[#2b2b2b] mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
-                  <div className="w-1 sm:w-1.5 h-5 sm:h-6 bg-[#0a639d] rounded-full"></div>
+              </div>              {/* Boarding/Dropping Details */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6 shadow-sm border border-gray-100/50 relative z-[1]">
+                <h3 className="text-sm sm:text-base md:text-lg font-bold text-[#2b2b2b] mb-3 sm:mb-4 md:mb-6 flex items-center gap-1.5 sm:gap-2 md:gap-3">
+                  <div className="w-0.5 sm:w-1 md:w-1.5 h-4 sm:h-5 md:h-6 bg-[#0a639d] rounded-full"></div>
                   Boarding / Dropping Details
                 </h3>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
                   <Dropdown
                     label="Boarding Place"
                     options={boardingOptions}
@@ -293,11 +281,9 @@ const PassengerDetail = () => {
                     required
                     error={errors[`${index}-droppingPlace`]}
                   />
-                </div>
-
-                {/* Apply to All Checkbox - Only show for first passenger */}
+                </div>                {/* Apply to All Checkbox - Only show for first passenger */}
                 {index === 0 && (
-                  <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50 shadow-sm">
+                  <div className="flex items-start sm:items-center gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border border-blue-200/50 shadow-sm">
                     <Checkbox
                       label="Apply these details to all passengers"
                       checked={passenger.applyToAll}
@@ -305,37 +291,33 @@ const PassengerDetail = () => {
                     />
                   </div>
                 )}
-              </div>
-
-              {/* Strong Separator Between Seats */}
+              </div>              {/* Strong Separator Between Seats */}
               {index < passengers.length - 1 && (
-                <div className="relative my-8 sm:my-12">
+                <div className="relative my-6 sm:my-8 md:my-12">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t-2 border-dashed border-gray-300"></div>
                   </div>
                   <div className="relative flex justify-center text-xs sm:text-sm">
-                    <span className="bg-white px-3 sm:px-4 py-1.5 sm:py-2 text-gray-500 font-medium rounded-full border border-gray-200 shadow-sm">
+                    <span className="bg-white px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-gray-500 font-medium rounded-full border border-gray-200 shadow-sm">
                       Next Passenger
                     </span>
                   </div>
                 </div>
               )}
             </div>
-          ))}
-
-          {/* Go to Payment Button */}
-          <div className="flex justify-center sm:justify-end mt-8 sm:mt-10 pt-4 sm:pt-6 border-t border-gray-200">
+          ))}          {/* Go to Payment Button */}
+          <div className="flex justify-center sm:justify-end mt-6 sm:mt-8 md:mt-10 pt-3 sm:pt-4 md:pt-6 border-t border-gray-200">
             <Button
               onClick={handleGoToPayment}
               variant="primary"
               size="large"
-              className="w-full sm:w-[246px] h-[60px] shadow-lg hover:shadow-xl transition-all duration-200"
+              className="w-full sm:w-auto sm:min-w-[200px] md:w-[246px] h-[50px] sm:h-[55px] md:h-[60px] shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
             >
-              <span className="mr-2">Go to payment</span>
+              <span className="mr-1 sm:mr-2">Go to payment</span>
               <img 
                 src="/images/img_hicon_bold_right_2.svg" 
                 alt="arrow" 
-                className="w-[28px] h-[28px]"
+                className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] md:w-[28px] md:h-[28px]"
               />
             </Button>
           </div>
