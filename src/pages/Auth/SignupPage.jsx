@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
+import { validateField } from '../../utils/authUtils';
 import { API_URLS } from '../../config/api';
 
 const SignupPage = () => {
@@ -15,6 +16,7 @@ const SignupPage = () => {
       navigate('/signup');
     }
   }, [contact, contactType, verified, navigate]);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '', // Optional email field
@@ -23,8 +25,6 @@ const SignupPage = () => {
   });  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateName = (name) => {
     if (!name.trim()) {
@@ -46,26 +46,13 @@ const SignupPage = () => {
     }
     return '';
   };
-
   const validatePassword = (password) => {
-    if (!password) {
-      return 'Password is required';
-    }
-    if (password.length < 6) {
-      return 'Password must be at least 6 characters long';
-    }
-    return '';
+    return validateField('password', password, formData);
   };
 
   const validateConfirmPassword = (confirmPassword, password) => {
-    if (!confirmPassword) {
-      return 'Please confirm your password';
-    }
-    if (confirmPassword !== password) {
-      return 'Passwords do not match';
-    }
-    return '';
-  };  const handleInputChange = (e) => {
+    return validateField('confirmPassword', confirmPassword, { ...formData, password });
+  };const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -342,81 +329,35 @@ const SignupPage = () => {
                 className="w-full"
                 error={errors.email}
               />
-            </div>            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  onBlur={() => handleInputBlur('password')}
-                  placeholder="Create a password (min. 6 characters)"
-                  className={`w-full px-3 py-3 pr-10 border rounded-lg focus:ring-2 focus:ring-[#0a639d] focus:border-[#0a639d] placeholder-gray-400 ${
-                    errors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'
-                  }`}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.46 8.46m1.418 1.418l4.242 4.242m0 0L15.54 15.54m-1.418-1.418L8.46 8.46m5.658 5.658l1.418 1.418" />
-                    </svg>
-                  ) : (
-                    <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  onBlur={() => handleInputBlur('confirmPassword')}
-                  placeholder="Confirm your password"
-                  className={`w-full px-3 py-3 pr-10 border rounded-lg focus:ring-2 focus:ring-[#0a639d] focus:border-[#0a639d] placeholder-gray-400 ${
-                    errors.confirmPassword ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'
-                  }`}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.46 8.46m1.418 1.418l4.242 4.242m0 0L15.54 15.54m-1.418-1.418L8.46 8.46m5.658 5.658l1.418 1.418" />
-                    </svg>
-                  ) : (
-                    <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-              )}
-            </div><Button
+              <InputField
+                label="Password"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                onBlur={() => handleInputBlur('password')}
+                placeholder="Create a password (min. 6 characters)"
+                className="w-full"
+                error={errors.password}
+              />
+            </div>
+
+            <div>
+              <InputField
+                label="Confirm Password"
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                onBlur={() => handleInputBlur('confirmPassword')}
+                placeholder="Confirm your password"
+                className="w-full"
+                error={errors.confirmPassword}
+              />
+            </div>            <Button
               type="submit"
               variant="primary"
               className="w-full bg-[#0a639d] hover:bg-[#085283] text-white py-3 rounded-lg font-medium"
