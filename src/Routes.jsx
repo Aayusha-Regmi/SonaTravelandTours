@@ -1,6 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
+// Import Protected Route component
+import ProtectedRoute from './components/ProtectedRoute';
+import PlaceholderPage from './components/PlaceholderPage';
+
 // Import page components
 import HomePage from './pages/Home/Home';
 import SearchResultsPage from './pages/SearchResults/SearchResultsPage';
@@ -22,10 +26,10 @@ const AppRoutes = () => {
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/contact" element={<ContactUs />} />
-        <Route path="/about" element={<AboutUs />} />
+        {/*<Route path="/about" element={<AboutUs />} />*/}
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/faqs" element={<FAQs />} />
+        {/* <Route path="/faqs" element={<FAQs />} /> */}
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -55,15 +59,17 @@ const AppRoutes = () => {
               <PassengerDetail />
             </ProtectedRoute>
           } 
-        />
-        <Route 
+        />        <Route 
           path="/payment" 
           element={
             <ProtectedRoute>
               <PaymentPage />
             </ProtectedRoute>
           } 
-        />        <Route 
+        />
+        
+        {/* 
+        <Route 
           path="/bookings" 
           element={
             <ProtectedRoute>
@@ -85,7 +91,9 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
+        */}
+        
+        <Route
           path="/routes" 
           element={
             <ProtectedRoute>
