@@ -12,31 +12,10 @@ import SeatSelection from './pages/BusSeatSelection/SeatSelection';
 import PaymentPage from './pages/Payment/PaymentPage';
 import PassengerDetail from './pages/BookingPassengerDetails/PassengerDetail';
 import ContactUs from './pages/ContactUs/ContactUs';
-import AboutUs from './pages/AboutUs/AboutUs';
+// import AboutUs from './pages/AboutUs/AboutUs';
 import TermsConditions from './pages/TermsConditions/TermsConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
-import FAQs from './pages/FAQs/FAQs';
-
-// Import Protected Route component
-import ProtectedRoute from './components/ProtectedRoute';
-
-// Import common components for placeholder pages
-import Header from './components/common/Header';
-import Footer from './components/common/Footer';
-
-// Placeholder page component for protected routes
-const PlaceholderPage = ({ title, description }) => (
-  <div className="min-h-screen bg-gray-50">
-    <Header />
-    <div className="flex items-center justify-center py-20">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">{title}</h1>
-        <p className="text-gray-600">{description}</p>
-      </div>
-    </div>
-    <Footer />
-  </div>
-);
+// import FAQs from './pages/FAQs/FAQs';
 
 const AppRoutes = () => {
   return (    <Router>      <Routes>
