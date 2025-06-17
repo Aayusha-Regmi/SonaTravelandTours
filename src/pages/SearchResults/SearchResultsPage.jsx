@@ -13,9 +13,8 @@ import api from '../../services/api';
 const SearchResultsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Get search results and params from location state
-  const { searchResults = [], searchParams = {} } = location.state || {};
+    // Get search results and params from location state
+  const { searchResults = [], searchParams = {}, fromLogin = false } = location.state || {};
   
   const [tripType, setTripType] = useState(searchParams.tripType || 'oneWay');
   const [formData, setFormData] = useState({
@@ -32,8 +31,17 @@ const SearchResultsPage = () => {
     // Bus data will be fetched from API service
     // Filter states
   const [priceRange, setPriceRange] = useState([500, 2000]);
-  const [selectedBoardingPlaces, setSelectedBoardingPlaces] = useState(['New Bus Park, Kathmandu']);
-  const [selectedDroppingPlaces, setSelectedDroppingPlaces] = useState(['Adarsha Nagar, Birgunj']);
+  const [selectedBoardingPlaces, setSelectedBoardingPlaces] = useState(['New Bus Park, Kathmandu',
+    'Kalanki, Kathmandu',
+    'Balkhu, Kathmandu',
+    'Koteshwor, Kathmandu',
+    'Chabahil, Kathmandu']);
+  const [selectedDroppingPlaces, setSelectedDroppingPlaces] = useState(['Adarsha Nagar, Birgunj',
+    'Ghantaghar, Birgunj',
+    'Birta, Birgunj',
+    'Powerhouse, Birgunj',
+    'Rangeli, Birgunj'
+   ]);
   //const [selectedBusTypes, setSelectedBusTypes] = useState(['Deluxe A/C', 'Super Deluxe']);
   const [selectedFacilities, setSelectedFacilities] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);  // Initialize bus results state
@@ -41,20 +49,41 @@ const SearchResultsPage = () => {
   const [busResults, setBusResults] = useState(searchResults.length > 0 ? searchResults : []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // Fetch bus data from API when component mounts
+    // Fetch bus data from API when component mounts
   useEffect(() => {
     const fetchBusData = async () => {
       setIsLoading(true);
       try {
-        // Only fetch if we don't have results already
+        // If we have results already, use them
+        if (searchResults.length > 0) {
+          console.log('Using existing search results');
+          return;
+        }
+
+        // If coming from login with search params, perform the search automatically
+        if (fromLogin && searchParams.from && searchParams.to && searchParams.date) {
+          console.log('Auto-searching after login with stored search data:', searchParams);
+          const searchData = {
+            fromCity: searchParams.from,
+            toCity: searchParams.to,
+            date: searchParams.date,
+            returnDate: searchParams.returnDate || '',
+            tripType: searchParams.tripType || 'oneWay'
+          };
+          const data = await api.searchBuses(searchData);
+          setAllBusResults(data);
+          setBusResults(data);
+          return;
+        }
+
+        // Otherwise fetch with current form values if we don't have results already
         if (searchResults.length === 0) {
-          const searchParams = {
+          const searchData = {
             fromCity: fromLocation,
             toCity: toLocation,
             date: travelDate
           };
-          const data = await api.searchBuses(searchParams);
+          const data = await api.searchBuses(searchData);
           setAllBusResults(data);
           setBusResults(data);
         }
@@ -67,7 +96,7 @@ const SearchResultsPage = () => {
     };
     
     fetchBusData();
-  }, [fromLocation, toLocation, travelDate, searchResults]);
+  }, [fromLocation, toLocation, travelDate, searchResults, fromLogin, searchParams]);
     // Effect to update filter section when filters are removed through filter tags
   useEffect(() => {
     // This will ensure the filter sidebar stays in sync with the selected filters

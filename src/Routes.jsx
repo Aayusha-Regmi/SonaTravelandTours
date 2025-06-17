@@ -17,24 +17,117 @@ import TermsConditions from './pages/TermsConditions/TermsConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
 import FAQs from './pages/FAQs/FAQs';
 
+// Import Protected Route component
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Import common components for placeholder pages
+import Header from './components/common/Header';
+import Footer from './components/common/Footer';
+
+// Placeholder page component for protected routes
+const PlaceholderPage = ({ title, description }) => (
+  <div className="min-h-screen bg-gray-50">
+    <Header />
+    <div className="flex items-center justify-center py-20">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">{title}</h1>
+        <p className="text-gray-600">{description}</p>
+      </div>
+    </div>
+    <Footer />
+  </div>
+);
+
 const AppRoutes = () => {
-  return (    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />        {/* Auth Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<PhoneSignupPage />} />
-        <Route path="/signup/complete" element={<SignupPage />} />
-        <Route path="/otp-verification" element={<OTPVerificationPage />} />{/* SeatSelection Step Pages Routes */}
-        <Route path="/search-results" element={<SearchResultsPage />} />        <Route 
-          path="/select-seats/:busId" 
-          element={<SeatSelection />} 
-        />
-        <Route path="/passenger-detail" element={<PassengerDetail />} />
-        <Route path="/payment" element={<PaymentPage />} />             <Route path="/contact" element={<ContactUs />} />
+  return (    <Router>      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/contact" element={<ContactUs />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/faqs" element={<FAQs />} />
+
+        {/* Auth Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<PhoneSignupPage />} />
+        <Route path="/signup/complete" element={<SignupPage />} />
+        <Route path="/otp-verification" element={<OTPVerificationPage />} />        {/* Protected Routes - Require Authentication */}
+        <Route 
+          path="/search-results" 
+          element={
+            <ProtectedRoute>
+              <SearchResultsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/select-seats/:busId" 
+          element={
+            <ProtectedRoute>
+              <SeatSelection />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/passenger-detail" 
+          element={
+            <ProtectedRoute>
+              <PassengerDetail />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/payment" 
+          element={
+            <ProtectedRoute>
+              <PaymentPage />
+            </ProtectedRoute>
+          } 
+        />        <Route 
+          path="/bookings" 
+          element={
+            <ProtectedRoute>
+              <PlaceholderPage 
+                title="My Bookings" 
+                description="View and manage your bus bookings here. This page is under development."
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/live-track" 
+          element={
+            <ProtectedRoute>
+              <PlaceholderPage 
+                title="Live Track" 
+                description="Track your bus in real-time. This page is under development."
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/routes" 
+          element={
+            <ProtectedRoute>
+              <PlaceholderPage 
+                title="Bus Routes" 
+                description="Explore available bus routes and schedules. This page is under development."
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/insurance" 
+          element={
+            <ProtectedRoute>
+              <PlaceholderPage 
+                title="Travel Insurance" 
+                description="Protect your journey with travel insurance. This page is under development."
+              />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </Router>
   );

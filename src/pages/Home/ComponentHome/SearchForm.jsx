@@ -5,6 +5,7 @@ import Button from '../../../components/ui/Button';
 import DatePicker from './UI/DatePickerNew';
 import LocationDropdown from './UI/LocationDropdown';
 import api from '../../../services/api';
+import { isAuthenticated, storeSearchData, redirectToLogin } from '../../../utils/authGuard';
 
 const SearchForm = () => {
   const navigate = useNavigate();
@@ -141,6 +142,29 @@ const SearchForm = () => {
         setError('Return date must be after departure date');
         return;
       }
+    }
+
+    // Check if user is authenticated before proceeding
+    if (!isAuthenticated()) {
+      console.log('User not authenticated, storing search data and redirecting to login');
+      
+      // Store search data for after login
+      const searchData = {
+        tripType,
+        from: formData.from,
+        to: formData.to,
+        date: formData.date,
+        returnDate: formData.returnDate,
+        fromCity: locationOptions.find(loc => loc.value === formData.from)?.label || formData.from,
+        toCity: locationOptions.find(loc => loc.value === formData.to)?.label || formData.to
+      };
+      
+      storeSearchData(searchData);
+      
+      // Redirect to login with return path
+      const loginUrl = redirectToLogin('/search-results', searchData);
+      navigate(loginUrl);
+      return;
     }
 
     setIsLoading(true);

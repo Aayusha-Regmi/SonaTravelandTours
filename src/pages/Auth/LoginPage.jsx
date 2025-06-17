@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import { validateLoginInput, validateField, detectInputType } from '../../utils/authUtils';
+import { getAndClearReturnPath, getAndClearSearchData } from '../../utils/authGuard';
 import { API_URLS } from '../../config/api';
 
 const LoginPage = () => {
@@ -161,16 +162,38 @@ const LoginPage = () => {
               
               const userRole = payload.role || payload.user_type || 'user';
               console.log('User role:', userRole);
-              
-              // Check role-based access
+                // Check role-based access
               if (userRole === 'user' || userRole === 'customer') {
                 // Allow user/customer to proceed
                 localStorage.setItem('loginSuccess', 'true');
                 localStorage.setItem('userMessage', result.message);
                 localStorage.setItem('userRole', userRole);
                 
+                // Handle return path and search data after successful login
+                const returnPath = getAndClearReturnPath();
+                const searchData = getAndClearSearchData();
+                
+                console.log('Post-login navigation - Return path:', returnPath);
+                console.log('Post-login navigation - Search data:', searchData);
+                
                 setIsLoading(false);
-                navigate('/');
+                
+                if (searchData && returnPath === '/search-results') {
+                  // User was redirected from search, navigate to search results with data
+                  navigate('/search-results', {
+                    state: {
+                      searchResults: [],
+                      searchParams: searchData,
+                      fromLogin: true
+                    }
+                  });
+                } else if (returnPath && returnPath !== '/') {
+                  // User was redirected from a protected page
+                  navigate(returnPath);
+                } else {
+                  // Normal login, go to home
+                  navigate('/');
+                }
               } else if (userRole === 'admin') {
                 // Admin role - show message and redirect link
                 setRoleMessage('You have admin privileges. Please use the admin portal to access your dashboard.');
