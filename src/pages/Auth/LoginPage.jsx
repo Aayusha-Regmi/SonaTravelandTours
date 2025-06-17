@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import { validateLoginInput, validateField, detectInputType } from '../../utils/authUtils';
@@ -7,6 +7,7 @@ import { API_URLS } from '../../config/api';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [formData, setFormData] = useState({
     emailOrPhone: '',
@@ -17,15 +18,21 @@ const LoginPage = () => {
   const [errors, setErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
   const [roleMessage, setRoleMessage] = useState(''); // Add role message state
+  const [successMessage, setSuccessMessage] = useState(''); // Add success message state
+
+  // Check for success message from signup
+  useEffect(() => {
+    if (location.state && location.state.message) {
+      setSuccessMessage(location.state.message);
+    }
+  }, [location.state]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
-    }));
-
-    // Clear error when user starts typing
+    }));    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -38,6 +45,11 @@ const LoginPage = () => {
       setRoleMessage('');
     }
 
+    // Clear success message when user starts typing
+    if (successMessage) {
+      setSuccessMessage('');
+    }
+
     // Real-time validation for touched fields
     if (touchedFields[name]) {
       const fieldError = validateField(name, value, formData);
@@ -47,7 +59,6 @@ const LoginPage = () => {
       }));
     }
   };
-
   const handleInputBlur = (fieldName) => {
     setTouchedFields(prev => ({
       ...prev,
@@ -60,9 +71,7 @@ const LoginPage = () => {
       ...prev,
       [fieldName]: fieldError
     }));
-  };
-
-  const handleLogin = async (e) => {
+  };  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -73,34 +82,38 @@ const LoginPage = () => {
       setErrors(validation.errors);
       setIsLoading(false);
       return;
-    }
-
-    // Clear any existing errors and role messages
+    }    // Clear any existing errors and role messages
     setErrors({});
-    setRoleMessage('');
-
-    try {
+    setRoleMessage('');    try {
       const inputType = detectInputType(formData.emailOrPhone);
       
+      console.log('=== INPUT DETECTION DEBUG ===');
+      console.log('Original input:', formData.emailOrPhone);
+      console.log('Input type detected:', inputType);
+      console.log('Is email?', inputType === 'email');
+      console.log('Cleaned phone digits:', formData.emailOrPhone.replace(/\D/g, ''));
+      
+      const emailValue = inputType === 'email' 
+        ? formData.emailOrPhone  // Keep email as string
+        : parseInt(formData.emailOrPhone.replace(/\D/g, ''), 10);  // Convert phone to integer
+      
+      console.log('Email field value:', emailValue);
+      console.log('Email field type:', typeof emailValue);
+      console.log('==============================');
+
       const loginData = {
         password: formData.password,
-        ...(inputType === 'email' 
-          ? { email: formData.emailOrPhone }
-          : { phone: formData.emailOrPhone }
-        )
-      };
-
-      console.log('=== LOGIN DEBUG INFO ===');
+        email: emailValue
+      };console.log('=== LOGIN DEBUG INFO ===');
       console.log('Environment Variables:');
       console.log('  VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
       console.log('  VITE_AUTH_LOGIN_ENDPOINT:', import.meta.env.VITE_AUTH_LOGIN_ENDPOINT);
       console.log('API URL:', API_URLS.AUTH.LOGIN);
       console.log('Login Data:', { ...loginData, password: '[HIDDEN]' });
-      console.log('========================');
-
-      // API call to login endpoint
+      console.log('========================');      // API call to login endpoint
       console.log('Making request to:', API_URLS.AUTH.LOGIN);
       
+      //sending login request to the server
       const response = await fetch(API_URLS.AUTH.LOGIN, {
         method: 'POST',
         headers: {
@@ -108,15 +121,20 @@ const LoginPage = () => {
           'Accept': 'application/json',
         },
         body: JSON.stringify(loginData)
-      });
-
-      console.log('Response Status:', response.status);
+      });      console.log('Response Status:', response.status);
       console.log('Response OK:', response.ok);
+      console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
 
       let result;
       try {
         result = await response.json();
+        console.log('=== API RESPONSE DEBUG ===');
         console.log('Response Body:', result);
+        console.log('Success:', result.success);
+        console.log('Status Code:', result.statusCode);
+        console.log('Message:', result.message);
+        console.log('Data:', result.data);
+        console.log('========================');
       } catch (parseError) {
         console.error('Failed to parse response as JSON:', parseError);
         setErrors({ 
@@ -124,9 +142,7 @@ const LoginPage = () => {
         });
         setIsLoading(false);
         return;
-      }
-
-      if (response.ok) {
+      }if (response.ok) {
         // Check if we have a successful response based on your API structure
         if (result.success && result.statusCode === 200) {
           // Login successful
@@ -224,9 +240,7 @@ const LoginPage = () => {
         
         setErrors({ general: errorMessage });
         setIsLoading(false);
-      }
-
-    } catch (err) {
+      }    } catch (err) {
       console.error('Login error details:', err);
       console.error('Error name:', err.name);
       console.error('Error message:', err.message);
@@ -262,8 +276,7 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left side - Form */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
-          {/* Logo */}
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">          {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
               <img 
@@ -272,12 +285,15 @@ const LoginPage = () => {
                 className="h-10 w-auto"
               />
             </div>
-          </div>
-
-          {/* Form Header */}
+          </div>          {/* Form Header */}
           <div className="text-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Sign in to your account</h2>
-          </div>
+          </div>          {/* Success Messages */}
+          {successMessage && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+              {successMessage}
+            </div>
+          )}
 
           {/* Error Messages */}
           {errors.general && (
@@ -320,8 +336,7 @@ const LoginPage = () => {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
+          <form onSubmit={handleLogin} className="space-y-4">            <div>
               <InputField
                 label="Email address or phone number"
                 type="text"
@@ -397,7 +412,7 @@ const LoginPage = () => {
       </div>
 
       {/* Right side - Illustration */}
-      <div className="hidden lg:flex flex-1 mr-24 items-center justify-center">
+      <div className="hidden lg:flex flex-1 mr-24 items-center justify-center ">
         <div className="max-w-2xl">         
            <img
             src="/images/login_img.png"

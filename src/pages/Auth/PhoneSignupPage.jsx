@@ -10,10 +10,9 @@ const PhoneSignupPage = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
   const validatePhoneNumber = (phone) => {
     // Remove all non-digit characters
-    // const cleaned = phone.replace(/\D/g, '');
+    const cleaned = phone.replace(/\D/g, '');
     
     // Check if it's a valid 10-digit phone number
     if (cleaned.length !== 10) {
@@ -27,25 +26,33 @@ const PhoneSignupPage = () => {
     
     return '';
   };
-
   const handlePhoneChange = (e) => {
     const value = e.target.value;
     setPhoneNumber(value);
     
     // Clear error when user starts typing correctly
-    const error = validatePhoneNumber(value);
-    if (!error) {
-      setError(null);
-    }   
+    try {
+      const error = validatePhoneNumber(value);
+      if (!error) {
+        setError('');
+      }
+    } catch (err) {
+      console.error('Error in phone validation:', err);
+    }
   };
-
   const handleSendCode = async (e) => {
     e.preventDefault();
     
+    console.log('=== SEND OTP DEBUG START ===');
+    console.log('Phone number input:', phoneNumber);
+    
     // Validate phone number
     const phoneError = validatePhoneNumber(phoneNumber);
+    console.log('Validation result:', phoneError);
+    
     if (phoneError) {
       setError(phoneError);
+      console.log('Validation failed, stopping');
       return;
     }
 
@@ -55,7 +62,7 @@ const PhoneSignupPage = () => {
     try {      // Clean phone number (remove any formatting)
       const cleanedPhone = phoneNumber.replace(/\D/g, '');
       
-      console.log('Sending OTP to phone:', cleanedPhone);
+      console.log('Cleaned phone:', cleanedPhone);
       console.log('API URL:', API_URLS.AUTH.SEND_OTP);
       console.log('Request payload:', {
         mobileNumber: cleanedPhone,
@@ -72,7 +79,7 @@ const PhoneSignupPage = () => {
           mobileNumber: cleanedPhone,
           action: 'signup'
         })
-      });      const result = await response.json();
+      });const result = await response.json();
       console.log('Send OTP Response:', result);
       console.log('Response Status:', response.status);
       console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
@@ -96,7 +103,7 @@ const PhoneSignupPage = () => {
         
         // Handle specific errors
         if (result.message && result.message.toLowerCase().includes('already exists')) {
-          errorMessage = 'This phone number is already registered. Please login instead.';
+          errorMessage = 'This phone is already registered. Please login instead.';
           // Optionally add a link to login
           setError(
             <span>
@@ -111,9 +118,13 @@ const PhoneSignupPage = () => {
         }
         
         setError(errorMessage);
-      }
-    } catch (err) {
-      console.error('Send OTP error:', err);
+      }    } catch (err) {
+      console.error('=== SEND OTP ERROR ===');
+      console.error('Error object:', err);
+      console.error('Error name:', err.name);
+      console.error('Error message:', err.message);
+      console.error('Error stack:', err.stack);
+      console.error('=== END ERROR DEBUG ===');
       
       let errorMessage = 'Network error. Please check your connection and try again.';
       
@@ -124,6 +135,7 @@ const PhoneSignupPage = () => {
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+      console.log('=== SEND OTP DEBUG END ===');
     }
   };
 
