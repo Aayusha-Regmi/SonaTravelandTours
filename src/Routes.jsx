@@ -12,10 +12,10 @@ import SeatSelection from './pages/BusSeatSelection/SeatSelection';
 import PaymentPage from './pages/Payment/PaymentPage';
 import PassengerDetail from './pages/BookingPassengerDetails/PassengerDetail';
 import ContactUs from './pages/ContactUs/ContactUs';
-import AboutUs from './pages/AboutUs/AboutUs';
+// import AboutUs from './pages/AboutUs/AboutUs';
 import TermsConditions from './pages/TermsConditions/TermsConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
-import FAQs from './pages/FAQs/FAQs';
+// import FAQs from './pages/FAQs/FAQs';
 
 const AppRoutes = () => {
   return (    <Router>
@@ -30,11 +30,12 @@ const AppRoutes = () => {
           element={<SeatSelection />} 
         />
         <Route path="/passenger-detail" element={<PassengerDetail />} />
-        <Route path="/payment" element={<PaymentPage />} />             <Route path="/contact" element={<ContactUs />} />
-        <Route path="/about" element={<AboutUs />} />
+        <Route path="/payment" element={<PaymentPage />} />            
+        <Route path="/contact" element={<ContactUs />} />
+        {/* <Route path="/about" element={<AboutUs />} /> */}
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/faqs" element={<FAQs />} />
+        {/* <Route path="/faqs" element={<FAQs />} /> */}
       </Routes>
     </Router>
   );
