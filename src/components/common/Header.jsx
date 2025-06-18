@@ -57,6 +57,7 @@ const Header = () => {
           </div>
         </nav>       
         <div className="hidden md:flex items-center space-x-3">
+          
           <Link 
             to="/login"
             className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors px-3 py-2"
@@ -76,7 +77,27 @@ const Header = () => {
               <span className="text-lg font-bold">Sign Up</span>
             </Button>
           </Link>
+          
         </div>
+        {/* Profile Icon with Dropdown
+        <div className="hidden md:flex items-center space-x-3">
+          <div className="relative group">
+        
+            <img 
+              src="/images/Profile_image.png" 
+              alt="Profile Icon" 
+              className="w-8 h-8 rounded-full object-cover cursor-pointer"
+            />
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100">
+              <Link to="/profile" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
+                My Profile
+              </Link>
+              <Link to="/logout" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
+                Logout
+              </Link>
+            </div>
+          </div>
+        </div> */}
 
         {/* Mobile Menu Button */}
         <div className="md:hidden">
