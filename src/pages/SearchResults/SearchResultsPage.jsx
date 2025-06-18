@@ -58,9 +58,7 @@ const SearchResultsPage = () => {
         if (searchResults.length > 0) {
           console.log('Using existing search results');
           return;
-        }
-
-        // If coming from login with search params, perform the search automatically
+        }        // If coming from login with search params, perform the search automatically
         if (fromLogin && searchParams.from && searchParams.to && searchParams.date) {
           console.log('Auto-searching after login with stored search data:', searchParams);
           const searchData = {
@@ -71,25 +69,36 @@ const SearchResultsPage = () => {
             tripType: searchParams.tripType || 'oneWay'
           };
           const data = await api.searchBuses(searchData);
+          console.log(' Auto-search results:', data);
           setAllBusResults(data);
           setBusResults(data);
+          setError(null); // Clear any previous errors
           return;
         }
 
         // Otherwise fetch with current form values if we don't have results already
         if (searchResults.length === 0) {
+          console.log('🔍 Searching with current form values:', {
+            fromCity: fromLocation,
+            toCity: toLocation,
+            date: travelDate
+          });
           const searchData = {
             fromCity: fromLocation,
             toCity: toLocation,
             date: travelDate
           };
           const data = await api.searchBuses(searchData);
+          console.log(' Search results received:', data);
           setAllBusResults(data);
           setBusResults(data);
+          setError(null); // Clear any previous errors
         }
       } catch (err) {
-        setError('Failed to fetch bus data. Please try again later.');
-        console.error('Error fetching bus data:', err);
+        console.error(' Bus search error:', err);
+        setError(`API Error: ${err.message}`);
+        setAllBusResults([]); // Clear any existing results
+        setBusResults([]);
       } finally {
         setIsLoading(false);
       }
@@ -106,11 +115,10 @@ const SearchResultsPage = () => {
   // Apply filters to bus results
   const applyFilters = useCallback(() => {
     let filteredResults = [...allBusResults];
-    
-    // Filter by price range
+      // Filter by price range
     filteredResults = filteredResults.filter(bus => 
-      (bus.fare || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) >= priceRange[0] && 
-      (bus.fare || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) <= priceRange[1]
+      (bus.fare || bus.fair || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) >= priceRange[0] && 
+      (bus.fare || bus.fair || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) <= priceRange[1]
     );
     
     // Filter by boarding places if any selected
@@ -199,16 +207,15 @@ const SearchResultsPage = () => {
       applyFilters();
     }
   }, [applyFilters, allBusResults]);
-  
-  // Location options - limited to Kathmandu and Birgunj only
+    // Location options - limited to Kathmandu and Birgunj only
   const locationOptions = [
     { 
-      value: 'KTM', 
+      value: 'Kathmandu', 
       label: 'Kathmandu',
       description: 'Stops: New Bus Park, Kalanki, Balkhu, Koteshwor, Chabahil'
     },
     {
-      value: 'BRG',
+      value: 'Birgunj',
       label: 'Birgunj',
       description: 'Stops: Adarsha Nagar, Ghantaghar, Birta, Powerhouse, Rangeli'
     }
@@ -236,14 +243,18 @@ const SearchResultsPage = () => {
             date: travelDate
           }));
         }
-        
-        // Fetch bus data from API
+          // Fetch bus data from API
+        console.log('🔍 Fetching bus data with params:', searchParams);
         const busData = await api.searchBuses(searchParams);
+        console.log('📊 Bus data received:', busData);
         setAllBusResults(busData);
         setBusResults(busData);
+        setError(null); // Clear any previous errors
       } catch (error) {
-        setError('Failed to fetch bus data. Please try again later.');
-        console.error('Error fetching bus data:', error);
+        console.error('❌ Bus fetch error:', error);
+        setError(`API Error: ${error.message}`);
+        setAllBusResults([]); // Clear any existing results
+        setBusResults([]);
       } finally {
         setIsLoading(false);
       }
@@ -301,14 +312,13 @@ const SearchResultsPage = () => {
         case 'Earliest':
           return (a.departureTime || a.departure_time || '').localeCompare(b.departureTime || b.departure_time || '');
         case 'Latest':
-          return (b.departureTime || b.departure_time || '').localeCompare(a.departureTime || a.departure_time || '');
-        case 'Lowest price':
-          const priceA = a.fare || parseInt((a.price || '').replace(/[^0-9]/g, '')) || 0;
-          const priceB = b.fare || parseInt((b.price || '').replace(/[^0-9]/g, '')) || 0;
+          return (b.departureTime || b.departure_time || '').localeCompare(a.departureTime || a.departure_time || '');        case 'Lowest price':
+          const priceA = a.fare || a.fair || parseInt((a.price || '').replace(/[^0-9]/g, '')) || 0;
+          const priceB = b.fare || b.fair || parseInt((b.price || '').replace(/[^0-9]/g, '')) || 0;
           return priceA - priceB;
         case 'Highest price':
-          const priceC = a.fare || parseInt((a.price || '').replace(/[^0-9]/g, '')) || 0;
-          const priceD = b.fare || parseInt((b.price || '').replace(/[^0-9]/g, '')) || 0;
+          const priceC = a.fare || a.fair || parseInt((a.price || '').replace(/[^0-9]/g, '')) || 0;
+          const priceD = b.fare || b.fair || parseInt((b.price || '').replace(/[^0-9]/g, '')) || 0;
           return priceD - priceC;
         case 'Top rating':
           return (parseFloat(b.rating || '0') || 0) - (parseFloat(a.rating || '0') || 0);
@@ -368,14 +378,13 @@ const SearchResultsPage = () => {
       ...formData,
       [name]: value
     });
-    
-    // Update display values for immediate UI feedback
+      // Update display values for immediate UI feedback
     if (name === 'from') {
       const selectedLocation = locationOptions.find(loc => loc.value === value);
       setFromLocation(selectedLocation?.label || value);
     } else if (name === 'to') {
       const selectedLocation = locationOptions.find(loc => loc.value === value);
-      setToLocation(selectedLocation?.label || value);    } else if (name === 'date') {
+      setToLocation(selectedLocation?.label || value);} else if (name === 'date') {
       // Ensure travelDate and formData.date are always in sync
       setTravelDate(value);
       

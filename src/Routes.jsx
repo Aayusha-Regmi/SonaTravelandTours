@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 // Import Protected Route component
 import ProtectedRoute from './components/ProtectedRoute';
 import PlaceholderPage from './components/PlaceholderPage';
+import ApiTestComponent from './components/ApiTestComponent';
 
 // Import page components
 import HomePage from './pages/Home/Home';
@@ -25,6 +26,7 @@ const AppRoutes = () => {
   return (    <Router>      <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/api-test" element={<ApiTestComponent />} />
         <Route path="/contact" element={<ContactUs />} />
         {/*<Route path="/about" element={<AboutUs />} />*/}
         <Route path="/terms-conditions" element={<TermsConditions />} />

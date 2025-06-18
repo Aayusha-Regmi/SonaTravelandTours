@@ -19,16 +19,15 @@ const SearchForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [routeOptions, setRouteOptions] = useState([]);
   const [error, setError] = useState(null);
-  
-  // Location options - limited to Kathmandu and Birgunj only
+    // Location options - limited to Kathmandu and Birgunj only
   const locationOptions = [
     { 
-      value: 'KTM', 
+      value: 'Kathmandu', 
       label: 'Kathmandu',
       description: 'Stops: New Bus Park, Kalanki, Balkhu, Koteshwor, Chabahil'
     },
     {
-      value: 'BRG',
+      value: 'Birgunj',
       label: 'Birgunj',
       description: 'Stops: Adarsha Nagar, Ghantaghar, Birta, Powerhouse, Rangeli'
     }
@@ -147,16 +146,15 @@ const SearchForm = () => {
     // Check if user is authenticated before proceeding
     if (!isAuthenticated()) {
       console.log('User not authenticated, storing search data and redirecting to login');
-      
-      // Store search data for after login
+        // Store search data for after login
       const searchData = {
         tripType,
         from: formData.from,
         to: formData.to,
         date: formData.date,
         returnDate: formData.returnDate,
-        fromCity: locationOptions.find(loc => loc.value === formData.from)?.label || formData.from,
-        toCity: locationOptions.find(loc => loc.value === formData.to)?.label || formData.to
+        fromCity: formData.from,
+        toCity: formData.to
       };
       
       storeSearchData(searchData);
@@ -168,10 +166,7 @@ const SearchForm = () => {
     }
 
     setIsLoading(true);
-    setError(null);
-
-    try {
-      console.log('Searching with data:', { tripType, ...formData });
+    setError(null);    try {      console.log('🔍 Searching with data:', { tripType, ...formData });
 
       // Use the local api.js service for bus search
       const busResults = await api.searchBuses({
@@ -182,36 +177,32 @@ const SearchForm = () => {
         tripType: tripType
       });
 
-      // Defensive: handle if API returns undefined or not an array
-      if (!busResults || !Array.isArray(busResults)) {
+      console.log('🎯 Search Results Received:', busResults);
+      console.log('📊 Number of buses found:', busResults ? busResults.length : 0);
+
+      // Handle empty results
+      if (!busResults || !Array.isArray(busResults) || busResults.length === 0) {
         setError('No buses found for this route and date. Please try different dates or locations.');
         setIsLoading(false);
         return;
       }
 
-      if (busResults.length === 0) {
-        setError('No buses found for this route and date. Please try different dates or locations.');
-        setIsLoading(false);
-        return;
-      }      // Navigate to search results page with the data
-      
+      // Navigate to search results page with the data
       // First scroll to top
       window.scrollTo(0, 0);
-      
-      navigate('/search-results', {
+        navigate('/search-results', {
         state: {
           searchResults: busResults,
           searchParams: {
             tripType,
             ...formData,
-            fromCity: locationOptions.find(loc => loc.value === formData.from)?.label || formData.from,
-            toCity: locationOptions.find(loc => loc.value === formData.to)?.label || formData.to
+            fromCity: formData.from,
+            toCity: formData.to
           },
         }
-      });
-    } catch (err) {
-      console.error('Error searching:', err);
-      setError(err.message || 'An error occurred while searching. Please try again.');
+      });    } catch (err) {
+      console.error('❌ Search error:', err);
+      setError(`Search failed: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
