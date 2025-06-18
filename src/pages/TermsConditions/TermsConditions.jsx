@@ -114,7 +114,8 @@ const TermsConditions = () => {
             </div>
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-gray-800 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-6">
               Terms & Conditions
-            </h1>            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+            </h1>            
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
               By using our app and services, you agree to comply with the following terms and conditions. 
               Please read them carefully before using Sona Travel & Tours services.
             </p>
