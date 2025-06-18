@@ -2,123 +2,7 @@
  * API service for bus search and booking operations
  */
 
-// Sample bus data for testing filters - at least 8 buses with different values
-const sampleBusData = [
-  {
-    id: 'bus-001',
-    busName: 'Sona Travels -1708',
-    busType: 'Deluxe A/C',
-    departureTime: '06:30',
-    arrivalTime: '12:45',
-    boardingPoint: 'New Bus Park, Kathmandu',
-    droppingPoint: 'Adarsha Nagar, Birgunj',
-    duration: '6h 15m',
-    fare: 1250,
-    rating: '4.8',
-    availableSeats: 22,
-    facilities: ['OLED OnePlus 42" TV', 'Full A/C & Air Suspension', 'Multi-zone A/C', 'CCTV Surveillance'],
-  },
-  {
-    id: 'bus-002',
-    busName: 'Sona Travels Super -1705',
-    busType: 'Super Deluxe',
-    departureTime: '08:00',
-    arrivalTime: '14:30',
-    boardingPoint: 'Kalanki, Kathmandu',
-    droppingPoint: 'Ghantaghar, Birgunj',
-    duration: '6h 30m',
-    fare: 1450,
-    rating: '4.5',
-    availableSeats: 15,
-    facilities: ['Navigation system', 'Full A/C & Air Suspension', 'Heated front seats', 'CCTV Surveillance', 'Sony Dolby Digital system'],
-  },
-  {
-    id: 'bus-003',
-    busName: 'Sona Travels Tourist -1701',
-    busType: 'Tourist',
-    departureTime: '10:15',
-    arrivalTime: '16:30',
-    boardingPoint: 'Balkhu, Kathmandu',
-    droppingPoint: 'Birta, Birgunj',
-    duration: '6h 15m',
-    fare: 950,
-    rating: '3.7',
-    availableSeats: 8,
-    facilities: ['Multi-zone A/C', 'CCTV Surveillance'],
-  },
-  {
-    id: 'bus-004',
-    busName: 'Sona Travels -1709',
-    busType: 'AC',
-    departureTime: '12:30',
-    arrivalTime: '19:00',
-    boardingPoint: 'Koteshwor, Kathmandu',
-    droppingPoint: 'Powerhouse, Birgunj',
-    duration: '6h 30m',
-    fare: 1100,
-    rating: '4.2',
-    availableSeats: 19,
-    facilities: ['Full A/C & Air Suspension', 'Navigation system', 'OLED OnePlus 42" TV'],
-  },
-  {
-    id: 'bus-005',
-    busName: 'Sona Travels Luxury -1721',
-    busType: 'Luxury',
-    departureTime: '15:45',
-    arrivalTime: '21:45',
-    boardingPoint: 'New Bus Park, Kathmandu',
-    droppingPoint: 'Rangeli, Birgunj',
-    duration: '6h',
-    fare: 1850,
-    rating: '4.9',
-    availableSeats: 12,
-    facilities: ['OLED OnePlus 42" TV', 'Navigation system', 'Full A/C & Air Suspension', 'Multi-zone A/C', 'Heated front seats', 'CCTV Surveillance', 'Sony Dolby Digital system'],
-  },
-  {
-    id: 'bus-006',
-    busName: 'Sona Travels Express -1806',
-    busType: 'Deluxe A/C',
-    departureTime: '17:30',
-    arrivalTime: '23:45',
-    boardingPoint: 'Chabahil, Kathmandu',
-    droppingPoint: 'Adarsha Nagar, Birgunj',
-    duration: '6h 15m',
-    fare: 1250,
-    rating: '4.3',
-    availableSeats: 16,
-    facilities: ['Full A/C & Air Suspension', 'OLED OnePlus 42" TV', 'Multi-zone A/C', 'Sony Dolby Digital system'],
-  },
-  {
-    id: 'bus-007',
-    busName: 'Sona Travels -1701',
-    busType: 'Super Deluxe',
-    departureTime: '19:00',
-    arrivalTime: '01:15',
-    boardingPoint: 'New Bus Park, Kathmandu',
-    droppingPoint: 'Ghantaghar, Birgunj',
-    duration: '6h 15m',
-    fare: 1350,
-    rating: '4.6',
-    availableSeats: 14,
-    facilities: ['Navigation system', 'Full A/C & Air Suspension', 'Heated front seats', 'Sony Dolby Digital system'],
-  },
-  {
-    id: 'bus-008',
-    busName: 'Highway Express -1902',
-    busType: 'Tourist',
-    departureTime: '22:30',
-    arrivalTime: '04:45',
-    boardingPoint: 'Kalanki, Kathmandu',
-    droppingPoint: 'Birta, Birgunj',
-    duration: '6h 15m',
-    fare: 950,
-    rating: '3.8',
-    availableSeats: 22,
-    facilities: ['CCTV Surveillance', 'Multi-zone A/C'],
-  }
-];
-
-
+import { API_URLS } from '../config/api';
 
 /**
  * Get all available facilities for bus filtering
@@ -239,9 +123,227 @@ const getAvailableSeats = (busId, date) => {
   });
 };
 
+// Helper function to determine bus type based on name and facilities
+const determineBusType = (busName, facilities) => {
+  if (!busName) return 'AC';
+  
+  const name = busName.toLowerCase();
+  const facilitiesStr = Array.isArray(facilities) ? facilities.join(' ').toLowerCase() : '';
+  
+  if (name.includes('luxury') || facilitiesStr.includes('luxury')) {
+    return 'Luxury';
+  } else if (name.includes('super') || name.includes('deluxe')) {
+    return 'Super Deluxe';
+  } else if (name.includes('deluxe')) {
+    return 'Deluxe A/C';
+  } else if (name.includes('tourist')) {
+    return 'Tourist';
+  } else if (name.includes('a/c') || facilitiesStr.includes('a/c')) {
+    return 'AC';
+  } else {
+    return 'Standard';
+  }
+};
+
+// Helper function to process successful API response
+const processSuccessfulResponse = (result, fromCity, toCity) => {
+  // Check if the response has the expected structure
+  if (result.success && result.data && Array.isArray(result.data)) {
+    if (result.data.length === 0) {
+      console.log('📭 API returned empty data - no buses found');
+      return [];
+    }
+
+    // Transform API response to match our component's expected format
+    const transformedBuses = result.data.map((bus, index) => {
+      // Parse comma-separated strings into arrays
+      const facilitiesArray = bus.facilities ? bus.facilities.split(',').map(f => f.trim()) : [];
+      const routesArray = bus.routes ? bus.routes.split(',').map(r => r.trim()) : [];
+      
+      // Calculate departure and arrival times based on routes or use defaults
+      const departureTime = '19:30'; // Default - could be enhanced based on API data
+      const arrivalTime = '4:30'; // Default - could be enhanced based on API data
+      
+      return {
+        id: `bus-${bus.busId || index}`,
+        busName: bus.busName || bus.secondaryBusNumber || 'Unknown Bus',
+        busNumber: bus.busNumber || bus.secondaryBusNumber || '',
+        busType: determineBusType(bus.busName, facilitiesArray),
+        departureTime,
+        arrivalTime,
+        boardingPoint: `${fromCity} Bus Park`,
+        droppingPoint: `${toCity} Terminal`,
+        duration: '6h 15m', // Default - could be calculated
+        fare: bus.fair || bus.fare || 1000,
+        rating: '4.5', // Default since not provided in API
+        availableSeats: bus.availableSeats || 0,
+        bookedSeats: bus.bookedSeats || 0,
+        facilities: facilitiesArray,
+        routes: routesArray,
+        description: bus.description || '',
+        baseOrigin: bus.baseOrigin || '',
+        baseDestination: bus.baseDestination || '',
+        baseDate: bus.baseDate || '',
+        status: bus.status || false,
+        // Keep original API data for reference
+        originalData: bus
+      };
+    });
+
+    console.log('  Transformed bus data:', transformedBuses);
+    return transformedBuses;
+  } else if (result.success && (!result.data || result.data.length === 0)) {
+    // API returned success but no data
+    console.log('📭 API returned empty data array');
+    return [];
+  } else {
+    // API returned unexpected structure
+    console.error('  API response has unexpected structure:', result);
+    throw new Error(`Invalid API response structure. Expected success=true and data array, got: ${JSON.stringify(result)}`);
+  }
+};
+
 const searchBuses = async (searchParams) => {
-  // Optionally filter sampleBusData here based on searchParams
-  return sampleBusData;
+  try {
+    // Map the search parameters to match the API format
+    const { fromCity, toCity, date, returnDate, tripType } = searchParams;
+    
+    // Format date for API (assuming it comes in a readable format)
+    let apiDate = date;
+    if (date) {
+      // If date is in a human readable format, convert to YYYY-MM-DD
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate.getTime())) {
+        apiDate = parsedDate.toISOString().split('T')[0];
+      }
+    }
+    
+    const requestBody = {
+      destination: toCity,
+      origin: fromCity,
+      date: apiDate
+    };    console.log('🚌 Bus Search API Request:', requestBody);
+    console.log('🌐 API URL:', API_URLS.BUS.SEARCH);
+    console.log('� Environment variables:', {
+      baseUrl: import.meta.env.VITE_API_BASE_URL,
+      endpoint: import.meta.env.VITE_BUS_SEARCH_ENDPOINT,
+      fullUrl: API_URLS.BUS.SEARCH
+    });
+
+    // Check if URL is properly constructed
+    if (!API_URLS.BUS.SEARCH || API_URLS.BUS.SEARCH.includes('undefined')) {
+      throw new Error('Bus API URL is not properly configured. Check environment variables.');
+    }
+
+    // Try different CORS configurations if the main one fails
+    const corsConfigs = [
+      {
+        name: 'Standard CORS',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      },
+      {
+        name: 'CORS with Origin',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': window.location.origin,
+        }
+      },
+      {
+        name: 'No-CORS (limited response)',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
+    ];
+
+    let lastError = null;
+
+    for (let i = 0; i < corsConfigs.length; i++) {
+      const config = corsConfigs[i];
+      console.log(` Trying ${config.name}...`);
+
+      try {
+        // Add timeout and better error handling
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+          console.error(` ${config.name} timeout after 30 seconds`);
+        }, 30000); // 30 second timeout
+
+        try {
+          console.log(` Making fetch request with ${config.name}...`);
+          const response = await fetch(API_URLS.BUS.SEARCH, {
+            method: 'POST',
+            headers: config.headers,
+            body: JSON.stringify(requestBody),
+            signal: controller.signal,
+            mode: config.mode,
+          });
+
+          clearTimeout(timeoutId);
+
+          console.log(`${config.name} completed successfully`);
+          console.log(' Response Status:', response.status, response.statusText);
+          console.log(' Response Headers:', Object.fromEntries(response.headers.entries()));
+          console.log('  Response URL:', response.url);
+          console.log('  Response Type:', response.type);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(' HTTP Error Response Body:', errorText);
+            throw new Error(`API returned ${response.status}: ${response.statusText}. Response: ${errorText}`);
+          }          // If we reach here, the request was successful
+          const result = await response.json();
+          console.log(' Bus Search API Response:', result);
+          console.log(' Number of buses returned:', result.data ? result.data.length : 0);
+
+          // Process the successful response and return
+          return processSuccessfulResponse(result, fromCity, toCity);
+
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          lastError = fetchError;
+          console.error(`  ${config.name} failed:`, fetchError.message);
+          
+          if (i === corsConfigs.length - 1) {
+            // This was our last attempt, throw the error
+            if (fetchError.name === 'AbortError') {
+              throw new Error('Request timeout - API took too long to respond');
+            } else if (fetchError.message === 'Failed to fetch') {
+              throw new Error('Network error - Cannot connect to API. Check if API is running and CORS is configured.');
+            } else {
+              throw new Error(`Network request failed: ${fetchError.message}`);
+            }
+          } else {
+            console.log(`  Trying next configuration...`);
+            continue;
+          }
+        }
+      } catch (configError) {
+        lastError = configError;
+        console.error(`  Configuration ${config.name} failed:`, configError.message);
+        if (i === corsConfigs.length - 1) {
+          throw configError;
+        }
+        continue;
+      }    }
+
+    // If we get here, all CORS configurations failed
+    throw new Error('All CORS configuration attempts failed. Please check API server and CORS settings.');
+    
+  } catch (error) {
+    console.error('  Bus search API error:', error);
+    
+    // Re-throw the error instead of falling back to sample data
+    throw new Error(`Failed to fetch bus data from API: ${error.message}`);
+  }
 };
 
 const getRoutes = async () => {

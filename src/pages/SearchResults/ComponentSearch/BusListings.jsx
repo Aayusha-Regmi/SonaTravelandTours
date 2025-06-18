@@ -136,23 +136,22 @@ const BusListings = ({
       };
       
       const calculatedAvailableSeats = generateAvailableSeats(busId);
-      
         return {
         id: busId,
         rating: bus.rating || '4.8',
         name: bus.busName || bus.name || 'Sona Express',
-        type: bus.busType || bus.type || 'Tourist A/c, Delux',
+        type: bus.busType || bus.type || 'AC Bus',
         departureTime: depTime,
         departureTimeFormatted: formattedDepartureTime,
-        departureLocation: bus.boardingPoint || bus.boarding_point || bus.source || 'Bus Park',
+        departureLocation: bus.boardingPoint || bus.boarding_point || bus.baseOrigin || 'Bus Park',
         arrivalTime: arrTime,
         arrivalTimeFormatted: formattedArrivalTime,
-        arrivalLocation: bus.droppingPoint || bus.dropping_point || bus.destination || 'Bus Park',
+        arrivalLocation: bus.droppingPoint || bus.dropping_point || bus.baseDestination || 'Bus Park',
         duration: duration,
-        price: bus.price || (bus.fare ? `Rs. ${bus.fare}` : 'Rs. 1200'),
+        price: bus.price || (bus.fare ? `Rs. ${bus.fare}` : (bus.fair ? `Rs. ${bus.fair}` : 'Rs. 1200')),
         priceUnit: '/ Seat',
-        availableSeats: `${calculatedAvailableSeats} Seats Available`,        
-        facilities: bus.facilities || [],
+        availableSeats: `${bus.availableSeats || calculatedAvailableSeats} Seats Available`,        
+        facilities: Array.isArray(bus.facilities) ? bus.facilities : (bus.facilities ? bus.facilities.split(',').map(f => f.trim()) : []),
         isNightJourney,
         isEarlyMorning,
         

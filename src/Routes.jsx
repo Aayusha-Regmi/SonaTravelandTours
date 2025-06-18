@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 // Import Protected Route component
 import ProtectedRoute from './components/ProtectedRoute';
 import PlaceholderPage from './components/PlaceholderPage';
+// import ApiTestComponent from './components/ApiTestComponent';
 
 // Import page components
 import HomePage from './pages/Home/Home';
@@ -20,17 +21,23 @@ import ContactUs from './pages/ContactUs/ContactUs';
 import Testimonials from './pages/Testimonials/Testimonials';
 import TermsConditions from './pages/TermsConditions/TermsConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
-// import FAQs from './pages/FAQs/FAQs';
+import FAQs from './pages/FAQs/FAQs';
 
 const AppRoutes = () => {
   return (    <Router>      <Routes>
+<<<<<<< HEAD
         {/* Public Routes */}        <Route path="/" element={<HomePage />} />
+=======
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
+        {/* <Route path="/api-test" element={<ApiTestComponent />} /> */}
+>>>>>>> d1a0ae4cabf8ee4d8c6ea4ea504f7e4c97ec1e33
         <Route path="/contact" element={<ContactUs />} />
         {/*<Route path="/about" element={<AboutUs />} />*/}
         <Route path="/testimonials" element={<Testimonials />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        {/* <Route path="/faqs" element={<FAQs />} /> */}
+        <Route path="/faqs" element={<FAQs />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -69,7 +76,7 @@ const AppRoutes = () => {
           } 
         />
         
-        {/* 
+        
         <Route 
           path="/bookings" 
           element={
@@ -92,7 +99,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } 
         />
-        */}
+       
         
         <Route
           path="/routes" 
