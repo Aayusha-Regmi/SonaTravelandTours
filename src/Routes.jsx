@@ -18,23 +18,17 @@ import PaymentPage from './pages/Payment/PaymentPage';
 import PassengerDetail from './pages/BookingPassengerDetails/PassengerDetail';
 import ContactUs from './pages/ContactUs/ContactUs';
 // import AboutUs from './pages/AboutUs/AboutUs';
-import Testimonials from './pages/Testimonials/Testimonials';
+// import Testimonials from './pages/Testimonials/Testimonials';
 import TermsConditions from './pages/TermsConditions/TermsConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
 import FAQs from './pages/FAQs/FAQs';
 
 const AppRoutes = () => {
   return (    <Router>      <Routes>
-<<<<<<< HEAD
         {/* Public Routes */}        <Route path="/" element={<HomePage />} />
-=======
-        {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
-        {/* <Route path="/api-test" element={<ApiTestComponent />} /> */}
->>>>>>> d1a0ae4cabf8ee4d8c6ea4ea504f7e4c97ec1e33
         <Route path="/contact" element={<ContactUs />} />
         {/*<Route path="/about" element={<AboutUs />} />*/}
-        <Route path="/testimonials" element={<Testimonials />} />
+        {/* <Route path="/testimonials" element={<Testimonials />} /> */}
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/faqs" element={<FAQs />} />
