@@ -2,39 +2,36 @@ import React from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 
-const Testimonials = () => {  const testimonials = [
-    {
+const Testimonials = () => {  const testimonials = [    {
       id: 1,
       name: "Mr. Jaleshwar Pandit",
       position: "Founder of Sona Group of Companies",
-      image: "/images/img_group.png",
+      image: "/images/jaleshwar.png",
       testimonial: "As founders of our company, we are united by a shared mission to revolutionise the travel industry. Our collective expertise and shared vision empower us to navigate challenges, seize opportunities, and continuously strive for growth and improvement. I am proud to collaborate with such visionary individuals, and I am confident that our combined efforts will continue to propel our company to new heights of success.",
       social: {
-        linkedin: "#",
+        linkedin: "https://www.linkedin.com/in/jaleshwar-prajapati-80600b191/",
         twitter: "#",
         instagram: "#"
       }
-    },
-    {
+    },    {
       id: 2,
-      name: "Mr. Raju Kumar Prajapati",
-      position: "Business Head (Kathmandu)",
-      image: "/images/img_group.png",
+      name: "Mr. Daya Shankar Prajapati",
+      position: "Co-Founder and CEO",
+      image: "/images/dayashankar.png",
       testimonial: "As CEO of the company, I am profoundly dedicated to realizing our vision of redefining travel experiences. Together with my fellow founders, we are driven by a passion for innovation and a commitment to exceeding expectations. With a focus on creativity, integrity, and customer satisfaction, we have built a company culture that fosters excellence at every level.",
       social: {
-        linkedin: "#",
+        linkedin: "https://www.linkedin.com/in/dayashankar-prajapati/",
         twitter: "#",
         instagram: "#"
       }
-    },
-    {
+    },    {
       id: 3,
       name: "Mr. Raju Kumar Prajapati",
       position: "Business Head (Kathmandu)",
-      image: "/images/img_group.png",
+      image: "/images/raju.png",
       testimonial: "As a business head of the company, I am dedicated to providing insightful analysis and strategic guidance to drive informed decision-making. With a keen eye for detail and a deep understanding of financial principles, I conduct thorough evaluations to optimize resource allocation and maximize profitability.",
       social: {
-        linkedin: "#",
+        linkedin: "https://www.linkedin.com/in/raju-prajapati-65752714b/",
         twitter: "#",
         instagram: "#"
       }
@@ -57,19 +54,17 @@ const Testimonials = () => {  const testimonials = [
       image: "/images/rohit.jpeg",
       testimonial: "As a software engineer at Sona Travel & Tours, I am committed to building reliable, scalable, and user-friendly systems that enhance our customers' travel experience. I take pride in creating solutions that streamline operations and improve efficiency. Collaborating with a talented and supportive team, I continuously strive to innovate and contribute to the company's digital growth.",
       social: {
-        linkedin: "#",
-        twitter: "#",
-        instagram: "#"
+        linkedin: "https://www.linkedin.com/in/jrohitofficial/",
+        twitter: "https://x.com/jrohitofficial_",
+        instagram: "https://www.instagram.com/jrohitofficial_/"
       }
-    },
-    {
+    },    {
       id: 6,
       name: "Ms. Aayusha Regmi",
       position: "Software Engineer",
       image: "/images/Aayusha.jpeg",
-      testimonial: "As a software engineer at Sona Travel & Tours, I am passionate about leveraging technology to improve user experiences and streamline our travel systems. I enjoy solving complex problems and bringing innovative ideas to life through clean, efficient code. Working in a collaborative environment motivates me to grow professionally and contribute meaningfully to the company's mission.",
-      social: {
-        linkedin: "#",
+      testimonial: "As a software engineer at Sona Travel & Tours, I am passionate about leveraging technology to improve user experiences and streamline our travel systems. I enjoy solving complex problems and bringing innovative ideas to life through clean, efficient code. Working in a collaborative environment motivates me to grow professionally and contribute meaningfully to the company's mission.",      social: {
+        linkedin: "https://www.linkedin.com/in/aayusha-regmi/",
         twitter: "#",
         instagram: "#"
       }
