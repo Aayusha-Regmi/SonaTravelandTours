@@ -48,8 +48,7 @@ const AppPromotion = () => {
                   className="inline-block h-[37px] mx-2 filter drop-shadow-lg hover:scale-110 transition-transform duration-300"
                 /> app and make every journey smarter!
               </p>
-              
-              {/* Enhanced Download Buttons */}
+                {/* Enhanced Download Buttons */}
               <div className="flex flex-col sm:flex-row gap-6">
                 <a href="#" className="group/btn relative block">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-50 group-hover/btn:opacity-75 transition-opacity duration-300"></div>
@@ -61,7 +60,7 @@ const AppPromotion = () => {
                     />
                   </div>
                 </a>
-                <a href="#" className="group/btn relative block">
+                <a href="https://play.google.com/store/apps/details?id=com.sonatravel.android" target="_blank" rel="noopener noreferrer" className="group/btn relative block">
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl blur-lg opacity-50 group-hover/btn:opacity-75 transition-opacity duration-300"></div>
                   <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-2 border border-white/30 hover:bg-white/20 hover:scale-110 hover:-rotate-2 transition-all duration-500 shadow-xl">
                     <img 

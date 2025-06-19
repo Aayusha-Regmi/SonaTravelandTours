@@ -16,16 +16,15 @@ const Footer = () => {
             <div className="space-y-4">
               <p className="text-[16px] font-semibold leading-[22px] text-center text-[#3d3d3d] font-opensans">
                 info@sonatraveltours.com
-              </p>
-              <div className="text-center">
+              </p>              <div className="text-center">
                 <span className="text-[16px] font-semibold leading-[24px] text-[#3d3d3d] font-opensans">
-                  (+977)9845122260
+                  (+977) 9802353260
                 </span>
                 <span className="text-[16px] font-semibold leading-[22px] text-[#0a639d] font-opensans">
                   {' '}
                 </span>
                 <span className="text-[16px] font-semibold leading-[24px] text-[#3d3d3d] font-opensans">
-                  (+977)9845230101
+                  (+977) 9802374215
                 </span>
               </div>
             </div>

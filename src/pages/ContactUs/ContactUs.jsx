@@ -153,11 +153,10 @@ const ContactUs = () => {
                         {/* 3D Shadow */}
                         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-3 bg-purple-500/20 rounded-full blur-sm group-hover:scale-125 transition-all duration-500"></div>
                       </div>
-                      
-                      <div className="flex-1">
+                        <div className="flex-1">
                         <p className="text-gray-500 text-sm font-medium uppercase tracking-wide">Phone Numbers</p>
-                        <p className="text-gray-800 text-lg font-bold group-hover:text-purple-600 transition-colors duration-300">(+977) 9845122260</p>
-                        <p className="text-gray-800 text-lg font-bold group-hover:text-purple-600 transition-colors duration-300">(+977) 9845230101</p>
+                        <p className="text-gray-800 text-lg font-bold group-hover:text-purple-600 transition-colors duration-300">(+977) 9802353260</p>
+                        <p className="text-gray-800 text-lg font-bold group-hover:text-purple-600 transition-colors duration-300">(+977) 9802374215</p>
                         <div className="w-0 group-hover:w-full h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500 mt-1"></div>
                       </div>
                     </div>                    {/* Address */}

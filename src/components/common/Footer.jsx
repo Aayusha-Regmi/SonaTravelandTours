@@ -285,9 +285,7 @@ const Footer = () => {
           .f_social_icon {
             justify-content: center;
           }
-        }
-
-        @media (max-width: 640px) {
+        }        @media (max-width: 640px) {
           .f_social_icon {
             gap: 6px;
           }
@@ -296,8 +294,15 @@ const Footer = () => {
             height: 36px;
             font-size: 16px;
           }
-          .company_widget .contact-info p {
+          .company_widget .contact-info .email-info {
             font-size: 14px;
+          }
+          .company_widget .contact-info .phone-item {
+            font-size: 14px;
+            font-weight: 500;
+          }
+          .company_widget .contact-info .phone-numbers {
+            gap: 2px;
           }
         }.f_widget {
           text-align: center;
@@ -334,10 +339,37 @@ const Footer = () => {
         .company_widget {
           text-align: center;
           padding: 0 20px;
+        }        .company_widget .contact-info {
+          margin: 24px 0;
         }
 
-        .company_widget .contact-info {
-          margin: 24px 0;
+        .company_widget .contact-info .email-info {
+          margin: 8px 0 16px 0;
+          font-size: 15px;
+          font-weight: 500;
+          color: #5f5f5f;
+          line-height: 1.6;
+        }
+
+        .company_widget .contact-info .phone-numbers {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .company_widget .contact-info .phone-item {
+          margin: 0;
+          font-size: 15px;
+          font-weight: 600;
+          color: #0a639d;
+          line-height: 1.4;
+          transition: all 0.3s ease;
+        }
+
+        .company_widget .contact-info .phone-item:hover {
+          color: #1a5f8a;
+          transform: scale(1.02);
         }
 
         .company_widget .contact-info p {
@@ -370,10 +402,12 @@ const Footer = () => {
                     alt="Sona Travel & Tours Logo" 
                     className="h-20 w-auto object-contain mx-auto"
                   />
-                </div>
-                <div className="contact-info">
-                  <p>info@sonatraveltours.com</p>
-                  <p>(+977)9845122260 (+977)9845230101</p>
+                </div>                <div className="contact-info">
+                  <p className="email-info">info@sonatraveltours.com</p>
+                  <div className="phone-numbers">
+                    <p className="phone-item">(+977) 9802353260</p>
+                    <p className="phone-item">(+977) 9802374215</p>
+                  </div>
                 </div>
                 <div className="f_social_icon">
                   <a href="#" title="Instagram" className="social-link">

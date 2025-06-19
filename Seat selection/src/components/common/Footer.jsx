@@ -16,11 +16,10 @@ const Footer = () => {
             <div className="text-center space-y-4">
               <p className="text-[16px] font-semibold text-[#3d3d3d] font-opensans">
                 info@sonatraveltours.com
-              </p>
-              <div className="text-[16px] font-semibold font-opensans">
-                <span className="text-[#3d3d3d]">(+977)9845122260</span>
+              </p>              <div className="text-[16px] font-semibold font-opensans">
+                <span className="text-[#3d3d3d]">(+977) 9802353260</span>
                 <span className="text-[#0a639d]"> </span>
-                <span className="text-[#3d3d3d]">(+977)9845230101</span>
+                <span className="text-[#3d3d3d]">(+977) 9802374215</span>
               </div>
             </div>
             
