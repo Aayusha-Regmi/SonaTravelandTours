@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
+import { isAuthenticated } from '@/utils/authGuard';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -57,16 +58,52 @@ const Header = () => {
           </div>
         </nav>       
         <div className="hidden md:flex items-center space-x-3">
-          
-          <Link 
-            to="/login"
-            className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors px-3 py-2"
-          >
-            Login
-          </Link>
-          <Link to="/signup">
-            <Button 
-              variant="primary" 
+          {isAuthenticated() ? (
+            <div className="relative">
+  {/* Profile Photo */}
+              <div 
+                className="w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-gray-300 hover:border-[#0a639d] transition-all group"
+              >
+                <img 
+                  src="/images/profile-avatar.jpg"
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 top-12 bg-white shadow-lg rounded-lg border border-gray-200 py-2 w-48 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <Link 
+                    to="/dashboard"
+                    className="block px-4 py-2 text-[#5f5f5f] hover:bg-gray-100 hover:text-[#0a639d] transition-colors"
+                  >
+                    My Dashboard
+                  </Link>
+                  <button
+        onClick={() => {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('token');
+          sessionStorage.removeItem('authToken');
+          sessionStorage.removeItem('token');
+          window.location.href = '/';
+        }}
+        className="block w-full text-left px-4 py-2 text-[#5f5f5f] hover:bg-gray-100 hover:text-[#0a639d] transition-colors"
+      >
+        Logout
+      </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Link 
+                to="/login"
+                className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors px-3 py-2"
+              >
+                Login
+              </Link>
+              <Link to="/signup">
+                <Button 
+                  variant="primary" 
               className="bg-[#0a639d] rounded-lg h-[45px] px-4 flex items-center hover:bg-[#07456e] transition-colors"
             >
               <img 
@@ -77,27 +114,13 @@ const Header = () => {
               <span className="text-lg font-bold">Sign Up</span>
             </Button>
           </Link>
-          
+          </>
+            
+          )}
         </div>
-        {/* Profile Icon with Dropdown
-        <div className="hidden md:flex items-center space-x-3">
-          <div className="relative group">
-        
-            <img 
-              src="/images/Profile_image.png" 
-              alt="Profile Icon" 
-              className="w-8 h-8 rounded-full object-cover cursor-pointer"
-            />
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100">
-              <Link to="/profile" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
-                My Profile
-              </Link>
-              <Link to="/logout" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
-                Logout
-              </Link>
-            </div>
-          </div>
-        </div> */}
+  
+
+       
 
         {/* Mobile Menu Button */}
         <div className="md:hidden">
