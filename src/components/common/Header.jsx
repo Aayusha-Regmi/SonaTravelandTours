@@ -1,14 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
 import { isAuthenticated } from '@/utils/authGuard';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [weather, setWeather] = useState({
+    temperature: 'Loading...',
+    location: 'Loading...',
+    description: 'Loading...'
+  });
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-  };  return (
+  };
+
+  useEffect(() => {
+    // Update time every second
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    // Get weather information
+    const getWeather = async () => {
+      const apiKey = "907961ecf95a2fcfe579e9f7edaf9652";
+      const city = "Kathmandu";
+      const country = "NP";
+      const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${apiKey}&units=metric`;
+
+      try {
+        const response = await fetch(weatherUrl);
+        const data = await response.json();
+        
+        setWeather({
+          temperature: `${Math.round(data.main.temp)}°C`,
+          location: `${data.name}, ${data.sys.country}`,
+          description: data.weather[0].description
+        });
+      } catch (error) {
+        console.error("Error fetching weather data:", error);
+        setWeather({
+          temperature: 'N/A',
+          location: 'Kathmandu, NP',
+          description: 'Weather unavailable'
+        });
+      }
+    };
+
+    getWeather();
+
+    return () => {
+      clearInterval(timeInterval);
+    };
+  }, []);return (
     <header className="backdrop-blur-md bg-white/80 border-b border-[#ececec]/60 h-[80px] w-full fixed top-0 left-0 right-0 shadow-md z-50 after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-r after:from-white/10 after:to-white/20 after:z-[-1]">
       <div className="container mx-auto px-4 h-full flex items-center justify-between relative">
         {/* Decorative blobs for enhanced glass morphism effect */}
@@ -37,8 +82,7 @@ const Header = () => {
             Live Track
           </Link>          <Link to="/faqs" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             FAQs
-          </Link>
-          <div className="relative group">
+          </Link>          <div className="relative group">
             <div className="flex items-center cursor-pointer text-base font-medium text-[#5f5f5f] hover:text-[#0a639d] transition-colors">
               Contact Us
               <img 
@@ -54,6 +98,46 @@ const Header = () => {
               <Link to="/testimonials" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
                 Testimonials
               </Link>
+            </div>
+          </div>          {/* Time and Weather Section */}
+          <div className="flex items-center gap-3">
+            {/* Time Section */}
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl px-4 py-2 shadow-lg hover:bg-white/30 transition-all duration-300">
+              <div className="flex items-center gap-2">
+                <div className="text-lg">🕐</div>
+                <div className="text-right">
+                  <div className="text-[#0a639d] font-bold text-sm leading-none">
+                    {currentTime.toLocaleTimeString('en-US', { 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      hour12: true 
+                    })}
+                  </div>
+                  <div className="text-[#5f5f5f] text-xs">
+                    {currentTime.toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>           
+             {/* Weather Section */}
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl px-4 py-2 shadow-lg hover:bg-white/30 transition-all duration-300 min-w-[180px]">
+              <div className="flex items-center gap-2">
+                <div className="text-lg flex-shrink-0">🌤️</div>
+                <div className="text-right flex-1 min-w-0">
+                  <div className="flex items-center gap-1 justify-end mb-0.5">
+                    <span className="text-[#0a639d] font-bold text-sm">
+                      {weather.temperature}
+                    </span>
+                    <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse flex-shrink-0"></div>
+                  </div>
+                  <div className="text-[#5f5f5f] text-xs capitalize leading-tight text-right">
+                    {weather.description}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </nav>       

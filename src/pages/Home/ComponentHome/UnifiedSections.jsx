@@ -1,7 +1,133 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from './UI/HomeCards';
 
 const UnifiedSections = () => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [weather, setWeather] = useState({
+    temperature: 'Loading...',
+    location: 'Loading...',
+    description: 'Loading...'
+  });
+
+  useEffect(() => {
+    // Update time every second
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    // Get weather information
+    const getWeather = async () => {
+      const apiKey = "907961ecf95a2fcfe579e9f7edaf9652";
+      const city = "Kathmandu";
+      const country = "NP";
+      const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${apiKey}&units=metric`;
+
+      try {
+        const response = await fetch(weatherUrl);
+        const data = await response.json();
+        
+        setWeather({
+          temperature: `${Math.round(data.main.temp)}°C`,
+          location: `${data.name}, ${data.sys.country}`,
+          description: data.weather[0].description
+        });
+      } catch (error) {
+        console.error("Error fetching weather data:", error);
+        setWeather({
+          temperature: 'N/A',
+          location: 'Kathmandu, NP',
+          description: 'Weather unavailable'
+        });
+      }
+    };
+
+    getWeather();
+
+    return () => {
+      clearInterval(timeInterval);
+    };
+  }, []);
+
+  useEffect(() => {    // Add custom animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+      @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+      @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes marquee {
+        0% { transform: translateX(0%); }
+        100% { transform: translateX(-100%); }
+      }
+      .weather-card {
+        animation: float 6s ease-in-out infinite;
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      .animate-shimmer {
+        animation: shimmer 3s infinite;
+      }
+      .animate-spin-slow {
+        animation: spin-slow 8s linear infinite;
+      }
+      .marquee-container {
+        display: flex;
+        overflow: hidden;
+        width: 100%;
+      }
+      .marquee-content {
+        display: flex;
+        animation: marquee 30s linear infinite;
+        min-width: 100%;
+      }
+      .animate-marquee {
+        animation: marquee 30s linear infinite;
+      }
+    `;
+    document.head.appendChild(style);    const script = document.createElement('script');
+    script.id = 'weatherwidget-io-js';
+    script.src = 'https://weatherwidget.io/js/widget.min.js';
+    script.async = true;
+    
+    if (!document.getElementById('weatherwidget-io-js')) {
+      document.head.appendChild(script);
+    }
+
+    // Load additional weather widget for header
+    const headerWeatherScript = document.createElement('script');
+    headerWeatherScript.src = 'https://app2.weatherwidget.org/js/?id=ww_935a2c7bc763b';
+    headerWeatherScript.async = true;
+    
+    if (!document.querySelector('script[src*="app2.weatherwidget.org"]')) {
+      document.head.appendChild(headerWeatherScript);
+    }
+    
+    return () => {
+      // Cleanup if needed
+      const existingScript = document.getElementById('weatherwidget-io-js');
+      if (existingScript) {
+        existingScript.remove();
+      }
+      const headerScript = document.querySelector('script[src*="app2.weatherwidget.org"]');
+      if (headerScript) {
+        headerScript.remove();
+      }
+      const existingStyle = document.querySelector('style');
+      if (existingStyle && existingStyle.textContent.includes('float')) {
+        existingStyle.remove();
+      }
+    };
+  }, []);
+
   const routes = [
     {
       id: 1,
@@ -51,9 +177,7 @@ const UnifiedSections = () => {
       promoCode: 'Sona12345',
       image: '/images/img_shanghaistreetviewwithcityscape135921_1.png'
     }
-  ];
-
-  return (
+  ];  return (
     <section className="relative py-24 overflow-hidden bg-gradient-to-br from-slate-800 via-gray-900 to-zinc-900 min-h-screen">
       {/* Unified Animated Background Elements */}
       <div className="absolute inset-0">
@@ -80,8 +204,250 @@ const UnifiedSections = () => {
         <div className="absolute top-1/5 right-1/5 text-3xl">✨</div>
       </div>
 
-      <div className="container mx-auto px-4 relative z-10 space-y-24">
+      <div className="container mx-auto px-4 relative z-10 space-y-24 pt-20">
         
+        {/* LIVE WEATHER FORECAST SECTION */}
+        <div>
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full px-6 py-3 mb-6">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+              <span className="text-cyan-400 font-medium">LIVE WEATHER</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Real-Time Weather Updates
+            </h2>
+            <p className="text-white/70 text-lg max-w-3xl mx-auto mb-8">
+              Check current weather conditions for your travel destinations. Plan your journey with live weather updates!
+            </p>
+          </div>          {/* Weather Marquee Card - Compact Glassmorphism */}
+          <div className="relative backdrop-blur-2xl bg-gradient-to-br from-white/12 to-white/4 border border-white/20 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-500 mb-12 overflow-hidden">
+            {/* Multi-layer Glassmorphism Effects */}
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 via-emerald-400/5 via-orange-400/5 to-purple-400/5 rounded-xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/8 via-transparent to-white/4 rounded-xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-white/3 to-transparent rounded-xl"></div>
+            
+            {/* Marquee Container */}
+            <div className="relative z-10 overflow-hidden">
+              <div className="marquee-container">
+                <div className="marquee-content animate-marquee">
+                  {/* First Set of Weather Widgets */}
+                  <div className="flex gap-6 min-w-max">
+                    {/* Kathmandu Weather */}
+                    <div className="flex-shrink-0 w-64">
+                      <div className="backdrop-blur-xl bg-gradient-to-br from-cyan-400/10 to-blue-500/10 rounded-xl p-4 border border-cyan-300/20 shadow-lg">
+                        <a 
+                          className="weatherwidget-io block" 
+                          href="https://forecast7.com/en/27d7285d32/kathmandu/" 
+                          data-label_1="KATHMANDU" 
+                          data-label_2="WEATHER"
+                          data-days="3"
+                          data-theme="pure"
+                          data-basecolor="rgba(255,255,255,0.1)"
+                          data-textcolor="#ffffff"
+                          data-highcolor="#10b981"
+                          data-lowcolor="#06b6d4"
+                          data-suncolor="#f59e0b"
+                          data-mooncolor="#6366f1"
+                          data-cloudcolor="#64748b"
+                          data-raincolor="#0ea5e9"
+                          data-snowcolor="#e2e8f0"
+                        >
+                          KATHMANDU WEATHER
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Birgunj Weather */}
+                    <div className="flex-shrink-0 w-80">
+                      <div className="bg-gradient-to-br from-emerald-400/20 to-teal-500/20 rounded-2xl p-6 border border-emerald-300/30">
+                        <a 
+                          className="weatherwidget-io block" 
+                          href="https://forecast7.com/en/27d0484d87/birgunj/" 
+                          data-label_1="BIRGUNJ" 
+                          data-label_2="WEATHER"
+                          data-days="3"
+                          data-theme="pure"
+                          data-basecolor="rgba(255,255,255,0.1)"
+                          data-textcolor="#ffffff"
+                          data-highcolor="#10b981"
+                          data-lowcolor="#06b6d4"
+                          data-suncolor="#f59e0b"
+                          data-mooncolor="#6366f1"
+                          data-cloudcolor="#64748b"
+                          data-raincolor="#0ea5e9"
+                          data-snowcolor="#e2e8f0"
+                        >
+                          BIRGUNJ WEATHER
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Chitvan Weather */}
+                    <div className="flex-shrink-0 w-80">
+                      <div className="bg-gradient-to-br from-orange-400/20 to-amber-500/20 rounded-2xl p-6 border border-orange-300/30">
+                        <a 
+                          className="weatherwidget-io block" 
+                          href="https://forecast7.com/en/27d5384d35/chitawan/" 
+                          data-label_1="CHITVAN" 
+                          data-label_2="WEATHER"
+                          data-days="3"
+                          data-theme="pure"
+                          data-basecolor="rgba(255,255,255,0.1)"
+                          data-textcolor="#ffffff"
+                          data-highcolor="#10b981"
+                          data-lowcolor="#06b6d4"
+                          data-suncolor="#f59e0b"
+                          data-mooncolor="#6366f1"
+                          data-cloudcolor="#64748b"
+                          data-raincolor="#0ea5e9"
+                          data-snowcolor="#e2e8f0"
+                        >
+                          CHITVAN WEATHER
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Pokhara Weather */}
+                    <div className="flex-shrink-0 w-80">
+                      <div className="bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-2xl p-6 border border-purple-300/30">
+                        <a 
+                          className="weatherwidget-io block" 
+                          href="https://forecast7.com/en/28d2484d00/pokhara/" 
+                          data-label_1="POKHARA" 
+                          data-label_2="WEATHER"
+                          data-days="3"
+                          data-theme="pure"
+                          data-basecolor="rgba(255,255,255,0.1)"
+                          data-textcolor="#ffffff"
+                          data-highcolor="#10b981"
+                          data-lowcolor="#06b6d4"
+                          data-suncolor="#f59e0b"
+                          data-mooncolor="#6366f1"
+                          data-cloudcolor="#64748b"
+                          data-raincolor="#0ea5e9"
+                          data-snowcolor="#e2e8f0"
+                        >
+                          POKHARA WEATHER
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Second Set (Duplicate for seamless loop) */}
+                <div className="marquee-content animate-marquee">
+                  <div className="flex gap-8 min-w-max">
+                    {/* Kathmandu Weather - Duplicate */}
+                    <div className="flex-shrink-0 w-80">
+                      <div className="bg-gradient-to-br from-cyan-400/20 to-blue-500/20 rounded-2xl p-6 border border-cyan-300/30">
+                        <a 
+                          className="weatherwidget-io block" 
+                          href="https://forecast7.com/en/27d7285d32/kathmandu/" 
+                          data-label_1="KATHMANDU" 
+                          data-label_2="WEATHER"
+                          data-days="3"
+                          data-theme="pure"
+                          data-basecolor="rgba(255,255,255,0.1)"
+                          data-textcolor="#ffffff"
+                          data-highcolor="#10b981"
+                          data-lowcolor="#06b6d4"
+                          data-suncolor="#f59e0b"
+                          data-mooncolor="#6366f1"
+                          data-cloudcolor="#64748b"
+                          data-raincolor="#0ea5e9"
+                          data-snowcolor="#e2e8f0"
+                        >
+                          KATHMANDU WEATHER
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Birgunj Weather - Duplicate */}
+                    <div className="flex-shrink-0 w-80">
+                      <div className="bg-gradient-to-br from-emerald-400/20 to-teal-500/20 rounded-2xl p-6 border border-emerald-300/30">
+                        <a 
+                          className="weatherwidget-io block" 
+                          href="https://forecast7.com/en/27d0484d87/birgunj/" 
+                          data-label_1="BIRGUNJ" 
+                          data-label_2="WEATHER"
+                          data-days="3"
+                          data-theme="pure"
+                          data-basecolor="rgba(255,255,255,0.1)"
+                          data-textcolor="#ffffff"
+                          data-highcolor="#10b981"
+                          data-lowcolor="#06b6d4"
+                          data-suncolor="#f59e0b"
+                          data-mooncolor="#6366f1"
+                          data-cloudcolor="#64748b"
+                          data-raincolor="#0ea5e9"
+                          data-snowcolor="#e2e8f0"
+                        >
+                          BIRGUNJ WEATHER
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Chitvan Weather - Duplicate */}
+                    <div className="flex-shrink-0 w-80">
+                      <div className="bg-gradient-to-br from-orange-400/20 to-amber-500/20 rounded-2xl p-6 border border-orange-300/30">
+                        <a 
+                          className="weatherwidget-io block" 
+                          href="https://forecast7.com/en/27d5384d35/chitawan/" 
+                          data-label_1="CHITVAN" 
+                          data-label_2="WEATHER"
+                          data-days="3"
+                          data-theme="pure"
+                          data-basecolor="rgba(255,255,255,0.1)"
+                          data-textcolor="#ffffff"
+                          data-highcolor="#10b981"
+                          data-lowcolor="#06b6d4"
+                          data-suncolor="#f59e0b"
+                          data-mooncolor="#6366f1"
+                          data-cloudcolor="#64748b"
+                          data-raincolor="#0ea5e9"
+                          data-snowcolor="#e2e8f0"
+                        >
+                          CHITVAN WEATHER
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Pokhara Weather - Duplicate */}
+                    <div className="flex-shrink-0 w-80">
+                      <div className="bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-2xl p-6 border border-purple-300/30">
+                        <a 
+                          className="weatherwidget-io block" 
+                          href="https://forecast7.com/en/28d2484d00/pokhara/" 
+                          data-label_1="POKHARA" 
+                          data-label_2="WEATHER"
+                          data-days="3"
+                          data-theme="pure"
+                          data-basecolor="rgba(255,255,255,0.1)"
+                          data-textcolor="#ffffff"
+                          data-highcolor="#10b981"
+                          data-lowcolor="#06b6d4"
+                          data-suncolor="#f59e0b"
+                          data-mooncolor="#6366f1"
+                          data-cloudcolor="#64748b"
+                          data-raincolor="#0ea5e9"
+                          data-snowcolor="#e2e8f0"
+                        >
+                          POKHARA WEATHER
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Decorative Elements */}
+            <div className="absolute -top-4 -right-4 w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full shadow-lg animate-pulse"></div>
+            <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full shadow-lg animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <div className="absolute top-1/2 -left-4 w-6 h-6 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full shadow-lg animate-pulse" style={{ animationDelay: '1s' }}></div>            <div className="absolute top-1/4 -right-2 w-4 h-4 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full shadow-lg animate-pulse" style={{ animationDelay: '1.5s' }}></div>          </div>
+        </div>
+
         {/* TOP BUS ROUTES SECTION */}
         <div>
           {/* Section Header */}
