@@ -188,7 +188,8 @@ const AboutUs = () => {
           <div className="absolute bottom-20 right-1/3 w-56 h-56 bg-gradient-to-r from-purple-100/30 to-pink-200/30 rounded-full blur-3xl animate-bounce" style={{animationDelay: '3s'}}></div>
         </div>
 
-        <div className="container mx-auto px-4 relative z-10">          {/* Hero Header */}
+        <div className="container mx-auto px-4 relative z-10">         
+          {/* Hero Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-3 bg-white/60 backdrop-blur-xl border border-gray-200/60 rounded-full px-6 py-3 mb-6">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
@@ -202,7 +203,8 @@ const AboutUs = () => {
               seamless and enjoyable through our extensive network of routes and user-friendly app.
             </p>
           </div>
-        </div>      </section>      {/* Main Content Section */}
+        </div>      </section>      
+        {/* Main Content Section */}
       <section className="py-4 relative">
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-6xl mx-auto">
@@ -229,7 +231,8 @@ const AboutUs = () => {
                 </div>
                   <div className="text-center">                  <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4 group-hover:text-blue-600 transition-colors duration-500">
                     Welcome to Sona Travel & Tours
-                  </h2>{/* Animated Bus Image */}
+                  </h2>
+                  {/* Animated Bus Image */}
                   <div className="flex justify-center mb-4">
                     <div className="relative">{/* Bus Image with Animation - Made Ultra Wide and More Attractive */}
                       <div className="relative z-10 group-hover:scale-110 transition-transform duration-700">                        <img 
