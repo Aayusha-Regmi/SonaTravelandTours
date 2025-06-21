@@ -23,6 +23,8 @@ const Header = () => {
     }, 1000);
 
     // Get weather information
+    // weather API key and city details
+    // You can replace the city and country with your desired location
     const getWeather = async () => {
       const apiKey = "907961ecf95a2fcfe579e9f7edaf9652";
       const city = "Kathmandu";

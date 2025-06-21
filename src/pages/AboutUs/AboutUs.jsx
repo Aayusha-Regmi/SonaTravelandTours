@@ -229,7 +229,8 @@ const AboutUs = () => {
                     </div>
                   </div>
                 </div>
-                  <div className="text-center">                  <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4 group-hover:text-blue-600 transition-colors duration-500">
+                  <div className="text-center">                  
+                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4 group-hover:text-blue-600 transition-colors duration-500">
                     Welcome to Sona Travel & Tours
                   </h2>
                   {/* Animated Bus Image */}
