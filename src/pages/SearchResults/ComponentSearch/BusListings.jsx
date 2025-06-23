@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
 import Chip from './Chip';
 import api from '../../../services/api';
+import InlineSeatSelection from './InlineSeatSelection';
 
 // Utility function to convert time string to minutes for comparison
 const timeToMinutes = (timeString) => {
@@ -74,6 +75,10 @@ const BusListings = ({
   const [expandedFacilities, setExpandedFacilities] = useState({});
   const [hoveredFacilities, setHoveredFacilities] = useState({});
   const [isSearching, setIsSearching] = useState(false);
+  
+  // State for inline seat selection
+  const [selectedBusForSeats, setSelectedBusForSeats] = useState(null);
+  const [showSeatSelection, setShowSeatSelection] = useState(false);
     // Calculate if filters are applied
   const hasFilters = useMemo(() => {
     return selectedBoardingPlaces.length > 0 || 
@@ -108,7 +113,7 @@ const BusListings = ({
     return buses.map(bus => {
       // Ensure we have an ID for navigation
       const busId = bus.id || bus._id || `bus-${Math.random().toString(36).substr(2, 9)}`;
-      
+      const busNumber = bus.secondaryBusNumber || 'Bus No';
       // Extract and normalize times
       const depTime = bus.departureTime || bus.departure_time || '16:00';
       const arrTime = bus.arrivalTime || bus.arrival_time || '20:50';
@@ -139,7 +144,8 @@ const BusListings = ({
         return {
         id: busId,
         rating: bus.rating || '4.8',
-        name: bus.busName || bus.name || 'Sona Express',
+        name: busNumber,
+        busNumber: bus.secondaryBusNumber || 'Bus Number Not Available',
         type: bus.busType || bus.type || 'AC Bus',
         departureTime: depTime,
         departureTimeFormatted: formattedDepartureTime,
@@ -166,8 +172,7 @@ const BusListings = ({
       ...prev,
       [index]: !prev[index]
     }));
-  };
-  const handleBookNow = (bus) => {
+  };  const handleBookNow = (bus) => {
     console.log('Navigating to seat selection for bus:', bus);
     if (!bus || !bus.id) {
       console.error('Bus data or ID is missing:', bus);
@@ -176,6 +181,33 @@ const BusListings = ({
     navigate(`/select-seats/${bus.id}`, { 
       state: { bus: bus }
     });
+  };
+  
+  // Handle seat selection - show inline seat selection
+  const handleSelectSeats = (bus) => {
+    console.log('Select Seats clicked for bus:', bus);
+    
+    // If same bus is clicked, toggle off
+    if (selectedBusForSeats && selectedBusForSeats.id === bus.id) {
+      setSelectedBusForSeats(null);
+      setShowSeatSelection(false);
+      return;
+    }
+    
+    // Set new bus and show seat selection
+    setSelectedBusForSeats(bus);
+    setShowSeatSelection(true);
+    
+    // Smooth scroll to seat selection after state update
+    setTimeout(() => {
+      const seatCard = document.getElementById(`seat-selection-${bus.id}`);
+      if (seatCard) {
+        seatCard.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center'
+        });
+      }
+    }, 100);
   };// Show loading state
   if (isLoading) {
     return (
@@ -413,12 +445,13 @@ const BusListings = ({
             disabled={isSearching}
             className={`bg-[#0a639d] text-white rounded-lg px-6 py-2.5 hover:bg-blue-700 transition-colors cursor-pointer ${isSearching ? 'opacity-80' : ''}`}
           >
-            {isSearching ? 'Searching...' : 'Search Again'}
-          </Button>
+            {isSearching ? 'Searching...' : 'Search Again'}          </Button>
         </div>
       ) : (
-        busData.map((bus, index) => (
-          <div key={index} className="bg-white rounded-lg p-4 md:p-6 w-full shadow-sm border border-gray-100">
+        <div className="space-y-4">
+          {busData.map((bus, index) => (
+            <div key={index}>
+              <div className="bg-white rounded-lg p-4 md:p-6 w-full shadow-sm border border-gray-100">
             <div className="flex flex-col lg:flex-row justify-between">
               <div className="flex-1">
                 {/* Left column */}
@@ -436,7 +469,7 @@ const BusListings = ({
 
                 {/* Bus Name and Type */}
                 <h3 className="text-lg font-bold text-gray-800 mb-0.5">
-                  {bus.name}
+                  {bus.name} <span>{bus.busNumber}</span>
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   {bus.type}
@@ -545,9 +578,7 @@ const BusListings = ({
                     )}
                   </div>
                 )}
-              </div>
-
-              {/* Available Seats and Book Button */}
+              </div>              {/* Available Seats and Select Seats Button */}
               <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium text-green-600">
                   {bus.availableSeats}
@@ -555,20 +586,42 @@ const BusListings = ({
                   <Button 
                   variant="primary"                
                   onClick={() => {
-                    console.log('Book Now clicked for bus:', bus);
-                    handleBookNow(bus);
+                    console.log('Select Seats clicked for bus:', bus);
+                    handleSelectSeats(bus);
                   }}
-                  className="bg-[#0a639d] text-white rounded-lg px-4 py-2 md:px-6 md:py-3 flex items-center justify-center hover:bg-blue-700 transition-colors"
+                  className={`${
+                    selectedBusForSeats && selectedBusForSeats.id === bus.id 
+                      ? 'bg-blue-700' 
+                      : 'bg-[#0a639d]'
+                  } text-white rounded-lg px-4 py-2 md:px-6 md:py-3 flex items-center justify-center hover:bg-blue-700 transition-colors`}
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"></path>
                   </svg>
-                  <span className="text-sm md:text-lg font-medium">Book Now</span>
+                  <span className="text-sm md:text-lg font-medium">Select Seats</span>
+                  <svg className={`w-4 h-4 ml-2 transition-transform duration-200 ${
+                    selectedBusForSeats && selectedBusForSeats.id === bus.id ? 'rotate-180' : ''
+                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>                  </svg>
                 </Button>
               </div>
             </div>
           </div>
-        ))
+          
+          {/* Inline Seat Selection - Show only for selected bus */}
+          {selectedBusForSeats && selectedBusForSeats.id === bus.id && showSeatSelection && (
+            <div 
+              id={`seat-selection-${bus.id}`}
+              className="mt-4 animate-fadeInSlideDown"
+            >
+              <InlineSeatSelection 
+                busData={bus} 
+                busId={bus.id}
+              />            </div>
+          )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

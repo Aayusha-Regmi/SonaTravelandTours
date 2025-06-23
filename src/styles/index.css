@@ -6,3 +6,19 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* Animation for inline seat selection */
+@keyframes fadeInSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInSlideDown {
+  animation: fadeInSlideDown 0.3s ease-out;
+}

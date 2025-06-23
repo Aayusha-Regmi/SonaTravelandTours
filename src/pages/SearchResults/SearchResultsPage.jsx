@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
-import FilterSection from './ComponentSearch/FilterSection';
+// import FilterSection from './ComponentSearch/FilterSection';
 import BusListings from './ComponentSearch/BusListings';
 import DateSelector from './ComponentSearch/DateSelector';
 import Button from '../../components/ui/Button';
@@ -27,24 +27,24 @@ const SearchResultsPage = () => {
   const [fromLocation, setFromLocation] = useState(searchParams.fromCity || 'Birgunj');
   const [toLocation, setToLocation] = useState(searchParams.toCity || 'Kathmandu');  const [travelDate, setTravelDate] = useState(searchParams.date || '06/06/2024');
   const [sortBy, setSortBy] = useState('Earliest');
-  const [selectedDepartureTime, setSelectedDepartureTime] = useState('');
+  // const [selectedDepartureTime, setSelectedDepartureTime] = useState('');
     // Bus data will be fetched from API service
-    // Filter states
-  const [priceRange, setPriceRange] = useState([500, 2000]);
-  const [selectedBoardingPlaces, setSelectedBoardingPlaces] = useState(['New Bus Park, Kathmandu',
-    'Kalanki, Kathmandu',
-    'Balkhu, Kathmandu',
-    'Koteshwor, Kathmandu',
-    'Chabahil, Kathmandu']);
-  const [selectedDroppingPlaces, setSelectedDroppingPlaces] = useState(['Adarsha Nagar, Birgunj',
-    'Ghantaghar, Birgunj',
-    'Birta, Birgunj',
-    'Powerhouse, Birgunj',
-    'Rangeli, Birgunj'
-   ]);
+    // Filter states - COMMENTED OUT since we only have one bus
+  // const [priceRange, setPriceRange] = useState([500, 2000]);
+  // const [selectedBoardingPlaces, setSelectedBoardingPlaces] = useState(['New Bus Park, Kathmandu',
+  //   'Kalanki, Kathmandu',
+  //   'Balkhu, Kathmandu',
+  //   'Koteshwor, Kathmandu',
+  //   'Chabahil, Kathmandu']);
+  // const [selectedDroppingPlaces, setSelectedDroppingPlaces] = useState(['Adarsha Nagar, Birgunj',
+  //   'Ghantaghar, Birgunj',
+  //   'Birta, Birgunj',
+  //   'Powerhouse, Birgunj',
+  //   'Rangeli, Birgunj'
+  //  ]);
   //const [selectedBusTypes, setSelectedBusTypes] = useState(['Deluxe A/C', 'Super Deluxe']);
-  const [selectedFacilities, setSelectedFacilities] = useState([]);
-  const [selectedRatings, setSelectedRatings] = useState([]);  // Initialize bus results state
+  // const [selectedFacilities, setSelectedFacilities] = useState([]);
+  // const [selectedRatings, setSelectedRatings] = useState([]);// Initialize bus results state
   const [allBusResults, setAllBusResults] = useState(searchResults.length > 0 ? searchResults : []);
   const [busResults, setBusResults] = useState(searchResults.length > 0 ? searchResults : []);
   const [isLoading, setIsLoading] = useState(false);
@@ -104,109 +104,107 @@ const SearchResultsPage = () => {
       }
     };
     
-    fetchBusData();
-  }, [fromLocation, toLocation, travelDate, searchResults, fromLogin, searchParams]);
-    // Effect to update filter section when filters are removed through filter tags
-  useEffect(() => {
-    // This will ensure the filter sidebar stays in sync with the selected filters
-    applyFilters();
-  }, [selectedBoardingPlaces, selectedDroppingPlaces, selectedFacilities, selectedRatings, priceRange, selectedDepartureTime]);
-  
-  // Apply filters to bus results
-  const applyFilters = useCallback(() => {
-    let filteredResults = [...allBusResults];
-      // Filter by price range
-    filteredResults = filteredResults.filter(bus => 
-      (bus.fare || bus.fair || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) >= priceRange[0] && 
-      (bus.fare || bus.fair || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) <= priceRange[1]
-    );
-    
-    // Filter by boarding places if any selected
-    if (selectedBoardingPlaces.length > 0) {
-      filteredResults = filteredResults.filter(bus => 
-        selectedBoardingPlaces.some(place => 
-          (bus.boardingPoint || bus.boarding_point || '').includes(place)
-        )
-      );
-    }
-    
-    // Filter by dropping places if any selected
-    if (selectedDroppingPlaces.length > 0) {
-      filteredResults = filteredResults.filter(bus => 
-        selectedDroppingPlaces.some(place => 
-          (bus.droppingPoint || bus.dropping_point || '').includes(place)
-        )
-      );
-    }
-    
-    // // Filter by bus types if any selected
-    // if (selectedBusTypes.length > 0) {
-    //   filteredResults = filteredResults.filter(bus => 
-    //     selectedBusTypes.some(type => 
-    //       (bus.busType || bus.type || '').includes(type)
-    //     )
-    //   );
-    // }
-    
-    // Filter by facilities if any selected
-    if (selectedFacilities.length > 0) {
-      filteredResults = filteredResults.filter(bus => 
-        bus.facilities && selectedFacilities.every(facility => 
-          bus.facilities.includes(facility)
-        )
-      );
-    }
-    
-  // Filter by rating if any selected
-    if (selectedRatings.length > 0) {
-      filteredResults = filteredResults.filter(bus => {
-        const rating = parseFloat(bus.rating || '0');
-        
-        // For "4 Stars" filter: rating >= 4 and < 5
-        return selectedRatings.some(ratingFilter => {
-          if (ratingFilter === '5 Stars') return rating >= 5;
-          if (ratingFilter === '4 Stars') return rating >= 4 && rating < 5;
-          if (ratingFilter === '3 Stars') return rating >= 3 && rating < 4;
-          if (ratingFilter === '1-2 Stars') return rating >= 1 && rating < 3;
-          return true;
-        });
-      });
-    }
-    
-    // Filter by departure time if selected
-    if (selectedDepartureTime) {
-      filteredResults = filteredResults.filter(bus => {
-        const departureTime = bus.departureTime || '';
-        const [hours, minutes] = departureTime.split(':').map(Number);
-        const timeInMinutes = hours * 60 + (minutes || 0);
-        
-        switch(selectedDepartureTime) {
-          case 'Early Morning':
-            // Before 6 AM (0:00 - 5:59)
-            return timeInMinutes < 360;
-          case 'Morning':
-            // 6 AM - 11:59 AM
-            return timeInMinutes >= 360 && timeInMinutes < 720;
-          case 'Afternoon':
-            // 12 PM - 5 PM
-            return timeInMinutes >= 720 && timeInMinutes < 1020;
-          case 'Evening':
-            // After 5 PM
-            return timeInMinutes >= 1020;
-          default:
-            return true;
-        }
-      });
-    }
-    
-    setBusResults(filteredResults);
-  }, [allBusResults, priceRange, selectedBoardingPlaces, selectedDroppingPlaces,selectedFacilities, selectedRatings, selectedDepartureTime]);
-    // Apply filters when any filter changes or when bus results change
-  useEffect(() => {
-    if (allBusResults.length > 0) {
-      applyFilters();
-    }
-  }, [applyFilters, allBusResults]);
+    fetchBusData();  }, [fromLocation, toLocation, travelDate, searchResults, fromLogin, searchParams]);
+    // Effect to update filter section when filters are removed through filter tags - COMMENTED OUT
+  // useEffect(() => {
+  //   // This will ensure the filter sidebar stays in sync with the selected filters
+  //   applyFilters();
+  // }, [selectedBoardingPlaces, selectedDroppingPlaces, selectedFacilities, selectedRatings, priceRange, selectedDepartureTime]);
+    // Apply filters to bus results - COMMENTED OUT since we don't need filters
+  // const applyFilters = useCallback(() => {
+  //   let filteredResults = [...allBusResults];
+  //     // Filter by price range
+  //   filteredResults = filteredResults.filter(bus => 
+  //     (bus.fare || bus.fair || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) >= priceRange[0] && 
+  //     (bus.fare || bus.fair || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) <= priceRange[1]
+  //   );
+  //   
+  //   // Filter by boarding places if any selected
+  //   if (selectedBoardingPlaces.length > 0) {
+  //     filteredResults = filteredResults.filter(bus => 
+  //       selectedBoardingPlaces.some(place => 
+  //         (bus.boardingPoint || bus.boarding_point || '').includes(place)
+  //       )
+  //     );
+  //   }
+  //   
+  //   // Filter by dropping places if any selected
+  //   if (selectedDroppingPlaces.length > 0) {
+  //     filteredResults = filteredResults.filter(bus => 
+  //       selectedDroppingPlaces.some(place => 
+  //         (bus.droppingPoint || bus.dropping_point || '').includes(place)
+  //       )
+  //     );
+  //   }
+  //   
+  //   // // Filter by bus types if any selected
+  //   // if (selectedBusTypes.length > 0) {
+  //   //   filteredResults = filteredResults.filter(bus => 
+  //   //     selectedBusTypes.some(type => 
+  //   //       (bus.busType || bus.type || '').includes(type)
+  //   //     )
+  //   //   );
+  //   // }
+  //   
+  //   // Filter by facilities if any selected
+  //   if (selectedFacilities.length > 0) {
+  //     filteredResults = filteredResults.filter(bus => 
+  //       bus.facilities && selectedFacilities.every(facility => 
+  //         bus.facilities.includes(facility)
+  //       )
+  //     );
+  //   }
+  //   
+  // // Filter by rating if any selected
+  //   if (selectedRatings.length > 0) {
+  //     filteredResults = filteredResults.filter(bus => {
+  //       const rating = parseFloat(bus.rating || '0');
+  //       
+  //       // For "4 Stars" filter: rating >= 4 and < 5
+  //       return selectedRatings.some(ratingFilter => {
+  //         if (ratingFilter === '5 Stars') return rating >= 5;
+  //         if (ratingFilter === '4 Stars') return rating >= 4 && rating < 5;
+  //         if (ratingFilter === '3 Stars') return rating >= 3 && rating < 4;
+  //         if (ratingFilter === '1-2 Stars') return rating >= 1 && rating < 3;
+  //         return true;
+  //       });
+  //     });
+  //   }
+  //   
+  //   // Filter by departure time if selected
+  //   if (selectedDepartureTime) {
+  //     filteredResults = filteredResults.filter(bus => {
+  //       const departureTime = bus.departureTime || '';
+  //       const [hours, minutes] = departureTime.split(':').map(Number);
+  //       const timeInMinutes = hours * 60 + (minutes || 0);
+  //       
+  //       switch(selectedDepartureTime) {
+  //         case 'Early Morning':
+  //           // Before 6 AM (0:00 - 5:59)
+  //           return timeInMinutes < 360;
+  //         case 'Morning':
+  //           // 6 AM - 11:59 AM
+  //           return timeInMinutes >= 360 && timeInMinutes < 720;
+  //         case 'Afternoon':
+  //           // 12 PM - 5 PM
+  //           return timeInMinutes >= 720 && timeInMinutes < 1020;
+  //         case 'Evening':
+  //           // After 5 PM
+  //           return timeInMinutes >= 1020;
+  //         default:
+  //           return true;
+  //       }
+  //     });
+  //   }
+  //   
+  //   setBusResults(filteredResults);
+  // }, [allBusResults, priceRange, selectedBoardingPlaces, selectedDroppingPlaces,selectedFacilities, selectedRatings, selectedDepartureTime]);
+  //   // Apply filters when any filter changes or when bus results change - COMMENTED OUT
+  // useEffect(() => {
+  //   if (allBusResults.length > 0) {
+  //     applyFilters();
+  //   }
+  // }, [applyFilters, allBusResults]);
     // Location options - limited to Kathmandu and Birgunj only
   const locationOptions = [
     { 
@@ -695,14 +693,14 @@ const SearchResultsPage = () => {
           <div className="flex items-center">
             <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
-            </svg>
-            <span className="text-base font-semibold text-green-700">
+            </svg>            <span className="text-base font-semibold text-green-700">
               {busResults.length} Bus{busResults.length !== 1 ? 'es' : ''} found
-              {allBusResults.length !== busResults.length && (
+              {/* Commented out filter count display since we don't have filters */}
+              {/* {allBusResults.length !== busResults.length && (
                 <span className="text-sm font-normal text-gray-500 ml-1">
                   (filtered from {allBusResults.length})
                 </span>
-              )}
+              )} */}
             </span>
           </div>
 
@@ -745,58 +743,16 @@ const SearchResultsPage = () => {
           </div>
         </div>        {/* Main Content */}
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters Sidebar */}
-          <div className="md:w-[300px] flex-shrink-0 sticky top-4 self-start">
-            <FilterSection 
-              priceRange={priceRange}
-              setPriceRange={setPriceRange}
-              selectedBoardingPlaces={selectedBoardingPlaces}
-              setSelectedBoardingPlaces={setSelectedBoardingPlaces}
-              selectedDroppingPlaces={selectedDroppingPlaces}
-              setSelectedDroppingPlaces={setSelectedDroppingPlaces}
-              // selectedBusTypes={selectedBusTypes}
-              // setSelectedBusTypes={setSelectedBusTypes}
-              selectedFacilities={selectedFacilities}
-              setSelectedFacilities={setSelectedFacilities}
-              selectedRatings={selectedRatings}
-              setSelectedRatings={setSelectedRatings}
-              selectedDepartureTime={selectedDepartureTime}
-              setSelectedDepartureTime={setSelectedDepartureTime}
-            />
-          </div>          {/* Bus Listings */}
-          <div className="flex-grow" id="resultsSection">            <BusListings 
+          {/* Filters Sidebar - COMMENTED OUT since we only have one bus */}
+          
+          {/* Bus Listings */}
+          <div className="flex-grow" id="resultsSection">
+            <BusListings 
               buses={busResults} 
               isLoading={isLoading} 
               totalBuses={allBusResults.length}
               travelDate={travelDate}
               onSearchAgain={handleSearchAgain}
-              selectedBoardingPlaces={selectedBoardingPlaces}
-              selectedDroppingPlaces={selectedDroppingPlaces}
-              // selectedBusTypes={selectedBusTypes}
-              selectedFacilities={selectedFacilities}
-              selectedRatings={selectedRatings}
-              priceRange={priceRange}
-              // Pass state setters for filter removal functionality
-              setSelectedBoardingPlaces={setSelectedBoardingPlaces}
-              setSelectedDroppingPlaces={setSelectedDroppingPlaces}
-              // setSelectedBusTypes={setSelectedBusTypes}
-              setSelectedFacilities={setSelectedFacilities}
-              setSelectedRatings={setSelectedRatings}
-              setPriceRange={setPriceRange}              selectedDepartureTime={selectedDepartureTime}
-              setSelectedDepartureTime={setSelectedDepartureTime}
-              onClearFilters={() => {
-                // Reset all filters to default values
-                setPriceRange([500, 2000]);
-                setSelectedBoardingPlaces([]);
-                setSelectedDroppingPlaces([]);
-                setSelectedBusTypes([]);
-                setSelectedFacilities([]);
-                setSelectedRatings([]);
-                setSelectedDepartureTime(''); // Clear departure time filter
-                
-                // Trigger a search with the cleared filters
-                setTimeout(() => handleSearchAgain(), 100);
-              }}
             />
           </div>
         </div>

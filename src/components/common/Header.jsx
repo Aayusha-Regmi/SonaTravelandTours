@@ -151,7 +151,7 @@ const Header = () => {
                 className="w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-gray-300 hover:border-[#0a639d] transition-all group"
               >
                 <img 
-                  src="/images/profile-avatar.jpg"
+                  src="/images/profileimg.png"
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -294,16 +294,51 @@ const Header = () => {
               </Link>            </div>
             
             {/* Authentication options for Mobile */}
-            <div className="space-y-3 pt-4 border-t border-[#ececec]/60">
-              <Link 
-                to="/login" 
-                className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors block"
-                onClick={() => setIsMenuOpen(false)}
+            {isAuthenticated() ? (
+               <div className="relative">
+  {/* Profile Photo */}
+              <div 
+                className="w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-gray-300 hover:border-[#0a639d] transition-all group"
               >
-                Login
-              </Link>
-              <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                <Button 
+                <img 
+                  src="/images/profileimg.png"
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 top-12 bg-white shadow-lg rounded-lg border border-gray-200 py-2 w-48 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <Link 
+                    to="/dashboard"
+                    className="block px-4 py-2 text-[#5f5f5f] hover:bg-gray-100 hover:text-[#0a639d] transition-colors"
+                  >
+                    My Dashboard
+                  </Link>
+                  <button
+        onClick={() => {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('token');
+          sessionStorage.removeItem('authToken');
+          sessionStorage.removeItem('token');
+          window.location.href = '/';
+        }}
+        className="block w-full text-left px-4 py-2 text-[#5f5f5f] hover:bg-gray-100 hover:text-[#0a639d] transition-colors"
+      >
+        Logout
+      </button>
+                </div>
+              </div>
+            </div>):(
+              <div className="space-y-3 pt-4 border-t border-[#ececec]/60">
+                <Link 
+                  to="/login" 
+                  className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                  <Button 
                   variant="primary" 
                   className="bg-[#0a639d] rounded-lg h-[50px] w-full flex items-center justify-center hover:bg-[#07456e] transition-colors"
                 >
@@ -316,6 +351,7 @@ const Header = () => {
                 </Button>
               </Link>
             </div>
+            )}
           </nav>
         </div>
       )}

@@ -12,7 +12,6 @@ import LoginPage from './pages/Auth/LoginPage';
 import SignupPage from './pages/Auth/SignupPage';
 import PhoneSignupPage from './pages/Auth/PhoneSignupPage';
 import OTPVerificationPage from './pages/Auth/OTPVerificationPage';
-import SeatSelection from './pages/BusSeatSelection/SeatSelection';
 import PaymentPage from './pages/Payment/PaymentPage';
 import PassengerDetail from './pages/BookingPassengerDetails/PassengerDetail';
 import ContactUs from './pages/ContactUs/ContactUs';
@@ -46,16 +45,7 @@ const AppRoutes = () => {
             <ProtectedRoute>
               <SearchResultsPage />
             </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/select-seats/:busId" 
-          element={
-            <ProtectedRoute>
-              <SeatSelection />
-            </ProtectedRoute>
-          } 
-        />
+          }        />
         <Route 
           path="/passenger-detail" 
           element={
@@ -63,7 +53,7 @@ const AppRoutes = () => {
               <PassengerDetail />
             </ProtectedRoute>
           } 
-        />        <Route 
+        /><Route 
           path="/payment" 
           element={
             <ProtectedRoute>

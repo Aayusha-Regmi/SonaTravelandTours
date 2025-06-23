@@ -20,6 +20,30 @@ const getBusFacilities = () => {
   ];
 };
 
+// getting booked seats for a specific bus
+const getBookedSeats = async (travelDate,destination)=>{
+  try{
+    const response = await fetch(`${API_BASE_URL}/seat/details`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        traveldate: travelDate,
+        destination: destination
+      })
+  });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.seatNumber || [];
+  } catch (error) {
+    console.error('Error fetching booked seats:', error);
+    return [];
+  }
+};
+
 /**
  * Get all available bus types for filtering
  * @returns {Array} - Array of bus type names
@@ -99,7 +123,7 @@ const bookSeats = (busId, selectedSeats, passengerInfo) => {
  */
 const getAvailableSeats = (busId, date) => {
   // Generate 40 seats with some randomly booked
-  const totalSeats = 40;
+  const totalSeats = 39;
   const seats = [];
   for (let i = 1; i <= totalSeats; i++) {
     const seatNumber = i.toString().padStart(2, '0');
@@ -150,7 +174,7 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
   // Check if the response has the expected structure
   if (result.success && result.data && Array.isArray(result.data)) {
     if (result.data.length === 0) {
-      console.log('📭 API returned empty data - no buses found');
+      console.log(' API returned empty data - no buses found');
       return [];
     }
 
@@ -167,7 +191,7 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
       return {
         id: `bus-${bus.busId || index}`,
         busName: bus.busName || bus.secondaryBusNumber || 'Unknown Bus',
-        busNumber: bus.busNumber || bus.secondaryBusNumber || '',
+        busNumber: bus.secondaryBusNumber || 'Bus Number Not Available',
         busType: determineBusType(bus.busName, facilitiesArray),
         departureTime,
         arrivalTime,
@@ -356,6 +380,7 @@ const getRoutes = async () => {
 export default {
   searchBuses,
   getRoutes,
+  getBookedSeats,
   getBusFacilities,
   getBusTypes,
   getBoardingPoints,
