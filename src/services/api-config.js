@@ -19,14 +19,15 @@ const apiConfig = {
       login: '/auth/login',
       register: '/auth/register',
       logout: '/auth/logout',
-      refreshToken: '/auth/refresh-token',
+      refreshToken: '/auth/refresh-token', 
     },
     
     // Bus endpoints
     bus: {
-      search: '/bus/search',
+      search: '/bus/search', // gets us all buses based on search criteria [is a get request]
       details: '/bus/:id',
       seats: '/bus/:id/seats',
+      seat_details: '/seat/details',// gets us booked seats[is a post request]
     },
     
     // Booking endpoints

@@ -109,11 +109,14 @@ const BusListings = ({
     // If no buses passed, use default data
   const busData = useMemo(() => {
     if (buses.length === 0) return [];
-    
-    return buses.map(bus => {
+      return buses.map(bus => {
       // Ensure we have an ID for navigation
       const busId = bus.id || bus._id || `bus-${Math.random().toString(36).substr(2, 9)}`;
-      const busNumber = bus.secondaryBusNumber || 'Bus No';
+      
+      // Better bus name and number handling
+      const busName = bus.busName || bus.name || bus.operatorName || 'Sona Travel';
+      const busNumber = bus.secondaryBusNumber || bus.busNumber || bus.vehicleNumber || `STT-${Math.floor(Math.random() * 1000)}`;
+      
       // Extract and normalize times
       const depTime = bus.departureTime || bus.departure_time || '16:00';
       const arrTime = bus.arrivalTime || bus.arrival_time || '20:50';
@@ -144,8 +147,8 @@ const BusListings = ({
         return {
         id: busId,
         rating: bus.rating || '4.8',
-        name: busNumber,
-        busNumber: bus.secondaryBusNumber || 'Bus Number Not Available',
+        name: busName,
+        busNumber: busNumber,
         type: bus.busType || bus.type || 'AC Bus',
         departureTime: depTime,
         departureTimeFormatted: formattedDepartureTime,
@@ -465,11 +468,10 @@ const BusListings = ({
                   <Chip variant="new" size="small" className="h-6 rounded-full px-2 py-1">
                     New
                   </Chip>
-                </div>
-
-                {/* Bus Name and Type */}
+                </div>                {/* Bus Name and Type */}
                 <h3 className="text-lg font-bold text-gray-800 mb-0.5">
-                  {bus.name} <span>{bus.busNumber}</span>
+                  {bus.name}
+                  <span className="text-sm font-medium text-gray-600 ml-2">({bus.busNumber})</span>
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   {bus.type}
