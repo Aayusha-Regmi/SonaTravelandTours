@@ -584,8 +584,7 @@ const BusListings = ({
               <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium text-green-600">
                   {bus.availableSeats}
-                </span>
-                  <Button 
+                </span>                  <Button 
                   variant="primary"                
                   onClick={() => {
                     console.log('Select Seats clicked for bus:', bus);
@@ -597,14 +596,14 @@ const BusListings = ({
                       : 'bg-[#0a639d]'
                   } text-white rounded-lg px-4 py-2 md:px-6 md:py-3 flex items-center justify-center hover:bg-blue-700 transition-colors`}
                 >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"></path>
-                  </svg>
-                  <span className="text-sm md:text-lg font-medium">Select Seats</span>
+                  <span className="text-sm md:text-lg font-medium">
+                    {selectedBusForSeats && selectedBusForSeats.id === bus.id ? 'Hide Seats' : 'Select Seats'}
+                  </span>
                   <svg className={`w-4 h-4 ml-2 transition-transform duration-200 ${
                     selectedBusForSeats && selectedBusForSeats.id === bus.id ? 'rotate-180' : ''
                   }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>                  </svg>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
                 </Button>
               </div>
             </div>
