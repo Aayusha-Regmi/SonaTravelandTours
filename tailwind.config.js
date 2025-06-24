@@ -5,11 +5,13 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          blue: "#0a639d",
-           'blue-dark': "var(--primary-blue-dark)",
+          blue: ["var(--primary-blue)","#0a639d"],
+          'blue-dark': "var(--primary-blue-dark)",
           'blue-light': "var(--primary-blue-light)",
           orange: "#ff8f1f",
           dark: "#07456e",
+          red: "var(--primary-red)",
+          background: "var(--primary-background)",
         },
         secondary: {
           gray: "#5f5f5f",
@@ -26,6 +28,10 @@ module.exports = {
           white: "#ffffff",
         },
          bg: {
+             white: "var(--bg-white)",
+          'gray-light': "var(--bg-gray-light)",
+          'gray-medium': "var(--bg-gray-medium)",
+          'gray-dark': "var(--bg-gray-dark)",
           primary: "var(--bg-primary)",
           secondary: "var(--bg-secondary)",
           muted: "var(--bg-muted)",
@@ -45,11 +51,14 @@ module.exports = {
           success: "var(--text-success)",
           dark: "#3d3d3d",
           gray: "#5f5f5f",
+          light: "var(--text-light)",
+          white: "var(--text-white)",
           lightGray: "#b0b0b0",
           placeholder: "#d9d9d9",
         },
          border: {
           light: "var(--border-light)",
+           medium: "var(--border-medium)",
         },
       },
       spacing: {

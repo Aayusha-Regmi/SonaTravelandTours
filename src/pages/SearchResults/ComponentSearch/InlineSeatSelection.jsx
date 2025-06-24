@@ -11,39 +11,63 @@ const Card = ({ children, className = '' }) => (
 );
 
 
-const InlineSeatSelection = ({ busData, busId }) => {
+const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) => {
   const navigate = useNavigate();
-
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [availableSeatsCount, setAvailableSeatsCount] = useState(0);
   const [seatConfig, setSeatConfig] = useState({});
+  const [isLoadingSeats, setIsLoadingSeats] = useState(false);
   const seatPrice = 2000; // Price per seat in Rs.
+  
+  // This useEffect will refresh booked seats whenever:
+  // - busData changes (different bus selected)
+  // - searchParams change (date, route, or other search criteria changed)
+  // - travelDate changes (date picker updated)  // This ensures seat availability is always current
   useEffect(() => {
     const fetchBookedSeats = async () => {
-      try {        const travelDate = busData.departureDate || busData.date || new Date().toISOString().split('T')[0];
-        const destination = busData.route?.to || busData.destination || 'Default Destination';        const apiUrl = `${process.env.VITE_API_BASE_URL}${process.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`;
+      setIsLoadingSeats(true);
+      try {       
+        // Use passed travelDate prop, fallback to busData or current date
+        const currentTravelDate = travelDate || busData.departureDate || busData.date || new Date().toISOString().split('T')[0];
+        const destination = busData.route?.to || busData.destination || searchParams.to || 'Default Destination';
+          const apiUrl = `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`;
         console.log('API URL:', apiUrl);
-        console.log('Travel Date:', travelDate);
+        console.log('Base URL:', import.meta.env.VITE_API_BASE_URL);
+        console.log('Endpoint:', import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT);
+        console.log('Travel Date:', currentTravelDate);
         console.log('Destination:', destination);
-        console.log('Request body:', { traveldate: travelDate, destination: destination });
-        console.log('Bus Data:', busData);        // Try different parameter combinations based on the Postman data
+        console.log('Search Params:', searchParams);        console.log('Request body:', { travelDate: currentTravelDate, destination: destination });
+        console.log('Bus Data:', busData);        
+          // Get user token from localStorage or sessionStorage
+        const userToken = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        console.log('User token found:', userToken ? 'Yes' : 'No');
+          // API request format - only travelDate and destination as specified
         const requestBody = {
-          traveldate: travelDate,
+          travelDate: currentTravelDate,
           destination: destination.toLowerCase() // Try lowercase to match API data
         };
         
-        // Add bus ID if available
-        if (busId) {
-          requestBody.busId = busId;
+        // Backend expects only travelDate and destination - no busId or token in body
+
+        // Prepare headers with authentication
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+        
+        // Add Authorization header if token is available
+        if (userToken) {
+          headers.Authorization = `Bearer ${userToken}`;
+          console.log('Added Authorization header');
         }
+
+        console.log('Request headers:', headers);
+        console.log('Final request body:', requestBody);
 
         const response = await fetch(apiUrl, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: headers,
           body: JSON.stringify(requestBody)
         });
 
@@ -53,30 +77,29 @@ const InlineSeatSelection = ({ busData, busId }) => {
         console.log('API Response:', data);
         console.log('API Response type:', typeof data);
         console.log('API Response keys:', Object.keys(data));
-        
-        // Extract seat numbers from the response data array
+          // Extract seat numbers from the response data array
         const bookedSeatNumbers = data.data ? data.data.map(booking => booking.seatNumber) : [];
         console.log('Seat numbers from API:', bookedSeatNumbers);
         console.log('Booked seat numbers length:', bookedSeatNumbers.length);
         
-        // Temporary test: If API returns empty, add A7 to test red seat rendering
-        if (bookedSeatNumbers.length === 0) {
-          console.log('API returned empty seats, adding A7 for testing...');
-          setBookedSeats(['A7']);
-          console.log('Set booked seats to:', ['A7']);
-        } else {
-          console.log('Using real booked seats:', bookedSeatNumbers);
-          setBookedSeats(bookedSeatNumbers);
-        }
-        
-      } catch (error) {
+        // Use only actual API response - no default/test values
+        console.log('Using API response booked seats:', bookedSeatNumbers);
+        setBookedSeats(bookedSeatNumbers);
+          } catch (error) {
         console.error('Failed to fetch booked seats:', error);
         console.error('Error details:', error.message);
-        console.log('Setting A7 as booked seat due to error...');
-        setBookedSeats(['A7']); // Also set test seat on error
+        // On API error, set empty array and show error message to user
+        console.log('Setting empty booked seats due to API error');
+        setBookedSeats([]);
+        toast.error('Failed to load seat availability. Please try again.');
+      } finally {
+        setIsLoadingSeats(false);
       }
-    };    fetchBookedSeats();
-  }, [busData]);
+    };
+    
+    fetchBookedSeats();
+  }, [busData, searchParams, travelDate]); // Add searchParams and travelDate as dependencies
+  
   // Generate seat configuration based on bus data
   useEffect(() => {
     console.log('Bus data received:', busData);
@@ -165,7 +188,7 @@ const InlineSeatSelection = ({ busData, busId }) => {
 
   useEffect(() => {
     console.log('Bus data is missing or incomplete:', busData);
-  }, [busData]);
+  }, [busData, bookedSeats]); // Add bookedSeats as dependency
 
   const handleSeatClick = (seatId, seatType) => {
     if (seatType === 'booked') return;

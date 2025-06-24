@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
-import Button from '../../components/ui/Button';
-import InputField from '../../components/ui/InputField';
 import Tabs from '../../components/ui/Tabs';
+import ProfileHeader from './ComponentUserProfile/ProfileHeader.jsx';
+import MyAccount from './ComponentUserProfile/MyAccount.jsx';
+import MyBookings from './ComponentUserProfile/MyBookings.jsx';
+import Cancellations from './ComponentUserProfile/Cancellations.jsx';
+import MyReviews from './ComponentUserProfile/MyReviews.jsx';
+import MyFavorites from './ComponentUserProfile/MyFavorites.jsx';
+import Discounts from './ComponentUserProfile/Discounts.jsx';
 
 const UserProfile = () => {
+  // Profile data state
   const [profileData, setProfileData] = useState({
     fullName: 'Tom Brown',
     gender: 'Male',
@@ -16,9 +22,33 @@ const UserProfile = () => {
     billingAddress: 'Flat No. 302, Sapphire Towers, Sector 15, Beach Road, Mumbai, Maharashtra - 400703'
   });
 
+  // Edit states
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingSecurity, setIsEditingSecurity] = useState(false);
 
+  // Sample data for components (in real app, this would come from API)
+  const [bookings] = useState([
+    // Add sample bookings here if needed
+    // { id: 'BK001', destination: 'Paris, France', dates: 'Dec 15-22, 2024', guests: 2, status: 'confirmed' }
+  ]);
+
+  const [cancellations] = useState([
+    // Add sample cancellations here if needed
+  ]);
+
+  const [reviews] = useState([
+    // Add sample reviews here if needed
+  ]);
+
+  const [favorites] = useState([
+    // Add sample favorites here if needed
+  ]);
+
+  const [discounts] = useState([
+    // Add sample discounts here if needed
+  ]);
+
+  // Event handlers
   const handleProfileEdit = () => {
     setIsEditingProfile(!isEditingProfile);
   };
@@ -34,200 +64,62 @@ const UserProfile = () => {
     }));
   };
 
-  const AccountContent = () => (
-    <div className="space-y-8">
-      {/* Account Section */}
-      <div className="bg-white rounded-[16px] p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-[24px] font-bold leading-[33px] text-[#3d3d3d] font-opensans">
-            Account
-          </h2>
-          <Button
-            variant="edit"
-            onClick={handleProfileEdit}
-            icon={<img src="/images/img_edit_light_blue_900.svg" alt="edit" className="w-[28px] h-[28px]" />}
-            className="text-[20px] font-bold leading-[28px]"
-          >
-            Edit Profile Info
-          </Button>
-        </div>
+  const handleProfileImageEdit = () => {
+    // Handle profile image edit
+    console.log('Profile image edit clicked');
+  };
 
-        <div className="grid grid-cols-2 gap-8">
-          <InputField
-            label="Full Name"
-            value={profileData.fullName}
-            onChange={(e) => handleInputChange('fullName', e.target.value)}
-            disabled={!isEditingProfile}
-            className="w-full"
-          />
-          
-          <div className="flex flex-col space-y-2">
-            <label className="text-[20px] font-bold leading-[28px] text-[#5f5f5f] font-opensans">
-              Gender
-            </label>
-            <div className="bg-[#f5f5f5] rounded-[12px] h-[80px] flex items-center justify-between px-4">
-              <span className="text-[18px] font-semibold leading-[24px] text-[#d9d9d9] font-opensans">
-                {profileData.gender}
-              </span>
-              <img
-                src="/images/img_hicon_linear_down_2_gray_500.svg"
-                alt="dropdown"
-                className="w-[24px] h-[24px]"
-              />
-            </div>
-          </div>
-
-          <InputField
-            label="Phone Number"
-            value={profileData.phoneNumber}
-            onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-            disabled={!isEditingProfile}
-            className="w-full"
-          />
-
-          <InputField
-            label="Email"
-            type="email"
-            value={profileData.email}
-            onChange={(e) => handleInputChange('email', e.target.value)}
-            disabled={!isEditingProfile}
-            className="w-full"
-          />
-
-          <InputField
-            label="City of Residence"
-            value={profileData.cityOfResidence}
-            onChange={(e) => handleInputChange('cityOfResidence', e.target.value)}
-            disabled={!isEditingProfile}
-            className="w-full col-span-2"
-          />
-        </div>
-      </div>
-
-      {/* Security Section */}
-      <div className="bg-white rounded-[16px] p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-[24px] font-bold leading-[33px] text-[#3d3d3d] font-opensans">
-            Security
-          </h2>
-          <Button
-            variant="edit"
-            onClick={handleSecurityEdit}
-            icon={<img src="/images/img_edit_light_blue_900.svg" alt="edit" className="w-[28px] h-[28px]" />}
-            className="text-[20px] font-bold leading-[28px]"
-          >
-            Edit Security Info
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-8">
-          <InputField
-            label="Password"
-            type="password"
-            value={profileData.password}
-            onChange={(e) => handleInputChange('password', e.target.value)}
-            disabled={!isEditingSecurity}
-            showPasswordToggle={true}
-            icon={<img src="/images/img_frame_1000005294.svg" alt="password" className="w-[124px] h-[12px]" />}
-            className="w-full"
-          />
-
-          <div className="flex flex-col space-y-2">
-            <label className="text-[20px] font-bold leading-[28px] text-[#5f5f5f] font-opensans">
-              Billing Address
-            </label>
-            <div className="bg-[#f5f5f5] rounded-[12px] h-[80px] flex items-center px-4">
-              <span className="text-[12px] font-semibold leading-[17px] text-[#8f8f8f] font-opensans">
-                {profileData.billingAddress}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
+  // Tab configuration
   const tabsData = [
     {
       label: 'My Account',
-      content: <AccountContent />
+      content: (
+        <MyAccount
+          profileData={profileData}
+          isEditingProfile={isEditingProfile}
+          isEditingSecurity={isEditingSecurity}
+          onProfileEdit={handleProfileEdit}
+          onSecurityEdit={handleSecurityEdit}
+          onInputChange={handleInputChange}
+        />
+      )
     },
     {
       label: 'My Bookings',
-      content: <div className="p-8 text-center text-[#8f8f8f] font-opensans">My Bookings content coming soon...</div>
+      content: <MyBookings bookings={bookings} />
     },
     {
       label: 'Cancellations',
-      content: <div className="p-8 text-center text-[#8f8f8f] font-opensans">Cancellations content coming soon...</div>
+      content: <Cancellations cancellations={cancellations} />
     },
     {
       label: 'My Reviews',
-      content: <div className="p-8 text-center text-[#8f8f8f] font-opensans">My Reviews content coming soon...</div>
+      content: <MyReviews reviews={reviews} />
     },
     {
       label: 'My Favorites',
-      content: <div className="p-8 text-center text-[#8f8f8f] font-opensans">My Favorites content coming soon...</div>
+      content: <MyFavorites favorites={favorites} />
     },
     {
       label: 'Discounts',
-      content: <div className="p-8 text-center text-[#8f8f8f] font-opensans">Discounts content coming soon...</div>
+      content: <Discounts discounts={discounts} />
     }
-  ];
-
-  return (
-    <div className="min-h-screen bg-[#f5f5f5]">
+  ];  return (
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="max-w-[1440px] mx-auto px-[75px] py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
         {/* Profile Header */}
-        <div className="flex flex-col items-center mb-8">
-          {/* Profile Picture */}
-          <div className="relative mb-6">
-            <div className="w-[234px] h-[234px] rounded-full border-4 border-[#d25555] p-[13px]">
-              <img
-                src="/images/img_ellipse_184_209x209.png"
-                alt="Amit Patel"
-                className="w-[209px] h-[209px] rounded-full"
-              />
-              <div className="absolute bottom-0 right-0 w-[54px] h-[54px] bg-[#d25555] rounded-full flex items-center justify-center">
-                <img
-                  src="/images/img_edit.svg"
-                  alt="edit profile"
-                  className="w-[32px] h-[32px]"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Profile Info */}
-          <h1 className="text-[28px] font-bold leading-[39px] text-[#5f5f5f] mb-2 font-opensans">
-            Amit Patel
-          </h1>
-          <p className="text-[20px] font-semibold leading-[28px] text-[#8f8f8f] mb-6 font-opensans">
-            AmitPatel@gmail.com
-          </p>
-
-          {/* Stats Buttons */}
-          <div className="flex space-x-4">
-            <Button
-              variant="primary"
-              className="w-[223px] h-[60px]"
-              icon={<img src="/images/img_hicon_outline_profile_accepted_2.svg" alt="joined" className="w-[24px] h-[24px]" />}
-            >
-              Joined Mar 2022
-            </Button>
-            <Button
-              variant="primary"
-              className="w-[174px] h-[60px]"
-              icon={<img src="/images/img_hicon_outline_bookmark_3.svg" alt="bookings" className="w-[24px] h-[24px]" />}
-            >
-              50 Booking
-            </Button>
-          </div>
-        </div>
+        <ProfileHeader
+          name="Amit Patel"
+          email="AmitPatel@gmail.com"
+          joinDate="Mar 2022"
+          bookingCount={50}
+          onProfileImageEdit={handleProfileImageEdit}
+        />
 
         {/* Tabs Section */}
-        <div className="w-full">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <Tabs 
             tabs={tabsData}
             defaultActiveTab={0}
