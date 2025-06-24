@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
@@ -14,7 +15,11 @@ const LoginPage = () => {
     emailOrPhone: '',
     password: ''
   });
-  
+  //Show/Hide password functions
+  const [showPassword, setShowPassword] = useState(false);
+  const togglePasswordVisibility = () => {
+    setShowPassword(prev => !prev);
+  };
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
@@ -371,12 +376,10 @@ const LoginPage = () => {
                 className="w-full"
                 error={errors.emailOrPhone}
               />
-            </div>
-
-            <div>
+            </div>            <div className="relative">
               <InputField
                 label="Password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -385,6 +388,18 @@ const LoginPage = () => {
                 className="w-full"
                 error={errors.password}
               />
+              {/* Show/Hide password toggle button */}
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-5 top-9 text-gray-500 hover:text-gray-700 focus:outline-none z-10"
+              >
+                {showPassword ? (
+                   <EyeSlashIcon className="w-5 h-5 text-gray-500" />
+                ) : (
+                  <EyeIcon className="w-5 h-5 text-gray-500" />
+                )}
+              </button>
             </div>
 
             <Button
