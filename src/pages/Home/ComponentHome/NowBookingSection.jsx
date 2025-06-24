@@ -54,20 +54,13 @@ const NowBookingSection = () => {
     }
     // Implement booking functionality here
   };
-
   return (
-    <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-br from-blue-50/30 via-white to-orange-50/20 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-blue-100/20 rounded-full blur-3xl -translate-x-32 -translate-y-32"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-100/15 rounded-full blur-3xl translate-x-48 translate-y-48"></div>
+    <section className="py-8 sm:py-12 md:py-16 mt-8 sm:mt-12 md:mt-16 lg:mt-20 relative overflow-hidden">
+
       
       <div className="container mx-auto px-4 relative z-10">
         {/* Enhanced Header */}
         <div className="text-center mb-6 sm:mb-8 md:mb-12">
-          <div className="inline-flex items-center gap-2 bg-blue-100/60 text-blue-700 px-3 py-1 rounded-full text-xs sm:text-sm font-medium mb-3">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            Live Booking Available
-          </div>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 mb-2 sm:mb-3">
             Now Booking
           </h2>

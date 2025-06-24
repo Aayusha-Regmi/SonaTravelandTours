@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Button from '@/components/ui/Button';
 
 const HeroSection = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isLoaded, setIsLoaded] = useState(false);
+
   const handleUnavailableService = (serviceName) => {
     toast.info(`${serviceName} booking will be available soon! Stay tuned for updates.`, {
       position: "top-right",
@@ -15,67 +18,105 @@ const HeroSection = () => {
     });
   };
 
-  return (
-    <section className="relative h-[400px] md:h-[450px] lg:h-[500px] overflow-hidden">
-      {/* Background Image */}
-      {/* <div className="absolute inset-0 z-0">
-        <img 
-          src="/images/img_busroadgenerativeai22087319731_1.png" 
-          alt="Bus on Road" 
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-black/5"></div>
-      </div> */}
-      <div className="absolute inset-0 z-0">
-        <video
-          src="/images/busrun.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover animate-fade-in"
-        />
-        {/* Enhanced overlay with gradient for better text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-black/5"></div>
-      </div>
+  // Mouse movement effect
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+      setMousePosition({ x, y });
+    };
 
-      {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-40 pt-8 md:pt-12">
-        <div className="max-w-xl relative">          <h1 className="mb-3 md:mb-4">
-            <span className="text-lg sm:text-xl md:text-2xl lg:text-[26px] font-semibold text-[#3d3d3d] font-['Open_Sans'] block">
-              The Easiest Way to Book your 
-            </span>
-            <span className="text-xl sm:text-2xl md:text-2xl lg:text-[26px] font-bold text-[#3d3d3d] font-['Oleo_Script']">
-              Bus Ticket
-            </span>
-            <span className="text-lg sm:text-xl md:text-2xl lg:text-[26px] font-semibold text-[#3d3d3d] font-['Open_Sans']"> with</span>
-          </h1>
-          
-          <div className="mb-4">
-            <span className="text-2xl sm:text-3xl md:text-4xl lg:text-[52px] font-bold text-[#ff8f1f] font-['Oleo_Script'] leading-tight">Sona</span>
-            <span className="text-2xl sm:text-3xl md:text-4xl lg:text-[52px] font-bold text-[#0a639d] font-['Oleo_Script'] leading-tight"> Travel</span>
-            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-[52px] font-bold text-[#0a639d] font-['Oleo_Script'] leading-tight">&amp; Tours</div>          </div>{/* Tab Buttons positioned for the search card */}          <div className="absolute ml-22 bottom-0 transform translate-y-20 z-50">
-            <div className="flex space-x-2 ml-2 sm:space-x-2">
-              <Button 
-                className="h-[45px] sm:h-[50px] w-[80px] sm:w-[100px] rounded-lg bg-[#0a639d] flex items-center justify-center shadow-md hover:bg-[#07456e] transition-colors"
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Animation trigger on component mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">      
+    {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/images/hero bg.png" 
+          alt="Nepal Travel Background" 
+          className="w-full h-full object-cover"        />
+        
+        {/* Overlay Image with Smooth Opening Effect and Enhanced Cursor Movement */}
+        <div className="absolute inset-0 z-5 overflow-hidden">
+          <img 
+            src="/images/overlayhero.png" 
+            alt="Hero Overlay" 
+            className={`w-full h-full object-cover transition-all duration-1500 ease-out ${
+              isLoaded ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-full opacity-0 scale-95'
+            }`}
+            style={{
+              transform: `
+                ${isLoaded ? 'translateY(0)' : 'translateY(100%)'} 
+                translateX(${(mousePosition.x - 50) * 0.15}px) 
+                translateY(${isLoaded ? (mousePosition.y - 50) * 0.15 : 100}%) 
+                rotateX(${(mousePosition.y - 50) * 0.05}deg) 
+                rotateY(${(mousePosition.x - 50) * 0.05}deg) 
+                scale(${1.02 + (mousePosition.x * 0.0003)})
+              `,
+              filter: `
+                drop-shadow(${(mousePosition.x - 50) * 0.1}px ${(mousePosition.y - 50) * 0.1}px 15px rgba(0,0,0,0.4))
+                brightness(${0.95 + (mousePosition.x * 0.001)})
+              `,
+              transformOrigin: 'center center',
+              transformStyle: 'preserve-3d'
+            }}
+          />
+        </div>
+          {/* Radial gradient shadow overlay */}
+        <div 
+          className="absolute inset-0 z-8 opacity-100"
+          style={{
+            background: 'radial-gradient(60.73% 52.25% at 51.42% 41.99%, rgba(0, 0, 0, 0.1) 28.65%, rgba(0, 0, 0, 0.95) 95.9%)',
+            height: '100vh',
+            width: '100%'
+          }}
+        ></div>
+        
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 z-10 bg-black/40"></div>
+      </div>      {/* Main Content */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20">          <div className="max-w-4xl mx-auto">
+          {/* Service Tabs - Positioned to align with search form left corner */}          
+          <div className="absolute left-24 sm:left-28 lg:left-40 top-[95%] transform -translate-y-1/2 bg-white/10 backdrop-blur-md rounded-2xl p-6 max-w-md z-30 mt-20 mb-10">
+            <div className="flex space-x-2 justify-center"><Button 
+                className="h-12 px-6 rounded-lg bg-[#0a639d] hover:bg-[#07456e] text-white font-medium transition-colors flex-1"
               >
-                <span className="text-sm sm:text-base font-medium text-white">Bus</span>
-              </Button>              <Button 
+                <span className="mr-2">🚌</span>Bus
+              </Button>              
+              <Button 
                 onClick={() => handleUnavailableService('Flight')}
-                className="h-[45px] sm:h-[50px] w-[80px] sm:w-[100px] rounded-lg bg-[#ececec] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
+                className="h-12 px-6 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium transition-colors flex-1"
                 variant="secondary"
               >
-                <span className="text-sm sm:text-base font-medium text-[#b0b0b0]">Flight</span>
+                <span className="mr-2">✈️</span>Flight
               </Button>
               <Button 
                 onClick={() => handleUnavailableService('Hotel')}
-                className="h-[45px] sm:h-[50px] w-[80px] sm:w-[100px] rounded-lg bg-[#ececec] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
+                className="h-12 px-6 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium transition-colors flex-1"
                 variant="secondary"
               >
-                <span className="text-sm sm:text-base font-medium text-[#b0b0b0]">Hotel</span>
+                <span className="mr-2">🏨</span>Hotel
               </Button>
             </div>
-          </div>        </div>
+          </div>
+        </div>
+      </div>{/* Scroll Down Indicator */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="animate-bounce">
+          <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+          </div>
+        </div>
       </div>
     </section>
   );

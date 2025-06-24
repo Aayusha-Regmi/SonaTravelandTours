@@ -249,14 +249,12 @@ const SearchForm = () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);  return (
-    <div className="relative w-full max-w-7xl mx-auto -mt-[100px] sm:-mt-[130px] md:-mt-[180px] z-40">
-      {/* Trip Type Selector - positioned above the main form */}
+    <div className="relative w-full max-w-7xl mx-auto -mt-[170px] sm:-mt-[200px] md:-mt-[240px] lg:-mt-[270px] xl:-mt-[300px] z-40 px-4 sm:px-6 lg:px-8">      {/* Trip Type Selector - positioned above the main form */}
       <div className="flex justify-start mb-[-10px] relative z-10">
-        <div className="backdrop-blur-md bg-white/40 rounded-t-2xl flex overflow-hidden shadow-lg border border-white/50">
-          <button            className={`px-6 py-3 flex items-center justify-center font-medium text-sm transition-all duration-300 ${
+        <div className="backdrop-blur-md bg-white/40 rounded-t-2xl flex overflow-hidden shadow-[0_15px_35px_rgba(0,0,0,0.5)] border border-white/50">          <button            className={`px-6 py-3 flex items-center justify-center font-medium text-sm transition-all duration-300 ${
               tripType === 'oneWay' 
-                ? 'bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-md' 
-                : 'bg-white/30 text-gray-800 hover:bg-white/50'
+                ? 'bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-[0_8px_25px_rgba(251,146,60,0.4)]' 
+                : 'bg-white/30 text-gray-800 hover:bg-white/50 hover:shadow-[0_4px_15px_rgba(0,0,0,0.2)]'
             }`}
             onClick={() => handleTripTypeChange('oneWay')}
           >
@@ -264,11 +262,10 @@ const SearchForm = () => {
               <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
             One Way
-          </button>
-          <button             className={`px-6 py-3 flex items-center justify-center font-medium text-sm transition-all duration-300 ${
+          </button>          <button            className={`px-6 py-3 flex items-center justify-center font-medium text-sm transition-all duration-300 ${
               tripType === 'twoWay' 
-                ? 'bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-md' 
-                : 'bg-white/30 text-gray-800 hover:bg-white/50'
+                ? 'bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-[0_8px_25px_rgba(251,146,60,0.4)]' 
+                : 'bg-white/30 text-gray-800 hover:bg-white/50 hover:shadow-[0_4px_15px_rgba(0,0,0,0.2)]'
             }`}
             onClick={() => handleTripTypeChange('twoWay')}
           >
@@ -278,13 +275,11 @@ const SearchForm = () => {
             Two Way
           </button>
         </div>
-      </div>      
-      {/* Main Search Form */}
-      <div ref={searchFormRef} className="backdrop-blur-xl bg-white/30 rounded-3xl p-10 shadow-2xl border border-white/40 w-full relative z-0">
-      
-      {/* Error message display */}
+      </div>        {/* Main Search Form */}
+      <div ref={searchFormRef} className="backdrop-blur-xl bg-white/30 rounded-3xl p-10 shadow-[0_25px_50px_rgba(0,0,0,0.6)] border border-white/40 w-full relative z-0">
+        {/* Error message display */}
       {error && (
-        <div className="backdrop-blur-md bg-red-500/20 border border-red-300/30 text-red-800 px-4 py-2 rounded-xl mb-4 shadow-lg">
+        <div className="backdrop-blur-md bg-red-500/20 border border-red-300/30 text-red-800 px-4 py-2 rounded-xl mb-4 shadow-[0_10px_25px_rgba(239,68,68,0.4)]">
           {error}
         </div>
       )}{/* Search Form */}
@@ -295,10 +290,9 @@ const SearchForm = () => {
       }`}>
         {/* Date Field(s) */}
         {tripType === 'twoWay' ? (
-          <>            
-          {/* Departure Date */}
+          <>            {/* Departure Date */}
             <div className="lg:col-span-1">
-              <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+              <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
                 <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">DATE</label>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center flex-1">
@@ -315,7 +309,7 @@ const SearchForm = () => {
               </div>
             </div>            {/* Return Date */}
             <div className="lg:col-span-1">
-              <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+              <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
                 <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">RETURN</label>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center flex-1">
@@ -338,10 +332,9 @@ const SearchForm = () => {
               </div>
             </div>
           </>
-        ) : (          
-          /* Single Date for One Way */
+        ) : (          /* Single Date for One Way */
           <div className="lg:col-span-1">
-            <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+            <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
               <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">DATE</label>
               <div className="flex items-center justify-between">
                 <div className="flex items-center flex-1">
@@ -359,7 +352,7 @@ const SearchForm = () => {
           </div>
         )}        {/* From Field */}        
         <div className="lg:col-span-1 relative">
-          <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border-2 border-orange-400/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+          <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border-2 border-orange-400/60 h-[85px] flex flex-col justify-center shadow-[0_12px_35px_rgba(251,146,60,0.3)] hover:bg-white/60 hover:shadow-[0_18px_45px_rgba(251,146,60,0.4)] transition-all duration-300">
             <label className="text-orange-600 text-xs font-bold mb-2 uppercase tracking-wider">FROM</label>
             <div className="flex items-center justify-between">              <div className="flex items-center flex-1">
                 <svg className="w-5 h-5 text-orange-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -382,7 +375,7 @@ const SearchForm = () => {
 
         {/* To Field */}        
         <div className="lg:col-span-1 relative">
-          <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-xl hover:bg-white/60 transition-all duration-300">
+          <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
             <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">TO</label>
             <div className="flex items-center justify-between">              <div className="flex items-center flex-1">
                 <svg className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -410,7 +403,7 @@ const SearchForm = () => {
               isLoading 
                 ? 'bg-gradient-to-r from-orange-600 to-orange-500' 
                 : 'bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500'
-            } shadow-2xl transition-all duration-300 border-0 text-white font-bold text-lg uppercase tracking-wide backdrop-blur-sm`}
+            } shadow-[0_15px_40px_rgba(251,146,60,0.4)] transition-all duration-300 border-0 text-white font-bold text-lg uppercase tracking-wide backdrop-blur-sm`}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -440,7 +433,7 @@ const SearchForm = () => {
           <button
             type="button"
             onClick={handleSwapLocations}
-            className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center backdrop-blur-sm border-4 border-white group"
+            className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 shadow-[0_8px_25px_rgba(251,146,60,0.4)] hover:shadow-[0_12px_35px_rgba(251,146,60,0.5)] transition-all duration-300 flex items-center justify-center backdrop-blur-sm border-4 border-white group"
             disabled={!formData.from && !formData.to}
             title="Swap locations"
           >
