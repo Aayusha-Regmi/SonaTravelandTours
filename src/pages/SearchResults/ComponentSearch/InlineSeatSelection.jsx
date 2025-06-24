@@ -2,53 +2,44 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Button from '../../../components/ui/Button';
-import { API_URLS } from '../../../config/api';
 
-// Card component identical to the original SeatSelection
-const Card = ({ children, className = '', ...props }) => {
-  return (
-    <div className={`bg-white shadow-lg border border-gray-200 rounded-xl ${className}`} {...props}>
-      {children}
-    </div>
-  );
-};
+// Add the missing Card component import
+const Card = ({ children, className = '' }) => (
+  <div className={`${className}`}>
+    {children}
+  </div>
+);
+
 
 const InlineSeatSelection = ({ busData, busId }) => {
   const navigate = useNavigate();
+
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [bookedSeats, setBookedSeats] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [availableSeatsCount, setAvailableSeatsCount] = useState(0);
   const [seatConfig, setSeatConfig] = useState({});
-  const [bookedSeats, setBookedSeats] = useState([]);
   const seatPrice = 2000; // Price per seat in Rs.
-
-  // Fetch booked seats from API
   useEffect(() => {
     const fetchBookedSeats = async () => {
-      try {
-        // Format date as YYYY-MM-DD to match API expectation
-        let travelDate = busData.departureDate || busData.date || new Date().toISOString().split('T')[0];
-        
-        // Ensure date is in correct format
-        if (travelDate.includes('T')) {
-          travelDate = travelDate.split('T')[0];
-        }
-        
-        const destination = busData.route?.to || busData.destination || busData.arrivalLocation || 'kathmandu';
-
-        console.log('=== SEAT BOOKING API DEBUG ===');
-        console.log('Bus Data received:', busData);
-        console.log('Extracted travelDate:', travelDate);
-        console.log('Extracted destination:', destination);
-        console.log('API URL being called:', API_URLS.BUS.DETAILS);
-        
+      try {        const travelDate = busData.departureDate || busData.date || new Date().toISOString().split('T')[0];
+        const destination = busData.route?.to || busData.destination || 'Default Destination';        const apiUrl = `${process.env.VITE_API_BASE_URL}${process.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`;
+        console.log('API URL:', apiUrl);
+        console.log('Travel Date:', travelDate);
+        console.log('Destination:', destination);
+        console.log('Request body:', { traveldate: travelDate, destination: destination });
+        console.log('Bus Data:', busData);        // Try different parameter combinations based on the Postman data
         const requestBody = {
-          travelDate: travelDate,
-          destination: destination.toLowerCase() // Ensure lowercase as per your example
+          traveldate: travelDate,
+          destination: destination.toLowerCase() // Try lowercase to match API data
         };
-        console.log('Request body:', requestBody);
         
-        const response = await fetch(API_URLS.BUS.DETAILS, {
+        // Add bus ID if available
+        if (busId) {
+          requestBody.busId = busId;
+        }
+
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -56,59 +47,44 @@ const InlineSeatSelection = ({ busData, busId }) => {
           body: JSON.stringify(requestBody)
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('API Error response:', errorText);
           throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log('Full API Response:', result);
-          // Extract seat numbers from the API response data array
-        if (result.success && Array.isArray(result.data)) {
-          const bookedSeatNumbers = result.data.map(booking => booking.seatNumber);
-          console.log('Extracted booked seat numbers:', bookedSeatNumbers);
-          setBookedSeats(bookedSeatNumbers);
-          
-          // For testing: If API returns empty, let's use some actual seats from your example
-          if (bookedSeatNumbers.length === 0) {
-            console.log('No booked seats from API, using actual test data from API example...');
-            // Using seats from your actual API response example
-            const testSeats = ['A1', 'A2', 'A3', 'A4', 'B16', 'B15', 'B14', 'B13', 'B12', 'B11', 'B1', 'A14', 'A13', 'A11'];
-            setBookedSeats(testSeats);
-            console.log('Set API example test seats:', testSeats);
-          }
+        }        const data = await response.json();
+        console.log('API Response:', data);
+        console.log('API Response type:', typeof data);
+        console.log('API Response keys:', Object.keys(data));
+        
+        // Extract seat numbers from the response data array
+        const bookedSeatNumbers = data.data ? data.data.map(booking => booking.seatNumber) : [];
+        console.log('Seat numbers from API:', bookedSeatNumbers);
+        console.log('Booked seat numbers length:', bookedSeatNumbers.length);
+        
+        // Temporary test: If API returns empty, add A7 to test red seat rendering
+        if (bookedSeatNumbers.length === 0) {
+          console.log('API returned empty seats, adding A7 for testing...');
+          setBookedSeats(['A7']);
+          console.log('Set booked seats to:', ['A7']);
         } else {
-          console.log('API response not successful or data not array:', result);
-          // Set actual test data from your API example
-          const testSeats = ['A1', 'A2', 'A3', 'A4', 'B16', 'B15', 'B14', 'B13', 'B12', 'B11', 'B1', 'A14', 'A13', 'A11'];
-          setBookedSeats(testSeats);
-          console.log('Set fallback API example seats:', testSeats);
-        }        
+          console.log('Using real booked seats:', bookedSeatNumbers);
+          setBookedSeats(bookedSeatNumbers);
+        }
+        
       } catch (error) {
         console.error('Failed to fetch booked seats:', error);
-        // Set test data on error to verify the UI works (using seats from your API example)
-        const testSeats = ['A1', 'A2', 'A3', 'A4', 'B16', 'B15', 'B14', 'B13', 'B12', 'B11', 'B1', 'A14', 'A13', 'A11'];
-        setBookedSeats(testSeats);
-        console.log('Set error fallback API example seats:', testSeats);
+        console.error('Error details:', error.message);
+        console.log('Setting A7 as booked seat due to error...');
+        setBookedSeats(['A7']); // Also set test seat on error
       }
-    };
-
-    fetchBookedSeats();
+    };    fetchBookedSeats();
   }, [busData]);
-
-  // Generate seat configuration based on bus data - EXACT COPY from original
+  // Generate seat configuration based on bus data
   useEffect(() => {
-    console.log('=== SEAT CONFIGURATION DEBUG ===');
     console.log('Bus data received:', busData);
     console.log('Bus ID from params:', busId);
-    console.log('Current bookedSeats state:', bookedSeats);
-    console.log('Number of booked seats:', bookedSeats.length);
+    console.log('Booked seats from API:', bookedSeats);
+    console.log('Booked seats includes A7?', bookedSeats.includes('A7'));
 
-    // Professional seat layout with improved spacing and alignment - EXACT COPY
+    // Professional seat layout with improved spacing and alignment
     const config = {
       // Row 1 - Upper deck front row (better spacing: 50px between seats)
       row1: [
@@ -163,21 +139,13 @@ const InlineSeatSelection = ({ busData, busId }) => {
         { id: 'A11', type: bookedSeats.includes('A11') ? 'booked' : 'available', position: { x: 540, y: 290 } },
         { id: 'A13', type: bookedSeats.includes('A13') ? 'booked' : 'available', position: { x: 590, y: 290 } },
         { id: 'A15', type: bookedSeats.includes('A15') ? 'booked' : 'available', position: { x: 670, y: 290 } },
-      ],    };
-    
-    console.log('Generated seat config:', config);
-    
-    // Log some specific seats to check their status
-    const testSeatIds = ['A1', 'A2', 'B1', 'B2', 'B14', 'B16'];
-    testSeatIds.forEach(seatId => {
-      const isBooked = bookedSeats.includes(seatId);
-      console.log(`Seat ${seatId}: isBooked = ${isBooked}`);
-    });
+      ],
+    };
     
     setSeatConfig(config);
     
     // Calculate available seats count to match the bus listing format
-    const totalSeats = 32; // Total seats in the bus layout
+    const totalSeats = 39; // Total seats in the bus layout
     const bookedSeatsCount = bookedSeats.length;
     const availableCount = totalSeats - bookedSeatsCount;
     
@@ -185,7 +153,6 @@ const InlineSeatSelection = ({ busData, busId }) => {
     
     console.log('Total seats:', totalSeats, 'Booked:', bookedSeatsCount, 'Available:', availableCount);
     console.log('Bus data available seats from listing:', busData.availableSeats);
-    console.log('=== END SEAT CONFIGURATION DEBUG ===');
   }, [busId, busData, bookedSeats]);
 
   // Calculate available seats and update price when selectedSeats change
@@ -195,6 +162,10 @@ const InlineSeatSelection = ({ busData, busId }) => {
       setTotalPrice(selectedSeats.length * seatPrice);
     }
   }, [selectedSeats, seatConfig]);
+
+  useEffect(() => {
+    console.log('Bus data is missing or incomplete:', busData);
+  }, [busData]);
 
   const handleSeatClick = (seatId, seatType) => {
     if (seatType === 'booked') return;
@@ -261,7 +232,7 @@ const InlineSeatSelection = ({ busData, busId }) => {
 
   return (
     <div className="space-y-6 mt-6">
-      {/* Seat Selection Card - EXACT COPY from original SeatSelection.jsx */}
+      {/* Seat Selection Card*/}
       <Card className="mb-6 min-h-[500px] w-full relative shadow-lg border border-gray-200 rounded-xl bg-white overflow-hidden">
         {/* Legend */}
         <div className="flex items-center justify-between mb-6 px-6 pt-6">
@@ -292,8 +263,8 @@ const InlineSeatSelection = ({ busData, busId }) => {
           </div>
         </div>
 
-        {/* Seat Map - EXACT COPY from original SeatSelection.jsx */}
-        <div className="relative px-8 pb-8 min-h-[380px] bg-gradient-to-b from-gray-50 to-white rounded-lg">
+        {/* Seat Map - Exact copy from SeatSelection.jsx */}
+        <div className="relative  px-8 pb-8 min-h-[380px] bg-gradient-to-b from-gray-50 to-white rounded-lg">
           {/* Bus outline for visual context */}
           <div className="absolute inset-x-8 top-4 bottom-4 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50/30"></div>
           
@@ -301,7 +272,7 @@ const InlineSeatSelection = ({ busData, busId }) => {
           <div className="absolute top-8 left-12 bg-gray-700 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
             Driver
           </div>
-          
+          <div></div>
           {/* Render all seats */}
           {Object.keys(seatConfig).length > 0 && Object.values(seatConfig).flat().map((seat) => {
             const isSelected = selectedSeats.includes(seat.id);
@@ -363,7 +334,7 @@ const InlineSeatSelection = ({ busData, busId }) => {
         </div>
       </Card>
 
-      {/* Selected Seats and Proceed Card - EXACT COPY from original SeatSelection.jsx */}
+      {/* Selected Seats and Proceed Card - Exact copy from SeatSelection.jsx */}
       <Card className="h-auto w-full shadow-lg border border-gray-200 rounded-xl bg-white">
         <div className="flex items-center justify-between h-full px-6 py-6">
           <div className="flex-1">
@@ -405,8 +376,7 @@ const InlineSeatSelection = ({ busData, busId }) => {
               <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
-            </Button>
-          </div>
+            </Button>          </div>
         </div>
       </Card>
     </div>
