@@ -44,13 +44,13 @@ const PaymentPage = () => {
       toast.error('Please select a payment method');
       return;
     }
-    
-    // Simulate payment processing
+      // Simulate payment processing
     toast.info(`Processing ${selectedPaymentMethod} payment...`);
     
     // Simulate API call delay
     setTimeout(() => {
-      const success = Math.random() > 0.1; // 90% success rate for demo
+      // Always succeed for demo (in production, this would be a real API call)
+      const success = true;
       
       if (success) {
         toast.success(`Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);

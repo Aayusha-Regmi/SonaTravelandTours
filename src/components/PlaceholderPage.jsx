@@ -20,7 +20,7 @@ const PlaceholderPage = ({ title, description }) => {
             </div>
             <div className="pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-500">
-                🚧 Coming Soon - This feature is under development
+                 Coming Soon - This feature is under development
               </p>
             </div>
           </div>

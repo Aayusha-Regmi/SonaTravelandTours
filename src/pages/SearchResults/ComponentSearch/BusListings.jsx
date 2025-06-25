@@ -134,14 +134,13 @@ const BusListings = ({
   // }
   const busData = useMemo(() => {
     if (buses.length === 0) return [];
-      return buses.map(bus => {
-      // Use busId from API response (primary identifier)
-      const busId = bus.busId || bus.id || bus._id || `bus-${Math.random().toString(36).substr(2, 9)}`;
+      return buses.map(bus => {      // Use busId from API response (primary identifier)
+      const busId = bus.busId || bus.id || bus._id ;
       
       // Use API field names: busName, secondaryBusNumber
-      const busName = bus.busName || bus.name || bus.operatorName || 'Sona Travel';
-      const busNumber = bus.secondaryBusNumber || bus.busNumber || bus.vehicleNumber || `STT-${Math.floor(Math.random() * 1000)}`;
-      
+      const busName = bus.busName || bus.name || bus.operatorName || null;
+      const busNumber = bus.secondaryBusNumber || bus.busNumber || bus.vehicleNumber || null;
+
       // Extract and normalize times
       const depTime = bus.departureTime || bus.departure_time || '16:00';
       const arrTime = bus.arrivalTime || bus.arrival_time || '20:50';
@@ -268,7 +267,12 @@ const BusListings = ({
       setIsSearching(false);
     }
   };
-
+console.log('🚌 BusListings received props:', { 
+  buses, 
+  busesLength: buses.length,
+  firstBusAvailableSeats: buses[0]?.availableSeats,
+  firstBusBookedSeats: buses[0]?.bookedSeats 
+});
   return (
     <div className="space-y-4">
       {/* Filter summary display with removable filters */}

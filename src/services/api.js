@@ -78,8 +78,9 @@ const getBusDetails = (busId) => {
  * @returns {Promise} - Promise resolving to booking information
  */
 const bookSeats = (busId, selectedSeats, passengerInfo) => {
-  // Return booking info instantly
-  const bookingId = `BK-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+  // Return booking info instantly with deterministic ID
+  const timestamp = Date.now();
+  const bookingId = `BK-${timestamp.toString(36).toUpperCase()}`;
   return Promise.resolve({
     bookingId,
     busId,
@@ -96,31 +97,59 @@ const bookSeats = (busId, selectedSeats, passengerInfo) => {
  * @param {string} busId - ID of the bus
  * @param {string} date - Travel date
  * @returns {Promise} - Promise resolving to available seats information
+ * 
+ * 
  */
-const getAvailableSeats = (busId, date) => {
-  // Generate 40 seats with some randomly booked
-  const totalSeats = 40;
-  const seats = [];
-  for (let i = 1; i <= totalSeats; i++) {
-    const seatNumber = i.toString().padStart(2, '0');
-    const isBooked = Math.random() < 0.3;
-    const seatType = i % 3 === 0 ? 'Sleeper' : 'Seater';
-    const gender = isBooked ? (Math.random() < 0.5 ? 'Male' : 'Female') : null;
-    seats.push({
-      seatNumber,
-      isBooked,
-      price: seatType === 'Sleeper' ? 1500 : 1200,
-      type: seatType,
-      gender
+//For Marking the seats red on seat sets.
+const getAvailableSeats = async (busId, date, destination = "kathmandu") => {
+  try {
+    // Call the real backend API for seat details
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        travelDate: date,
+        destination: destination.toLowerCase() // Dynamic destination
+      })
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('Seat details API response:', result);
+
+    // Extract booked seat numbers from API response
+    const bookedSeatNumbers = result.data ? result.data.map(booking => booking.seatNumber) : [];
+    
+   
+
+    const availableSeatsCount = seats.filter(seat => !seat.isBooked).length;
+
+    return {
+      busId,
+      travelDate: date,
+      totalSeats,
+      availableSeats: availableSeatsCount, // Real count from backend
+      seats
+    };
+
+  } catch (error) {
+    console.error('Failed to fetch real seat data:', error);
+    
+    // Fallback: return 0 available seats instead of random data
+    return {
+      busId,
+      travelDate: date,
+      totalSeats: 40,
+      availableSeats: 0, // Show 0 instead of random numbers
+      seats: []
+    };
   }
-  return Promise.resolve({
-    busId,
-    travelDate: date,
-    totalSeats,
-    availableSeats: seats.filter(seat => !seat.isBooked).length,
-    seats
-  });
 };
 
 // Helper function to determine bus type based on name and facilities
@@ -145,7 +174,7 @@ const determineBusType = (busName, facilities) => {
   }
 };
 
-// Helper function to process successful API response
+// Helper function to process successful API response for bus search
 const processSuccessfulResponse = (result, fromCity, toCity) => {
   // Check if the response has the expected structure
   if (result.success && result.data && Array.isArray(result.data)) {
@@ -156,6 +185,11 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
 
     // Transform API response to match our component's expected format
     const transformedBuses = result.data.map((bus, index) => {
+      // DEBUG: Log raw API data
+      console.log('🔍 Raw bus data from API:', bus);
+      console.log('📊 Original availableSeats:', bus.availableSeats);
+      console.log('📊 Original bookedSeats:', bus.bookedSeats);
+      
       // Parse comma-separated strings into arrays
       const facilitiesArray = bus.facilities ? bus.facilities.split(',').map(f => f.trim()) : [];
       const routesArray = bus.routes ? bus.routes.split(',').map(r => r.trim()) : [];
@@ -164,10 +198,11 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
       const departureTime = '19:30'; // Default - could be enhanced based on API data
       const arrivalTime = '4:30'; // Default - could be enhanced based on API data
       
-      return {
+      // Create the transformed bus object
+      const transformedBus = {
         id: `bus-${bus.busId || index}`,
         busName: bus.busName || bus.secondaryBusNumber || 'Unknown Bus',
-        busNumber: bus.secondaryBusNumber || 'Bus Number Not Available',
+        busNumber: bus.secondaryBusNumber || bus.busNumber || 'Bus Number Not Available',
         busType: determineBusType(bus.busName, facilitiesArray),
         departureTime,
         arrivalTime,
@@ -176,8 +211,8 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
         duration: '6h 15m', // Default - could be calculated
         fare: bus.fair || bus.fare || 1000,
         rating: '4.5', // Default since not provided in API
-        availableSeats: bus.availableSeats || 0,
-        bookedSeats: bus.bookedSeats || 0,
+        availableSeats: bus.availableSeats || 0,  // ← EXTRACT FROM API
+        bookedSeats: bus.bookedSeats || 0,        // ← EXTRACT FROM API
         facilities: facilitiesArray,
         routes: routesArray,
         description: bus.description || '',
@@ -188,41 +223,68 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
         // Keep original API data for reference
         originalData: bus
       };
+
+      // DEBUG: Log transformed data
+      console.log('✅ COMPARISON:');
+      console.log('   Postman shows: availableSeats=35, bookedSeats=8');
+      console.log('   API returned:', bus.availableSeats, bus.bookedSeats);
+      console.log('   Transformed to:', transformedBus.availableSeats, transformedBus.bookedSeats);
+      
+      return transformedBus;  // ← RETURN THE TRANSFORMED OBJECT
     });
 
-    console.log('  Transformed bus data:', transformedBuses);
+    console.log('🔄 Transformed bus data:', transformedBuses);
     return transformedBuses;
+    
   } else if (result.success && (!result.data || result.data.length === 0)) {
     // API returned success but no data
     console.log('📭 API returned empty data array');
     return [];
   } else {
     // API returned unexpected structure
-    console.error('  API response has unexpected structure:', result);
+    console.error('🚨 API response has unexpected structure:', result);
     throw new Error(`Invalid API response structure. Expected success=true and data array, got: ${JSON.stringify(result)}`);
   }
 };
 
 const searchBuses = async (searchParams) => {
   try {
-    // Map the search parameters to match the API format
     const { fromCity, toCity, date, returnDate, tripType } = searchParams;
     
-    // Format date for API (assuming it comes in a readable format)
+    // FIX: Proper date formatting without timezone issues
     let apiDate = date;
     if (date) {
-      // If date is in a human readable format, convert to YYYY-MM-DD
-      const parsedDate = new Date(date);
-      if (!isNaN(parsedDate.getTime())) {
-        apiDate = parsedDate.toISOString().split('T')[0];
+      // Handle different date formats properly
+      if (typeof date === 'string') {
+        // If it's already in YYYY-MM-DD format, use as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          apiDate = date;
+        } else {
+          // Parse the date and format without timezone conversion
+          const parsedDate = new Date(date);
+          if (!isNaN(parsedDate.getTime())) {
+            // Use local date parts instead of UTC to avoid timezone issues
+            const year = parsedDate.getFullYear();
+            const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(parsedDate.getDate()).padStart(2, '0');
+            apiDate = `${year}-${month}-${day}`;
+          }
+        }
       }
     }
+    
+    // Add debug log to verify date conversion
+    console.log('🗓️ Date conversion check:');
+    console.log('   Original date:', date);
+    console.log('   Formatted for API:', apiDate);
     
     const requestBody = {
       destination: toCity,
       origin: fromCity,
-      date: apiDate
-    };    console.log('🚌 Bus Search API Request:', requestBody);
+      date: apiDate  // Now correctly formatted
+    };
+    
+    console.log('🚌 Bus Search API Request:', requestBody);
     console.log('🌐 API URL:', API_URLS.BUS.SEARCH);
     console.log('� Environment variables:', {
       baseUrl: import.meta.env.VITE_API_BASE_URL,

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Button from '../../../components/ui/Button';
-
 // Add the missing Card component import
 const Card = ({ children, className = '' }) => (
   <div className={`${className}`}>
@@ -28,10 +27,9 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
   useEffect(() => {
     const fetchBookedSeats = async () => {
       setIsLoadingSeats(true);
-      try {       
-        // Use passed travelDate prop, fallback to busData or current date
+      try {         // Use passed travelDate prop, fallback to busData or current date
         const currentTravelDate = travelDate || busData.departureDate || busData.date || new Date().toISOString().split('T')[0];
-        const destination = busData.route?.to || busData.destination || searchParams.to || 'Default Destination';
+        const destination = searchParams.toCity || searchParams.to || busData.route?.to || busData.destination || busData.arrivalLocation || 'kathmandu';
           const apiUrl = `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`;
         console.log('API URL:', apiUrl);
         console.log('Base URL:', import.meta.env.VITE_API_BASE_URL);
@@ -39,33 +37,59 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         console.log('Travel Date:', currentTravelDate);
         console.log('Destination:', destination);
         console.log('Search Params:', searchParams);        console.log('Request body:', { travelDate: currentTravelDate, destination: destination });
-        console.log('Bus Data:', busData);        
-          // Get user token from localStorage or sessionStorage
-        const userToken = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-        console.log('User token found:', userToken ? 'Yes' : 'No');
+        console.log('Bus Data:', busData);          // Get user token from localStorage or sessionStorage
+        let userToken = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        
+        // Clean and validate the token
+        if (userToken) {
+          userToken = userToken.trim(); // Remove any whitespace
+          console.log('Raw token:', userToken);
+          
+          // Basic JWT validation (should have 3 parts separated by dots)
+          const tokenParts = userToken.split('.');
+          if (tokenParts.length !== 3) {
+            console.error('Invalid JWT token format - should have 3 parts');
+            userToken = null;
+          } else {
+            try {
+              // Try to decode the payload to validate
+              const payload = JSON.parse(atob(tokenParts[1]));
+              console.log('Token payload:', payload);
+              
+              // Check if token is expired
+              if (payload.exp && payload.exp < Date.now() / 1000) {
+                console.error('JWT token is expired');
+                userToken = null;
+              }
+            } catch (error) {
+              console.error('Invalid JWT token - cannot decode:', error);
+              userToken = null;
+            }
+          }
+        }
+        
+        console.log('User token found and valid:', userToken ? 'Yes' : 'No');
           // API request format - only travelDate and destination as specified
         const requestBody = {
           travelDate: currentTravelDate,
           destination: destination.toLowerCase() // Try lowercase to match API data
         };
         
-        // Backend expects only travelDate and destination - no busId or token in body
-
-        // Prepare headers with authentication
+        console.log('Request body for API:', requestBody);        // Prepare headers with authentication
         const headers = {
           'Content-Type': 'application/json',
         };
         
-        // Add Authorization header if token is available
+        // Add Authorization header only if token is valid
         if (userToken) {
           headers.Authorization = `Bearer ${userToken}`;
-          console.log('Added Authorization header');
+          console.log('Added Authorization header with valid token');
+        } else {
+          console.log('No valid token found - making unauthenticated request');
         }
 
         console.log('Request headers:', headers);
-        console.log('Final request body:', requestBody);
-
-        const response = await fetch(apiUrl, {
+        console.log('Final request body:', requestBody);        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: headers,
           body: JSON.stringify(requestBody)
