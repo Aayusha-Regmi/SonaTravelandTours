@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
-// import FilterSection from './ComponentSearch/FilterSection';
 import BusListings from './ComponentSearch/BusListings';
 import DateSelector from './ComponentSearch/DateSelector';
 import Button from '../../components/ui/Button';
@@ -13,7 +12,8 @@ import api from '../../services/api';
 const SearchResultsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-    // Get search results and params from location state
+  
+  // Get search results and params from location state
   const { searchResults = [], searchParams = {}, fromLogin = false } = location.state || {};
   
   const [tripType, setTripType] = useState(searchParams.tripType || 'oneWay');
@@ -23,189 +23,25 @@ const SearchResultsPage = () => {
     date: searchParams.date || '',
     returnDate: searchParams.returnDate || ''
   });
-    // Set default values or values from search params
+  
+  // Set default values or values from search params
   const [fromLocation, setFromLocation] = useState(searchParams.fromCity || 'Birgunj');
-  const [toLocation, setToLocation] = useState(searchParams.toCity || 'Kathmandu');  const [travelDate, setTravelDate] = useState(searchParams.date || '06/06/2024');
+  const [toLocation, setToLocation] = useState(searchParams.toCity || 'Kathmandu');
+  const [travelDate, setTravelDate] = useState(searchParams.date || '06/06/2024');
   const [sortBy, setSortBy] = useState('Earliest');
-  // const [selectedDepartureTime, setSelectedDepartureTime] = useState('');
-    // Bus data will be fetched from API service
-    // Filter states - COMMENTED OUT since we only have one bus
-  // const [priceRange, setPriceRange] = useState([500, 2000]);
-  // const [selectedBoardingPlaces, setSelectedBoardingPlaces] = useState(['New Bus Park, Kathmandu',
-  //   'Kalanki, Kathmandu',
-  //   'Balkhu, Kathmandu',
-  //   'Koteshwor, Kathmandu',
-  //   'Chabahil, Kathmandu']);
-  // const [selectedDroppingPlaces, setSelectedDroppingPlaces] = useState(['Adarsha Nagar, Birgunj',
-  //   'Ghantaghar, Birgunj',
-  //   'Birta, Birgunj',
-  //   'Powerhouse, Birgunj',
-  //   'Rangeli, Birgunj'
-  //  ]);
-  //const [selectedBusTypes, setSelectedBusTypes] = useState(['Deluxe A/C', 'Super Deluxe']);
-  // const [selectedFacilities, setSelectedFacilities] = useState([]);
-  // const [selectedRatings, setSelectedRatings] = useState([]);// Initialize bus results state
+  
+  // Initialize bus results state
   const [allBusResults, setAllBusResults] = useState(searchResults.length > 0 ? searchResults : []);
   const [busResults, setBusResults] = useState(searchResults.length > 0 ? searchResults : []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-    // Fetch bus data from API when component mounts
-  useEffect(() => {
-    const fetchBusData = async () => {
-      setIsLoading(true);
-      try {
-        // If we have results already, use them
-        if (searchResults.length > 0) {
-          console.log('Using existing search results');
-          return;
-        }        // If coming from login with search params, perform the search automatically
-        if (fromLogin && searchParams.from && searchParams.to && searchParams.date) {
-          console.log('Auto-searching after login with stored search data:', searchParams);
-          const searchData = {
-            fromCity: searchParams.from,
-            toCity: searchParams.to,
-            date: searchParams.date,
-            returnDate: searchParams.returnDate || '',
-            tripType: searchParams.tripType || 'oneWay'
-          };
-          const data = await api.searchBuses(searchData);
-          console.log(' Auto-search results:', data);
-          setAllBusResults(data);
-          setBusResults(data);
-          setError(null); // Clear any previous errors
-          return;
-        }
 
-        // Otherwise fetch with current form values if we don't have results already
-        if (searchResults.length === 0) {
-          console.log('🔍 Searching with current form values:', {
-            fromCity: fromLocation,
-            toCity: toLocation,
-            date: travelDate
-          });
-          const searchData = {
-            fromCity: fromLocation,
-            toCity: toLocation,
-            date: travelDate
-          };
-          const data = await api.searchBuses(searchData);
-          console.log(' Search results received:', data);
-          setAllBusResults(data);
-          setBusResults(data);
-          setError(null); // Clear any previous errors
-        }
-      } catch (err) {
-        console.error(' Bus search error:', err);
-        setError(`API Error: ${err.message}`);
-        setAllBusResults([]); // Clear any existing results
-        setBusResults([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchBusData();  }, [fromLocation, toLocation, travelDate, searchResults, fromLogin, searchParams]);
-    // Effect to update filter section when filters are removed through filter tags - COMMENTED OUT
-  // useEffect(() => {
-  //   // This will ensure the filter sidebar stays in sync with the selected filters
-  //   applyFilters();
-  // }, [selectedBoardingPlaces, selectedDroppingPlaces, selectedFacilities, selectedRatings, priceRange, selectedDepartureTime]);
-    // Apply filters to bus results - COMMENTED OUT since we don't need filters
-  // const applyFilters = useCallback(() => {
-  //   let filteredResults = [...allBusResults];
-  //     // Filter by price range
-  //   filteredResults = filteredResults.filter(bus => 
-  //     (bus.fare || bus.fair || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) >= priceRange[0] && 
-  //     (bus.fare || bus.fair || parseInt((bus.price || '').replace(/[^0-9]/g, ''))) <= priceRange[1]
-  //   );
-  //   
-  //   // Filter by boarding places if any selected
-  //   if (selectedBoardingPlaces.length > 0) {
-  //     filteredResults = filteredResults.filter(bus => 
-  //       selectedBoardingPlaces.some(place => 
-  //         (bus.boardingPoint || bus.boarding_point || '').includes(place)
-  //       )
-  //     );
-  //   }
-  //   
-  //   // Filter by dropping places if any selected
-  //   if (selectedDroppingPlaces.length > 0) {
-  //     filteredResults = filteredResults.filter(bus => 
-  //       selectedDroppingPlaces.some(place => 
-  //         (bus.droppingPoint || bus.dropping_point || '').includes(place)
-  //       )
-  //     );
-  //   }
-  //   
-  //   // // Filter by bus types if any selected
-  //   // if (selectedBusTypes.length > 0) {
-  //   //   filteredResults = filteredResults.filter(bus => 
-  //   //     selectedBusTypes.some(type => 
-  //   //       (bus.busType || bus.type || '').includes(type)
-  //   //     )
-  //   //   );
-  //   // }
-  //   
-  //   // Filter by facilities if any selected
-  //   if (selectedFacilities.length > 0) {
-  //     filteredResults = filteredResults.filter(bus => 
-  //       bus.facilities && selectedFacilities.every(facility => 
-  //         bus.facilities.includes(facility)
-  //       )
-  //     );
-  //   }
-  //   
-  // // Filter by rating if any selected
-  //   if (selectedRatings.length > 0) {
-  //     filteredResults = filteredResults.filter(bus => {
-  //       const rating = parseFloat(bus.rating || '0');
-  //       
-  //       // For "4 Stars" filter: rating >= 4 and < 5
-  //       return selectedRatings.some(ratingFilter => {
-  //         if (ratingFilter === '5 Stars') return rating >= 5;
-  //         if (ratingFilter === '4 Stars') return rating >= 4 && rating < 5;
-  //         if (ratingFilter === '3 Stars') return rating >= 3 && rating < 4;
-  //         if (ratingFilter === '1-2 Stars') return rating >= 1 && rating < 3;
-  //         return true;
-  //       });
-  //     });
-  //   }
-  //   
-  //   // Filter by departure time if selected
-  //   if (selectedDepartureTime) {
-  //     filteredResults = filteredResults.filter(bus => {
-  //       const departureTime = bus.departureTime || '';
-  //       const [hours, minutes] = departureTime.split(':').map(Number);
-  //       const timeInMinutes = hours * 60 + (minutes || 0);
-  //       
-  //       switch(selectedDepartureTime) {
-  //         case 'Early Morning':
-  //           // Before 6 AM (0:00 - 5:59)
-  //           return timeInMinutes < 360;
-  //         case 'Morning':
-  //           // 6 AM - 11:59 AM
-  //           return timeInMinutes >= 360 && timeInMinutes < 720;
-  //         case 'Afternoon':
-  //           // 12 PM - 5 PM
-  //           return timeInMinutes >= 720 && timeInMinutes < 1020;
-  //         case 'Evening':
-  //           // After 5 PM
-  //           return timeInMinutes >= 1020;
-  //         default:
-  //           return true;
-  //       }
-  //     });
-  //   }
-  //   
-  //   setBusResults(filteredResults);
-  // }, [allBusResults, priceRange, selectedBoardingPlaces, selectedDroppingPlaces,selectedFacilities, selectedRatings, selectedDepartureTime]);
-  //   // Apply filters when any filter changes or when bus results change - COMMENTED OUT
-  // useEffect(() => {
-  //   if (allBusResults.length > 0) {
-  //     applyFilters();
-  //   }
-  // }, [applyFilters, allBusResults]);
-    // Location options - limited to Kathmandu and Birgunj only
+  // Refs for debouncing and preventing multiple calls
+  const searchTimeoutRef = useRef(null);
+  const lastSearchParamsRef = useRef(null);
+  const isSearchingRef = useRef(false);
+
+  // Location options - limited to Kathmandu and Birgunj only
   const locationOptions = [
     { 
       value: 'Kathmandu', 
@@ -219,85 +55,157 @@ const SearchResultsPage = () => {
     }
   ];
 
-  const sortOptions = ['Earliest', 'Latest', 'Lowest price', 'Highest price','Top rating'];  
-  
-  // Fetch bus data from API when component mounts or search params change  
+  const sortOptions = ['Earliest', 'Latest', 'Lowest price', 'Highest price','Top rating'];
+
+  // DEBOUNCED SEARCH FUNCTION - NEW APPROACH
+  const performSearch = useCallback(async (searchParams, source = 'unknown') => {
+    // Prevent multiple simultaneous searches
+    if (isSearchingRef.current) {
+      console.log('🚫 Search already in progress, skipping...');
+      return;
+    }
+
+    // Check if search params actually changed
+    const searchKey = `${searchParams.fromCity}-${searchParams.toCity}-${searchParams.date}`;
+    if (lastSearchParamsRef.current === searchKey) {
+      console.log('🚫 Same search parameters, skipping duplicate search');
+      return;
+    }
+
+    isSearchingRef.current = true;
+    lastSearchParamsRef.current = searchKey;
+
+    console.log(`🚀 ========== PERFORMING SEARCH (${source.toUpperCase()}) ==========`);
+    console.log('📥 Search Parameters:', searchParams);
+    console.log('📥 Source:', source);
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Convert date format before API call
+      let apiDate = searchParams.date;
+      if (searchParams.date) {
+        const dateObj = new Date(searchParams.date);
+        if (!isNaN(dateObj.getTime())) {
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObj.getDate()).padStart(2, '0');
+          apiDate = `${year}-${month}-${day}`;
+          
+          console.log('🗓️ Date conversion for', source + ':');
+          console.log('   Original date:', searchParams.date);
+          console.log('   Converted date:', apiDate);
+        }
+      }
+
+      const apiParams = {
+        fromCity: searchParams.fromCity,
+        toCity: searchParams.toCity,
+        date: apiDate
+      };
+
+      console.log('📤 API Request from', source + ':', apiParams);
+      const startTime = performance.now();
+      
+      const busData = await api.searchBuses(apiParams);
+      
+      const endTime = performance.now();
+      console.log(`📥 API Response (${source}) in ${Math.round(endTime - startTime)}ms:`, busData);
+      console.log('   Available seats in first bus:', busData[0]?.availableSeats);
+      console.log('   Booked seats in first bus:', busData[0]?.bookedSeats);
+
+      if (!busData || !Array.isArray(busData)) {
+        throw new Error('Invalid API response format');
+      }
+
+      if (busData.length === 0) {
+        console.log('📭 No buses found');
+        setError('No buses found for this route and date.');
+        setBusResults([]);
+        setAllBusResults([]);
+        return;
+      }
+
+      console.log(`✅ ${source} search successful - updating UI with ${busData.length} buses`);
+      setAllBusResults(busData);
+      setBusResults(busData);
+      setError(null);
+
+      // Update URL state
+      navigate('/search-results', { 
+        state: { 
+          searchResults: busData,
+          searchParams: { 
+            tripType, 
+            ...formData,
+            fromCity: searchParams.fromCity,
+            toCity: searchParams.toCity
+          } 
+        },
+        replace: true
+      });
+
+      console.log(`🏁 ========== ${source.toUpperCase()} SEARCH COMPLETED ==========`);
+
+    } catch (error) {
+      console.error(`❌ ${source} search error:`, error);
+      setError(`Search failed: ${error.message}`);
+      setAllBusResults([]);
+      setBusResults([]);
+    } finally {
+      setIsLoading(false);
+      isSearchingRef.current = false;
+    }
+  }, [navigate, tripType, formData]);
+
+  // DEBOUNCED SEARCH TRIGGER
+  const triggerSearch = useCallback((searchParams, source = 'auto', delay = 300) => {
+    console.log(`🕐 Scheduling ${source} search in ${delay}ms...`);
+    
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(searchParams, source);
+    }, delay);
+  }, [performSearch]);
+
+  // Initial fetch on component mount
   useEffect(() => {
-    const fetchBusData = async () => {
-      setIsLoading(true);
-      try {
-        // Create search params object
-        const searchParams = {
+    const fetchInitialData = async () => {
+      if (searchResults.length > 0) {
+        console.log('✅ Using existing search results from navigation');
+        return;
+      }
+
+      if (fromLogin && searchParams.from && searchParams.to && searchParams.date) {
+        console.log('🔄 Auto-searching after login');
+        const searchData = {
+          fromCity: searchParams.from,
+          toCity: searchParams.to,
+          date: searchParams.date
+        };
+        await performSearch(searchData, 'login-redirect');
+        return;
+      }
+
+      // Initial search with current values
+      if (fromLocation && toLocation && travelDate) {
+        const initialParams = {
           fromCity: fromLocation,
           toCity: toLocation,
           date: travelDate
         };
-        
-        // Update form data when travelDate changes to keep forms in sync
-        if (travelDate !== formData.date) {
-          // This ensures both the DatePicker and DateSelector show the same date
-          setFormData(prev => ({
-            ...prev,
-            date: travelDate
-          }));
-        }
-          // Fetch bus data from API
-        console.log('🔍 Fetching bus data with params:', searchParams);
-        const busData = await api.searchBuses(searchParams);
-        console.log('📊 Bus data received:', busData);
-        setAllBusResults(busData);
-        setBusResults(busData);
-        setError(null); // Clear any previous errors
-      } catch (error) {
-        console.error('❌ Bus fetch error:', error);
-        setError(`API Error: ${error.message}`);
-        setAllBusResults([]); // Clear any existing results
-        setBusResults([]);
-      } finally {
-        setIsLoading(false);
+        await performSearch(initialParams, 'initial-load');
       }
     };
-    
-    // Only fetch if we don't already have search results from navigation state
-    if (searchResults.length === 0) {
-      fetchBusData();
-    }
-  }, [fromLocation, toLocation, travelDate]);
-    // Redirect to home if no search data
-  useEffect(() => {
-    if (!location.state && (!searchResults || searchResults.length === 0)) {
-      console.log('No search data available');
-    }
-  }, [location.state, searchResults]);
-  
-  // Ensure date format consistency on page load/refresh
-  useEffect(() => {
-    if (travelDate) {
-      // Convert travelDate to standard format if needed
-      try {
-        const dateObj = new Date(travelDate);
-        if (!isNaN(dateObj.getTime())) {
-          const formattedDate = dateObj.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          });
-          
-          // Only update if format is different to avoid loops
-          if (formattedDate !== travelDate) {
-            setTravelDate(formattedDate);
-            setFormData(prev => ({
-              ...prev,
-              date: formattedDate
-            }));
-          }
-        }
-      } catch (e) {
-        console.error('Date parsing error:', e);
-      }
-    }
-  }, []);
+
+    fetchInitialData();
+  }, []); // Only run once on mount
 
   // Effect to sort bus results when sortBy changes
   useEffect(() => {
@@ -310,7 +218,8 @@ const SearchResultsPage = () => {
         case 'Earliest':
           return (a.departureTime || a.departure_time || '').localeCompare(b.departureTime || b.departure_time || '');
         case 'Latest':
-          return (b.departureTime || b.departure_time || '').localeCompare(a.departureTime || a.departure_time || '');        case 'Lowest price':
+          return (b.departureTime || b.departure_time || '').localeCompare(a.departureTime || a.departure_time || '');
+        case 'Lowest price':
           const priceA = a.fare || a.fair || parseInt((a.price || '').replace(/[^0-9]/g, '')) || 0;
           const priceB = b.fare || b.fair || parseInt((b.price || '').replace(/[^0-9]/g, '')) || 0;
           return priceA - priceB;
@@ -326,94 +235,65 @@ const SearchResultsPage = () => {
     });
     
     setBusResults(sortedResults);
-    setTimeout(() => setIsLoading(false), 100); // Small delay for UI feedback
+    setTimeout(() => setIsLoading(false), 100);
   }, [sortBy]);
+
+  // UPDATED handleInputChange - IMMEDIATE API CALLS
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // If changing the travel date and we have a return date set
-    if (name === 'date' && tripType === 'twoWay' && formData.returnDate) {
-      const newTravelDate = value ? new Date(value.split(' ').join(' ')) : null;
-      const existingReturnDate = new Date(formData.returnDate.split(' ').join(' '));
-      
-      // If the new travel date is after the existing return date or if travel date is cleared
-      if (!newTravelDate || newTravelDate > existingReturnDate) {
-        // Reset return date when travel date changes to after it
-        setFormData({
-          ...formData,
-          [name]: value,
-          returnDate: '' // Clear the return date
-        });
-        
-        // Always sync travelDate with form data
-        if (name === 'date') {
-          setTravelDate(value);
-        }
-        return;
-      }
-    }
+    console.log(`📝 Input change: ${name} = ${value} (source: ${e.isTrusted ? 'user' : 'programmatic'})`);
     
-    // If user is selecting a 'from' location and it's the same as the 'to' location, clear the 'to' field
-    if (name === 'from' && value === formData.to) {
-      setFormData({
-        ...formData,
-        [name]: value,
-        to: '' // Clear the destination if it's the same as departure
-      });
-      return;
-    }
-    
-    // If user is selecting a 'to' location and it's the same as the 'from' location, clear the 'from' field
-    if (name === 'to' && value === formData.from) {
-      setFormData({
-        ...formData,
-        [name]: value,
-        from: '' // Clear the departure if it's the same as destination
-      });
-      return;
-    }
-      setFormData({
-      ...formData,
+    // Update form data immediately
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    });
-      // Update display values for immediate UI feedback
+    }));
+
+    // Handle specific input types
     if (name === 'from') {
       const selectedLocation = locationOptions.find(loc => loc.value === value);
       setFromLocation(selectedLocation?.label || value);
-    } else if (name === 'to') {
-      const selectedLocation = locationOptions.find(loc => loc.value === value);
-      setToLocation(selectedLocation?.label || value);} else if (name === 'date') {
-      // Ensure travelDate and formData.date are always in sync
-      setTravelDate(value);
       
-      // Special handling for date reset
-      if (e.isReset) {
-        // When date is reset, set today's date for a consistent reset behavior
-        const today = new Date();
-        const formattedToday = today.toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        });
-        
-        setTravelDate(formattedToday);
-        setFormData(prev => ({
-          ...prev,
-          date: formattedToday
-        }));
-        
-        // Wait a bit then refresh results
-        setTimeout(() => handleSearchAgain(), 300);
-        return;
+      // Trigger search immediately for location change
+      if (value && formData.to && (formData.date || travelDate)) {
+        const searchParams = {
+          fromCity: value,
+          toCity: formData.to,
+          date: formData.date || travelDate
+        };
+        triggerSearch(searchParams, 'from-location-change', 100);
       }
       
-      // If this is a date change from the DatePicker, we might want to refresh results
-      // But only if it's a direct user interaction (not a programmatic update)
-      if (e.isTrusted) {
-        // When DatePicker changes, update both travelDate and formData.date
-        // and trigger a search to refresh results
-        setTimeout(() => handleSearchAgain(), 100);
+    } else if (name === 'to') {
+      const selectedLocation = locationOptions.find(loc => loc.value === value);
+      setToLocation(selectedLocation?.label || value);
+      
+      // Trigger search immediately for location change
+      if (formData.from && value && (formData.date || travelDate)) {
+        const searchParams = {
+          fromCity: formData.from,
+          toCity: value,
+          date: formData.date || travelDate
+        };
+        triggerSearch(searchParams, 'to-location-change', 100);
+      }
+      
+    } else if (name === 'date') {
+      setTravelDate(value);
+      
+      console.log('🗓️ Date change detected:');
+      console.log('   New date:', value);
+      console.log('   Is user interaction:', e.isTrusted);
+      
+      // Trigger search immediately for date change if we have locations
+      if ((formData.from || fromLocation) && (formData.to || toLocation) && value) {
+        const searchParams = {
+          fromCity: formData.from || fromLocation,
+          toCity: formData.to || toLocation,
+          date: value
+        };
+        triggerSearch(searchParams, 'date-change', 100);
       }
     }
   };
@@ -421,6 +301,8 @@ const SearchResultsPage = () => {
   const handleSwapLocations = () => {
     const newFrom = formData.to;
     const newTo = formData.from;
+    
+    console.log('🔄 Swapping locations:', newFrom, '↔', newTo);
     
     setFormData(prevData => ({
       ...prevData,
@@ -431,89 +313,51 @@ const SearchResultsPage = () => {
     // Update display values
     setFromLocation(locationOptions.find(loc => loc.value === newFrom)?.label || newFrom);
     setToLocation(locationOptions.find(loc => loc.value === newTo)?.label || newTo);
-  };
-  const handleSearchAgain = async () => {
-    // Validate form data
-    if (!formData.from || !formData.to || !formData.date || (tripType === 'twoWay' && !formData.returnDate)) {
-      setError('Please fill in all required fields');
-      return;
-    }
-    if (formData.from === formData.to) {
-      setError('Departure and destination cannot be the same');
-      return;
-    }
-    if (tripType === 'twoWay' && formData.date && formData.returnDate) {
-      const departDate = new Date(formData.date.split(' ').join(' '));
-      const returnDate = new Date(formData.returnDate.split(' ').join(' '));
-      if (returnDate < departDate) {
-        setError('Return date must be after departure date');
-        return;
-      }
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      // Make API call
-      const filteredBuses = await api.searchBuses({
-        fromCity: formData?.from,
-        toCity: formData?.to,
-        date: formData?.date,
-      });
-      if (!filteredBuses || !Array.isArray(filteredBuses)) {
-        throw new Error('Unexpected response format');
-      }
-      if (filteredBuses.length === 0) {
-        setError('No buses found for this route and date. Please try different dates or locations.');
-        setBusResults([]);
-        setAllBusResults([]);
-        setIsLoading(false);
-        return;
-      }
-      setBusResults(filteredBuses);
-      setAllBusResults(filteredBuses);
-      handleUpdateSearchState(filteredBuses);
-      document.getElementById('resultsSection')?.scrollIntoView({ behavior: 'smooth' });
-    } catch (err) {
-      // On error, show error and fallback to default data instantly
-      setError('Failed to fetch bus data. Showing default results.');
-      const defaultData = await api.getDefaultBuses ? await api.getDefaultBuses() : [
-        {
-          id: 'default1',
-          busName: 'Sona Express',
-          busType: 'Deluxe A/C',
-          departureTime: '16:00',
-          arrivalTime: '20:50',
-          boardingPoint: 'New Bus Park, Kathmandu',
-          droppingPoint: 'Adarsha Nagar, Birgunj',
-          price: 'Rs. 1200',
-          availableSeats: 12,
-          facilities: ['AC', 'WiFi'],
-          rating: '4.8',
-        }
-      ];
-      setBusResults(defaultData);
-      setAllBusResults(defaultData);
-      handleUpdateSearchState(defaultData);
-    } finally {
-      setIsLoading(false);
+    
+    // Trigger search immediately after swap
+    if (newFrom && newTo && (formData.date || travelDate)) {
+      const searchParams = {
+        fromCity: newFrom,
+        toCity: newTo,
+        date: formData.date || travelDate
+      };
+      triggerSearch(searchParams, 'location-swap', 100);
     }
   };
 
-  // Update URL state for browser history after successful search
-  const handleUpdateSearchState = (results) => {
-    navigate('/search-results', { 
-      state: { 
-        searchResults: results,
-        searchParams: { 
-          tripType, 
-          ...formData,
-          // Include city names from location codes
-          fromCity: locationOptions.find(loc => loc.value === formData.from)?.label || formData.from,
-          toCity: locationOptions.find(loc => loc.value === formData.to)?.label || formData.to
-        } 
-      },
-      replace: true // Replace current history entry to avoid back button issues
-    });
+  // SIMPLIFIED handleSearchAgain - IMMEDIATE API CALL
+  const handleSearchAgain = async () => {
+    console.log('🔄 ========== MANUAL SEARCH AGAIN CLICKED ==========');
+    console.log('📥 Current form data:', formData);
+    
+    // Validation
+    if (!formData.from || !formData.to || !formData.date) {
+      console.log('❌ Validation failed: Missing required fields');
+      setError('Please fill in all required fields');
+      return;
+    }
+    
+    if (formData.from === formData.to) {
+      console.log('❌ Validation failed: Same departure and destination');
+      setError('Departure and destination cannot be the same');
+      return;
+    }
+    
+    console.log('✅ Validation passed - triggering immediate search');
+    
+    const searchParams = {
+      fromCity: formData.from,
+      toCity: formData.to,
+      date: formData.date
+    };
+    
+    // Immediate search with no delay for manual button click
+    await performSearch(searchParams, 'manual-search-again');
+    
+    // Scroll to results
+    setTimeout(() => {
+      document.getElementById('resultsSection')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const handleTripTypeChange = (type) => {
@@ -524,9 +368,20 @@ const SearchResultsPage = () => {
     setSortBy(option);
   };
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#f5f5f5]">      <Header />
-        <main className="container mx-auto px-4 sm:px-8 py-6 md:py-8 lg:py-12 max-w-7xl">
+    <div className="min-h-screen bg-[#f5f5f5]">
+      <Header />
+      
+      <main className="container mx-auto px-4 sm:px-8 py-6 md:py-8 lg:py-12 max-w-7xl">
         {/* Breadcrumb */}
         <div className="flex items-center space-x-3 mb-6">
           <span className="text-sm font-medium text-gray-400">Home</span>
@@ -539,9 +394,12 @@ const SearchResultsPage = () => {
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
             {error}
           </div>
-        )}{/* Search Section */}
+        )}
+
+        {/* Search Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 mb-8">
-          <div className="flex flex-wrap items-end gap-4 lg:gap-3">            {/* Trip Type Selector */}
+          <div className="flex flex-wrap items-end gap-4 lg:gap-3">
+            {/* Trip Type Selector */}
             <div className="flex flex-col order-1 w-[150px]">
               <label htmlFor="tripType" className="text-sm font-medium text-gray-700 mb-1">Trip Type</label>
               <div className="relative">
@@ -561,7 +419,9 @@ const SearchResultsPage = () => {
                   </svg>
                 </div>
               </div>
-            </div>{/* From Location */}
+            </div>
+
+            {/* From Location */}
             <div className="w-[200px] order-2">
               <LocationDropdown
                 label="From"
@@ -572,7 +432,9 @@ const SearchResultsPage = () => {
                 options={locationOptions}
                 required
               />
-            </div>            {/* Swap Button */}
+            </div>
+
+            {/* Swap Button */}
             <div className="self-center order-3 mt-3">
               <button 
                 onClick={handleSwapLocations}
@@ -599,7 +461,9 @@ const SearchResultsPage = () => {
                 options={locationOptions.filter(option => option.value !== formData.from)}
                 required
               />
-            </div>            {/* Date Pickers with more compact layout */}
+            </div>
+
+            {/* Date Pickers with more compact layout */}
             <div className="flex items-end space-x-3 flex-nowrap order-5">
               {/* Departure Date */}
               <div className={tripType === 'twoWay' ? 'w-[170px]' : 'w-[200px]'}>
@@ -634,7 +498,10 @@ const SearchResultsPage = () => {
                   />
                 </div>
               )}
-            </div>            {/* Search Button */}            <div className="order-6 ml-auto">
+            </div>
+
+            {/* Search Button */}
+            <div className="order-6 ml-auto">
               <Button
                 variant="primary"
                 onClick={handleSearchAgain}
@@ -667,40 +534,39 @@ const SearchResultsPage = () => {
                 )}
               </Button>
             </div>
-          </div>        </div>        {/* Date Selector */}
+          </div>
+        </div>
+
+        {/* Date Selector - UPDATED TO USE NEW APPROACH */}
         <DateSelector 
           initialDate={formData.date || travelDate}
           onDateChange={(dateString, dateObj) => {
-            // Update form data with the new date
-            handleInputChange({
-              target: {
-                name: 'date',
-                value: dateString
-              },
-              isTrusted: true // Mark as user interaction
-            });
+            console.log('📅 DateSelector change:', dateString);
             
-            // Update travelDate state to keep both components in sync
+            // Update states immediately
             setTravelDate(dateString);
+            setFormData(prev => ({ ...prev, date: dateString }));
             
-            // Automatically trigger search after a short delay
-            setTimeout(() => {
-              handleSearchAgain();
-            }, 100);
+            // Trigger immediate search
+            if ((formData.from || fromLocation) && (formData.to || toLocation)) {
+              const searchParams = {
+                fromCity: formData.from || fromLocation,
+                toCity: formData.to || toLocation,
+                date: dateString
+              };
+              triggerSearch(searchParams, 'date-selector', 100);
+            }
           }}
-        />{/* Results Header */}
+        />
+
+        {/* Results Header */}
         <div className="bg-white rounded-lg p-5 mb-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center">
             <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
-            </svg>            <span className="text-base font-semibold text-green-700">
+            </svg>
+            <span className="text-base font-semibold text-green-700">
               {busResults.length} Bus{busResults.length !== 1 ? 'es' : ''} found
-              {/* Commented out filter count display since we don't have filters */}
-              {/* {allBusResults.length !== busResults.length && (
-                <span className="text-sm font-normal text-gray-500 ml-1">
-                  (filtered from {allBusResults.length})
-                </span>
-              )} */}
             </span>
           </div>
 
@@ -716,7 +582,8 @@ const SearchResultsPage = () => {
               </span>
             </div>
 
-            <div className="flex space-x-4 overflow-x-auto no-scrollbar">              {sortOptions.map((option, index) => (
+            <div className="flex space-x-4 overflow-x-auto no-scrollbar">
+              {sortOptions.map((option, index) => (
                 <button
                   key={index}
                   onClick={() => handleSortChange(option)}
@@ -741,10 +608,10 @@ const SearchResultsPage = () => {
               ))}
             </div>
           </div>
-        </div>        {/* Main Content */}
+        </div>
+
+        {/* Main Content */}
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters Sidebar - COMMENTED OUT since we only have one bus */}
-          
           {/* Bus Listings */}
           <div className="flex-grow" id="resultsSection">
             <BusListings 
