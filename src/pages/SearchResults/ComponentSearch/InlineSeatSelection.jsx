@@ -27,69 +27,72 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
   useEffect(() => {
     const fetchBookedSeats = async () => {
       setIsLoadingSeats(true);
-      try {         // Use passed travelDate prop, fallback to busData or current date
-        const currentTravelDate = travelDate || busData.departureDate || busData.date || new Date().toISOString().split('T')[0];
-        const destination = searchParams.toCity || searchParams.to || busData.route?.to || busData.destination || busData.arrivalLocation || 'kathmandu';
-          const apiUrl = `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`;
-        console.log('API URL:', apiUrl);
-        console.log('Base URL:', import.meta.env.VITE_API_BASE_URL);
-        console.log('Endpoint:', import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT);
-        console.log('Travel Date:', currentTravelDate);
-        console.log('Destination:', destination);
-        console.log('Search Params:', searchParams);        console.log('Request body:', { travelDate: currentTravelDate, destination: destination });
-        console.log('Bus Data:', busData);          // Get user token from localStorage or sessionStorage
-        let userToken = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      try {
+        // Format date and destination
+        let currentTravelDate = travelDate || busData.departureDate || busData.date;
+        if (currentTravelDate) {
+          const dateObj = new Date(currentTravelDate);
+          if (!isNaN(dateObj.getTime())) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            currentTravelDate = `${year}-${month}-${day}`;
+          }
+        } else {
+          currentTravelDate = new Date().toISOString().split('T')[0];
+        }
+        console.log('📅 Current travel date:', currentTravelDate);
+        let destination = searchParams.toCity || searchParams.to || busData.route?.to || busData.destination || busData.arrivalLocation || 'kathmandu';
+        destination = destination.toLowerCase().trim();
         
-        // Clean and validate the token
+        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`;
+        
+        // Get token
+        let userToken = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (userToken) {
-          userToken = userToken.trim(); // Remove any whitespace
-          console.log('Raw token:', userToken);
-          
-          // Basic JWT validation (should have 3 parts separated by dots)
+          userToken = userToken.trim();
           const tokenParts = userToken.split('.');
           if (tokenParts.length !== 3) {
-            console.error('Invalid JWT token format - should have 3 parts');
             userToken = null;
           } else {
             try {
-              // Try to decode the payload to validate
               const payload = JSON.parse(atob(tokenParts[1]));
-              console.log('Token payload:', payload);
-              
-              // Check if token is expired
               if (payload.exp && payload.exp < Date.now() / 1000) {
-                console.error('JWT token is expired');
                 userToken = null;
               }
             } catch (error) {
-              console.error('Invalid JWT token - cannot decode:', error);
               userToken = null;
             }
           }
         }
         
-        console.log('User token found and valid:', userToken ? 'Yes' : 'No');
-          // API request format - only travelDate and destination as specified
         const requestBody = {
           travelDate: currentTravelDate,
-          destination: destination.toLowerCase() // Try lowercase to match API data
+          destination: destination
         };
         
-        console.log('Request body for API:', requestBody);        // Prepare headers with authentication
         const headers = {
           'Content-Type': 'application/json',
         };
         
-        // Add Authorization header only if token is valid
         if (userToken) {
           headers.Authorization = `Bearer ${userToken}`;
-          console.log('Added Authorization header with valid token');
-        } else {
-          console.log('No valid token found - making unauthenticated request');
         }
-
-        console.log('Request headers:', headers);
-        console.log('Final request body:', requestBody);        const response = await fetch(apiUrl, {
+  console.log('🌐 COMPLETE REQUEST DETAILS:', {
+  method: 'POST',
+  url: apiUrl,
+  headers: headers,
+  body: JSON.stringify(requestBody),
+  timestamp: new Date().toISOString()
+});
+        // 🔥 MINIMAL LOG: API REQUEST
+        console.log('🚀 SEAT API REQUEST:', {
+          url: apiUrl,
+          body: requestBody,
+          hasAuth: !!userToken
+        });
+        
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: headers,
           body: JSON.stringify(requestBody)
@@ -97,23 +100,33 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
-        }        const data = await response.json();
-        console.log('API Response:', data);
-        console.log('API Response type:', typeof data);
-        console.log('API Response keys:', Object.keys(data));
-          // Extract seat numbers from the response data array
-        const bookedSeatNumbers = data.data ? data.data.map(booking => booking.seatNumber) : [];
-        console.log('Seat numbers from API:', bookedSeatNumbers);
-        console.log('Booked seat numbers length:', bookedSeatNumbers.length);
+        }
+
+        const data = await response.json();
         
-        // Use only actual API response - no default/test values
-        console.log('Using API response booked seats:', bookedSeatNumbers);
+        // 🔥 MINIMAL LOG: API RESPONSE
+        console.log('📥 SEAT API RESPONSE:', {
+          success: data.success,
+          dataLength: data.data?.length || 0,
+          bookedSeats: data.data ? data.data.map(booking => booking.seatNumber) : []
+        });
+        
+        // Extract seat numbers
+        let bookedSeatNumbers = [];
+        if (data.success && data.data && Array.isArray(data.data)) {
+          bookedSeatNumbers = data.data
+            .map(booking => booking.seatNumber)
+            .filter(seat => seat && /^[A-Z]\d+$/.test(seat));
+        }
+        
+        // 🔥 MINIMAL LOG: FINAL RESULT
+        console.log('✅ SETTING BOOKED SEATS:', bookedSeatNumbers);
+        
         setBookedSeats(bookedSeatNumbers);
-          } catch (error) {
-        console.error('Failed to fetch booked seats:', error);
-        console.error('Error details:', error.message);
-        // On API error, set empty array and show error message to user
-        console.log('Setting empty booked seats due to API error');
+        
+      } catch (error) {
+        // 🔥 MINIMAL LOG: ERROR
+        console.error('❌ SEAT API ERROR:', error.message);
         setBookedSeats([]);
         toast.error('Failed to load seat availability. Please try again.');
       } finally {
@@ -126,14 +139,18 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
   
   // Generate seat configuration based on bus data
   useEffect(() => {
-    console.log('Bus data received:', busData);
-    console.log('Bus ID from params:', busId);
-    console.log('Booked seats from API:', bookedSeats);
-    console.log('Booked seats includes A7?', bookedSeats.includes('A7'));
+    console.log('🎨 ========== UPDATING SEAT CONFIGURATION ==========');
+    console.log('🚌 Bus data received:', busData);
+    console.log('🆔 Bus ID from params:', busId);
+    console.log('🚫 Booked seats from API:', bookedSeats);
+    console.log('🔍 Checking specific seats:');
+    console.log('   A5 booked?', bookedSeats.includes('A5'));
+    console.log('   A7 booked?', bookedSeats.includes('A7'));
+    console.log('   S1 booked?', bookedSeats.includes('S1'));
 
     // Professional seat layout with improved spacing and alignment
     const config = {
-      // Row 1 - Upper deck front row (better spacing: 50px between seats)
+      // Row 1 - Upper deck front row
       row1: [
         { id: 'S4', type: bookedSeats.includes('S4') ? 'booked' : 'available', position: { x: 50, y: 50 } },
         { id: 'B2', type: bookedSeats.includes('B2') ? 'booked' : 'available', position: { x: 150, y: 50 } },
@@ -189,6 +206,9 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
       ],
     };
     
+    console.log('🎨 Generated seat config for A5:', config.row5.find(seat => seat.id === 'A5'));
+    console.log('🎨 Generated seat config for A7:', config.row5.find(seat => seat.id === 'A7'));
+    
     setSeatConfig(config);
     
     // Calculate available seats count to match the bus listing format
@@ -198,8 +218,12 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
     
     setAvailableSeatsCount(availableCount);
     
-    console.log('Total seats:', totalSeats, 'Booked:', bookedSeatsCount, 'Available:', availableCount);
-    console.log('Bus data available seats from listing:', busData.availableSeats);
+    console.log(' Seat Statistics:');
+    console.log('   Total seats:', totalSeats);
+    console.log('   Booked seats count:', bookedSeatsCount);
+    console.log('   Available seats count:', availableCount);
+    console.log('   Bus data available seats:', busData.availableSeats);
+    console.log(' ========== SEAT CONFIGURATION COMPLETED ==========');
   }, [busId, busData, bookedSeats]);
 
   // Calculate available seats and update price when selectedSeats change

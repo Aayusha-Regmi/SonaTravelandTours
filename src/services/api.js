@@ -141,14 +141,7 @@ const getAvailableSeats = async (busId, date, destination = "kathmandu") => {
   } catch (error) {
     console.error('Failed to fetch real seat data:', error);
     
-    // Fallback: return 0 available seats instead of random data
-    return {
-      busId,
-      travelDate: date,
-      totalSeats: 40,
-      availableSeats: 0, // Show 0 instead of random numbers
-      seats: []
-    };
+   
   }
 };
 
