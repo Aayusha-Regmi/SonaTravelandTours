@@ -16,6 +16,7 @@ import PaymentPage from './pages/Payment/PaymentPage';
 import PassengerDetail from './pages/BookingPassengerDetails/PassengerDetail';
 import ContactUs from './pages/ContactUs/ContactUs';
 import AboutUs from './pages/AboutUs/AboutUs';
+import BusRoutes from './pages/BusRoutes/BusRoutes';
 import TermsConditions from './pages/TermsConditions/TermsConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
 import FAQs from './pages/FAQs/FAQs';
@@ -23,9 +24,9 @@ import Testimonials from './pages/Testimonials/Testimonials';
 
 const AppRoutes = () => {
   return (    <Router>      
-    <Routes>
-        {/* Public Routes */}
+    <Routes>        {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/bus-routes" element={<BusRoutes />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />

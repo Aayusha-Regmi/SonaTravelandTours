@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import Card from './UI/HomeCards';
 
 const UnifiedSections = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());  const [weather, setWeather] = useState({
-    temperature: 'Loading...',
-    location: 'Loading...',
-    description: 'Loading...'
+  const [currentTime, setCurrentTime] = useState(new Date());  const [weatherData, setWeatherData] = useState({
+    kathmandu: { temperature: 'Loading...', humidity: '--', windSpeed: '--', condition: 'Loading...', icon: '⛅' },
+    pokhara: { temperature: 'Loading...', humidity: '--', windSpeed: '--', condition: 'Loading...', icon: '⛅' },
+    birgunj: { temperature: 'Loading...', humidity: '--', windSpeed: '--', condition: 'Loading...', icon: '⛅' },
+    chitwan: { temperature: 'Loading...', humidity: '--', windSpeed: '--', condition: 'Loading...', icon: '⛅' }
   });
 
   const [forecasts, setForecasts] = useState({
@@ -19,41 +20,91 @@ const UnifiedSections = () => {
     // Update time every second
     const timeInterval = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);    // Get weather information
-    const getWeather = async () => {
+    }, 1000);    // Get current weather for all cities with retry logic
+    const getCurrentWeather = async (cityName, cityKey, retryCount = 0) => {
       const apiKey = "907961ecf95a2fcfe579e9f7edaf9652";
-      const city = "Kathmandu";
-      const country = "NP";
-      const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${apiKey}&units=metric`;
-      
+      const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName},NP&appid=${apiKey}&units=metric`;
 
       try {
         const response = await fetch(weatherUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
-        setWeather({
-          temperature: `${Math.round(data.main.temp)}°C`,
-          location: `${data.name}, ${data.sys.country}`,
-          description: data.weather[0].description
-        });
+        if (data.cod && data.cod !== 200) {
+          throw new Error(`API error: ${data.message || 'Unknown error'}`);
+        }
+        
+        setWeatherData(prev => ({
+          ...prev,
+          [cityKey]: {
+            temperature: `${Math.round(data.main.temp)}°C`,
+            humidity: `${data.main.humidity}%`,
+            windSpeed: `${Math.round(data.wind.speed * 3.6)}km/h`, // Convert m/s to km/h
+            condition: data.weather[0].main,
+            description: data.weather[0].description,
+            icon: getWeatherIcon(data.weather[0].main),
+            feelsLike: `${Math.round(data.main.feels_like)}°C`,
+            pressure: `${data.main.pressure}hPa`,
+            visibility: data.visibility ? `${(data.visibility / 1000).toFixed(1)}km` : 'N/A'
+          }
+        }));
       } catch (error) {
-        console.error("Error fetching weather data:", error);
-        setWeather({
-          temperature: 'N/A',
-          location: 'Kathmandu, NP',
-          description: 'Weather unavailable'
-        });
-      }
+        console.error(`Error fetching weather for ${cityName} (attempt ${retryCount + 1}):`, error);
+        
+        // Retry up to 2 times with exponential backoff
+        if (retryCount < 2) {
+          setTimeout(() => {
+            getCurrentWeather(cityName, cityKey, retryCount + 1);
+          }, (retryCount + 1) * 2000);
+          return;
+        }
+        
+        // Set fallback weather data after all retries failed
+        const fallbackData = {
+          kathmandu: { temp: 27, humidity: 66, wind: 12, condition: 'Clear', icon: '☀️' },
+          pokhara: { temp: 19, humidity: 80, wind: 8, condition: 'Clouds', icon: '⛅' },
+          birgunj: { temp: 28, humidity: 71, wind: 15, condition: 'Clear', icon: '☀️' },
+          chitwan: { temp: 25, humidity: 83, wind: 10, condition: 'Rain', icon: '🌧️' }
+        };
+        
+        const fallback = fallbackData[cityKey];
+        setWeatherData(prev => ({
+          ...prev,
+          [cityKey]: {
+            temperature: `${fallback.temp}°C`,
+            humidity: `${fallback.humidity}%`,
+            windSpeed: `${fallback.wind}km/h`,
+            condition: fallback.condition,
+            description: fallback.condition.toLowerCase(),
+            icon: fallback.icon,
+            feelsLike: `${fallback.temp + 2}°C`,
+            pressure: '1013hPa',
+            visibility: '10km'
+          }
+        }));      }
     };
 
-    // Get 3-day forecast for all cities
-    const getForecast = async (cityName, cityKey) => {
+    // Get enhanced 3-day forecast for all cities with retry logic
+    const getForecast = async (cityName, cityKey, retryCount = 0) => {
       const apiKey = "907961ecf95a2fcfe579e9f7edaf9652";
       const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName},NP&appid=${apiKey}&units=metric`;
 
       try {
         const response = await fetch(forecastUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        
+        if (data.cod && data.cod !== "200") {
+          throw new Error(`API error: ${data.message || 'Unknown error'}`);
+        }
         
         // Get forecast for next 3 days (skip today, take every 8th entry for daily forecast)
         const dailyForecasts = [];
@@ -65,8 +116,16 @@ const UnifiedSections = () => {
           dailyForecasts.push({
             day: dailyForecasts.length === 0 ? 'Tomorrow' : `${dayName}`,
             temp: Math.round(forecast.main.temp),
+            maxTemp: Math.round(forecast.main.temp_max),
+            minTemp: Math.round(forecast.main.temp_min),
             weather: forecast.weather[0].main,
-            icon: getWeatherIcon(forecast.weather[0].main)
+            description: forecast.weather[0].description,
+            icon: getWeatherIcon(forecast.weather[0].main),
+            humidity: forecast.main.humidity,
+            windSpeed: Math.round(forecast.wind.speed * 3.6),
+            pressure: forecast.main.pressure,
+            clouds: forecast.clouds.all,
+            date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
           });
         }
 
@@ -75,18 +134,72 @@ const UnifiedSections = () => {
           [cityKey]: dailyForecasts
         }));
       } catch (error) {
-        console.error(`Error fetching forecast for ${cityName}:`, error);        // Set fallback forecast data with actual day names
+        console.error(`Error fetching forecast for ${cityName} (attempt ${retryCount + 1}):`, error);
+        
+        // Retry up to 2 times with exponential backoff
+        if (retryCount < 2) {
+          setTimeout(() => {
+            getForecast(cityName, cityKey, retryCount + 1);
+          }, (retryCount + 1) * 2000);
+          return;
+        }
+        
+        // Set fallback forecast data with actual day names and more details after all retries failed
         const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
         const dayAfterTomorrow = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
         const thirdDay = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
         
+        const fallbackForecasts = {
+          kathmandu: [
+            { temp: 25, maxTemp: 28, minTemp: 22, weather: 'Clear', icon: '☀️', humidity: 65, windSpeed: 12 },
+            { temp: 23, maxTemp: 26, minTemp: 20, weather: 'Clouds', icon: '⛅', humidity: 70, windSpeed: 10 },
+            { temp: 26, maxTemp: 29, minTemp: 23, weather: 'Rain', icon: '🌧️', humidity: 85, windSpeed: 15 }
+          ],
+          pokhara: [
+            { temp: 17, maxTemp: 20, minTemp: 14, weather: 'Rain', icon: '🌧️', humidity: 85, windSpeed: 8 },
+            { temp: 20, maxTemp: 23, minTemp: 17, weather: 'Clouds', icon: '⛅', humidity: 75, windSpeed: 10 },
+            { temp: 22, maxTemp: 25, minTemp: 19, weather: 'Clear', icon: '☀️', humidity: 60, windSpeed: 12 }
+          ],
+          birgunj: [
+            { temp: 30, maxTemp: 33, minTemp: 27, weather: 'Clear', icon: '☀️', humidity: 55, windSpeed: 15 },
+            { temp: 29, maxTemp: 32, minTemp: 26, weather: 'Clouds', icon: '⛅', humidity: 60, windSpeed: 12 },
+            { temp: 31, maxTemp: 34, minTemp: 28, weather: 'Clear', icon: '☀️', humidity: 50, windSpeed: 18 }
+          ],
+          chitwan: [
+            { temp: 23, maxTemp: 26, minTemp: 20, weather: 'Clouds', icon: '⛅', humidity: 80, windSpeed: 10 },
+            { temp: 26, maxTemp: 29, minTemp: 23, weather: 'Clear', icon: '☀️', humidity: 70, windSpeed: 8 },
+            { temp: 24, maxTemp: 27, minTemp: 21, weather: 'Rain', icon: '🌧️', humidity: 90, windSpeed: 12 }
+          ]
+        };
+          const cityFallback = fallbackForecasts[cityKey] || fallbackForecasts.kathmandu;
+        
         setForecasts(prev => ({
           ...prev,
           [cityKey]: [
-            { day: 'Tomorrow', temp: 25, weather: 'Clear', icon: '☀️' },
-            { day: dayAfterTomorrow.toLocaleDateString('en-US', { weekday: 'short' }), temp: 23, weather: 'Clouds', icon: '⛅' },
-            { day: thirdDay.toLocaleDateString('en-US', { weekday: 'short' }), temp: 26, weather: 'Rain', icon: '🌧️' }
-          ]
+            { 
+              day: 'Tomorrow', 
+              ...cityFallback[0],
+              description: cityFallback[0].weather.toLowerCase(),
+              pressure: 1013,
+              clouds: 20,
+              date: tomorrow.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            },
+            { 
+              day: dayAfterTomorrow.toLocaleDateString('en-US', { weekday: 'short' }), 
+              ...cityFallback[1],
+              description: cityFallback[1].weather.toLowerCase(),
+              pressure: 1015,
+              clouds: 50,
+              date: dayAfterTomorrow.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            },
+            { 
+              day: thirdDay.toLocaleDateString('en-US', { weekday: 'short' }), 
+              ...cityFallback[2],
+              description: cityFallback[2].weather.toLowerCase(),
+              pressure: 1010,
+              clouds: 80,
+              date: thirdDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            }          ]
         }));
       }
     };
@@ -105,9 +218,11 @@ const UnifiedSections = () => {
         'Haze': '🌫️'
       };
       return icons[weatherMain] || '⛅';
-    };
-
-    getWeather();
+    };    // Fetch current weather for all cities
+    getCurrentWeather('Kathmandu', 'kathmandu');
+    getCurrentWeather('Pokhara', 'pokhara');
+    getCurrentWeather('Birgunj', 'birgunj');
+    getCurrentWeather('Chitwan', 'chitwan');
     
     // Fetch forecasts for all cities
     getForecast('Kathmandu', 'kathmandu');
@@ -277,399 +392,435 @@ const UnifiedSections = () => {
       </div>
 
       <div className="container mx-auto px-4 relative z-10 space-y-24 pt-20">          {/* WEATHER FORECAST SECTION */}
-        <div>
-          {/* Section Header */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-3 bg-gray-700/60 backdrop-blur-xl border border-gray-600/30 rounded-full px-6 py-3 mb-6">
-              <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-              <span className="text-yellow-400 font-medium text-sm tracking-wide">WEATHER FORECAST</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Plan Your Journey with Weather Updates
-            </h2>
-            <p className="text-white/70 text-lg max-w-3xl mx-auto">
-              Stay informed about weather conditions for your travel destinations
-            </p>
-          </div>          {/* Main Weather Container Card */}
-          <div className="relative backdrop-blur-2xl bg-gradient-to-br from-gray-800/60 via-gray-900/40 to-black/20 border border-gray-600/30 rounded-3xl p-8 shadow-2xl overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-3xl"></div>
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 via-transparent to-purple-500/5 rounded-3xl"></div>
-            
-            {/* Weather Cards Grid */}
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            {/* Section Header */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-3 bg-gray-700/60 backdrop-blur-xl border border-gray-600/30 rounded-full px-6 py-3 mb-6">
+                <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                <span className="text-yellow-400 font-medium text-sm tracking-wide">WEATHER FORECAST</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Plan Your Journey with Weather Updates
+              </h2>
+              <p className="text-white/70 text-lg max-w-3xl mx-auto">
+                Stay informed about weather conditions for your travel destinations
+              </p>
+            </div>          {/* Main Weather Container Card */}
+            <div className="relative backdrop-blur-2xl bg-gradient-to-br from-gray-800/60 via-gray-900/40 to-black/20 border border-gray-600/30 rounded-3xl p-8 shadow-2xl overflow-hidden">
+              {/* Background Effects */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-3xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 via-transparent to-purple-500/5 rounded-3xl"></div>
               
-              {/* Kathmandu Weather Card */}
-              <div className="group relative backdrop-blur-xl bg-gradient-to-br from-blue-900/50 via-blue-800/40 to-blue-700/30 border border-blue-400/30 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
-                {/* Weather Map Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/25 via-yellow-500/20 to-green-500/15 opacity-70"></div>
-                <div className="absolute inset-0 opacity-25">
-                  <div className="absolute top-4 left-4 w-2 h-2 bg-white/40 rounded-full"></div>
-                  <div className="absolute top-8 right-6 w-1 h-1 bg-white/30 rounded-full"></div>
-                  <div className="absolute bottom-6 left-8 w-1 h-1 bg-white/35 rounded-full"></div>
-                  <div className="absolute bottom-4 right-4 w-2 h-2 bg-white/40 rounded-full"></div>
-                </div>
+              {/* Weather Cards Grid */}
+              <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 
-                {/* Location Pin */}
-                <div className="absolute top-4 left-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                  <span className="text-blue-300 text-xs font-medium">📍 Capital</span>
-                </div>                  {/* LIVE Status */}
-                <div className="absolute top-4 right-4 bg-blue-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
-                  LIVE
-                </div>
-                  {/* 3-Day Forecast */}
-                <div className="absolute top-12 right-4 bg-blue-900/70 backdrop-blur-sm border border-blue-400/30 rounded-lg px-2 py-1 text-xs">
-                  <div className="text-blue-200 text-xs space-y-0.5">
-                    {forecasts.kathmandu.length > 0 ? (
-                      forecasts.kathmandu.map((forecast, index) => (
-                        <div key={index} className="flex items-center gap-1">
-                          <span>{forecast.day}:</span>
-                          <span className="text-white">{forecast.temp}°</span>
-                          <span>{forecast.icon}</span>
-                        </div>
-                      ))                    ) : (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <span>Tomorrow:</span>
-                          <span className="text-white">25°</span>
-                          <span>⛅</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
-                          <span className="text-white">23°</span>
-                          <span>🌧️</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
-                          <span className="text-white">26°</span>
-                          <span>☀️</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Weather Content */}
-                <div className="relative z-10 p-6 pt-12">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="text-4xl">☀️</div>
-                    <div className="text-5xl font-bold text-white">27°C</div>
-                  </div>                  <h3 className="text-xl font-bold text-white mb-2">Kathmandu</h3>
-                    {/* Kathmandu Map */}
-                  <div className="relative bg-gradient-to-br from-blue-900/30 to-blue-700/20 rounded-lg p-3 mb-3 border border-blue-400/20">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-blue-300 text-xs font-medium">📍 Capital Valley</span>
-                      <span className="text-blue-200 text-xs">27.7172° N, 85.3240° E</span>
-                    </div>                    <div className="relative h-28 rounded border border-blue-300/30 overflow-hidden">
-                      {/* Google Maps Embed */}                      <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d56516.277768685635!2d85.28493324095915!3d27.709030241454187!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb198a307baabf%3A0xb5137c1bf18db1ea!2sKathmandu%2044600!5e0!3m2!1sen!2snp!4v1750676388226!5m2!1sen!2snp&disableDefaultUI=true&scrollwheel=false&draggable=false&panControl=false&zoomControl=false&mapTypeControl=false&scaleControl=false&streetViewControl=false&overviewMapControl=false&rotateControl=false"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0, pointerEvents: 'none' }}
-                        allowFullScreen=""
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        title="Kathmandu Map"
-                        className="rounded"
-                      ></iframe>
-                      <span className="absolute bottom-0 right-1 text-blue-300 text-xs opacity-70 bg-black/50 px-1 rounded">KTM</span>
-                    </div>
+                {/* Kathmandu Weather Card */}
+                <div className="group relative backdrop-blur-xl bg-gradient-to-br from-blue-900/50 via-blue-800/40 to-blue-700/30 border border-blue-400/30 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                  {/* Weather Map Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/25 via-yellow-500/20 to-green-500/15 opacity-70"></div>
+                  <div className="absolute inset-0 opacity-25">
+                    <div className="absolute top-4 left-4 w-2 h-2 bg-white/40 rounded-full"></div>
+                    <div className="absolute top-8 right-6 w-1 h-1 bg-white/30 rounded-full"></div>
+                    <div className="absolute bottom-6 left-8 w-1 h-1 bg-white/35 rounded-full"></div>
+                    <div className="absolute bottom-4 right-4 w-2 h-2 bg-white/40 rounded-full"></div>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-xs text-white/90">
-                    <div className="flex items-center gap-1">
-                      <span>💧</span>
-                      <span>66%</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span>💨</span>
-                      <span>12km/h</span>
+                  {/* Location Pin */}
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    <span className="text-blue-300 text-xs font-medium">📍 Capital</span>
+                  </div>                  {/* LIVE Status */}
+                  <div className="absolute top-4 right-4 bg-blue-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
+                    LIVE
+                  </div>                  {/* 3-Day Forecast */}
+                  <div className="absolute top-12 right-4 bg-blue-900/70 backdrop-blur-sm border border-blue-400/30 rounded-lg px-2 py-1 text-xs">
+                    <div className="text-blue-200 text-xs space-y-0.5">
+                      {forecasts.kathmandu.length > 0 ? (
+                        forecasts.kathmandu.map((forecast, index) => (
+                          <div key={index} className="flex items-center gap-1">
+                            <span className="font-medium">{forecast.day}:</span>
+                            <span className="text-white">{forecast.temp}°</span>
+                            <span>{forecast.icon}</span>
+                            <span className="text-blue-300 text-xs">{forecast.humidity}%</span>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <span>Tomorrow:</span>
+                            <span className="text-white">25°</span>
+                            <span>⛅</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
+                            <span className="text-white">23°</span>
+                            <span>🌧️</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span>{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
+                            <span className="text-white">26°</span>
+                            <span>☀️</span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
-                </div>
-              </div>
+                    {/* Weather Content */}
+                  <div className="relative z-10 p-6 pt-12">                    <div className="flex items-center gap-3 mb-4">
+                      <div className="text-4xl">{weatherData.kathmandu.icon}</div>
+                      <div className="text-4xl font-bold text-white">{weatherData.kathmandu.temperature}</div>
+                    </div>
 
-              {/* Pokhara Weather Card */}
-              <div className="group relative backdrop-blur-xl bg-gradient-to-br from-slate-900/50 via-slate-800/40 to-slate-700/30 border border-slate-400/30 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
-                {/* Weather Map Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-500/25 via-blue-500/20 to-cyan-500/15 opacity-70"></div>
-                <div className="absolute inset-0 opacity-25">
-                  <div className="absolute top-6 left-6 w-1 h-1 bg-white/40 rounded-full"></div>
-                  <div className="absolute top-4 right-8 w-2 h-2 bg-white/35 rounded-full"></div>
-                  <div className="absolute bottom-8 left-4 w-2 h-2 bg-white/40 rounded-full"></div>
-                  <div className="absolute bottom-6 right-6 w-1 h-1 bg-white/30 rounded-full"></div>
-                </div>
-                
-                {/* Location Pin */}
-                <div className="absolute top-4 left-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                  <span className="text-cyan-300 text-xs font-medium">📍 Lake City</span>
-                </div>                  {/* LIVE Status */}
-                <div className="absolute top-4 right-4 bg-cyan-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
-                  LIVE
-                </div>
-                  {/* 3-Day Forecast */}
-                <div className="absolute top-12 right-4 bg-cyan-900/70 backdrop-blur-sm border border-cyan-400/30 rounded-lg px-2 py-1 text-xs">
-                  <div className="text-cyan-200 text-xs space-y-0.5">
-                    {forecasts.pokhara.length > 0 ? (
-                      forecasts.pokhara.map((forecast, index) => (
-                        <div key={index} className="flex items-center gap-1">
-                          <span>{forecast.day}:</span>
-                          <span className="text-white">{forecast.temp}°</span>
-                          <span>{forecast.icon}</span>
-                        </div>
-                      ))                    ) : (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <span>Tomorrow:</span>
-                          <span className="text-white">17°</span>
-                          <span>🌧️</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
-                          <span className="text-white">20°</span>
-                          <span>⛅</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
-                          <span className="text-white">22°</span>
-                          <span>☀️</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Weather Content */}
-                <div className="relative z-10 p-6 pt-12">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="text-4xl">⛅</div>
-                    <div className="text-5xl font-bold text-white">19°C</div>
-                  </div>                  <h3 className="text-xl font-bold text-white mb-2">Pokhara</h3>
-                    {/* Pokhara Map */}
-                  <div className="relative bg-gradient-to-br from-cyan-900/30 to-cyan-700/20 rounded-lg p-3 mb-3 border border-cyan-400/20">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-cyan-300 text-xs font-medium">📍 Lake City</span>
-                      <span className="text-cyan-200 text-xs">28.2096° N, 83.9856° E</span>
-                    </div>
-                    <div className="relative h-28 rounded border border-cyan-300/30 overflow-hidden">
-                      <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d112488.25482335828!2d83.87421753369678!3d28.229848956021193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3995937bbf0376ff%3A0xf6cf823b25802164!2sPokhara!5e0!3m2!1sen!2snp!4v1750675437147!5m2!1sen!2snp&disableDefaultUI=true&scrollwheel=false&draggable=false&panControl=false&zoomControl=false&mapTypeControl=false&scaleControl=false&streetViewControl=false&overviewMapControl=false&rotateControl=false"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0, filter: 'sepia(0.1) hue-rotate(180deg) saturate(1.2)', pointerEvents: 'none' }}
-                        allowFullScreen=""
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        title="Pokhara Map"
-                        className="rounded"
-                      />
-                      <span className="absolute bottom-0 right-1 text-cyan-300 text-xs opacity-70 bg-black/50 px-1 rounded">PKR</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-xs text-white/90">
-                    <div className="flex items-center gap-1">
-                      <span>💧</span>
-                      <span>80%</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span>💨</span>
-                      <span>8km/h</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Kathmandu</h3>
+                    <p className="text-blue-200 text-sm mb-3 capitalize">{weatherData.kathmandu.description}</p>
+                      {/* Kathmandu Map */}
+                    <div className="relative bg-gradient-to-br from-blue-900/30 to-blue-700/20 rounded-lg p-3 mb-3 border border-blue-400/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-blue-300 text-xs font-medium">📍 Capital Valley</span>
+                        <span className="text-blue-200 text-xs">27.7172° N, 85.3240° E</span>
+                      </div>
 
-              {/* Birgunj Weather Card */}
-              <div className="group relative backdrop-blur-xl bg-gradient-to-br from-orange-900/50 via-orange-800/40 to-orange-700/30 border border-orange-400/30 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
-                {/* Weather Map Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-red-500/25 via-orange-500/20 to-yellow-500/15 opacity-70"></div>
-                <div className="absolute inset-0 opacity-25">
-                  <div className="absolute top-6 left-8 w-2 h-2 bg-white/40 rounded-full"></div>
-                  <div className="absolute top-8 right-4 w-1 h-1 bg-white/35 rounded-full"></div>
-                  <div className="absolute bottom-4 left-6 w-1 h-1 bg-white/30 rounded-full"></div>
-                  <div className="absolute bottom-8 right-8 w-2 h-2 bg-white/40 rounded-full"></div>
-                </div>
-                
-                {/* Location Pin */}
-                <div className="absolute top-4 left-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                  <span className="text-orange-300 text-xs font-medium">📍 Border City</span>
-                </div>                  {/* LIVE Status */}
-                <div className="absolute top-4 right-4 bg-orange-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
-                  LIVE
-                </div>
-                  {/* 3-Day Forecast */}
-                <div className="absolute top-12 right-4 bg-orange-900/70 backdrop-blur-sm border border-orange-400/30 rounded-lg px-2 py-1 text-xs">
-                  <div className="text-orange-200 text-xs space-y-0.5">
-                    {forecasts.birgunj.length > 0 ? (
-                      forecasts.birgunj.map((forecast, index) => (
-                        <div key={index} className="flex items-center gap-1">
-                          <span>{forecast.day}:</span>
-                          <span className="text-white">{forecast.temp}°</span>
-                          <span>{forecast.icon}</span>
-                        </div>
-                      ))                    ) : (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <span>Tomorrow:</span>
-                          <span className="text-white">30°</span>
-                          <span>☀️</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
-                          <span className="text-white">29°</span>
-                          <span>⛅</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
-                          <span className="text-white">31°</span>
-                          <span>☀️</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Weather Content */}
-                <div className="relative z-10 p-6 pt-12">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="text-4xl">☀️</div>
-                    <div className="text-5xl font-bold text-white">28°C</div>
-                  </div>                  <h3 className="text-xl font-bold text-white mb-2">Birgunj</h3>
-                    {/* Birgunj Map */}
-                  <div className="relative bg-gradient-to-br from-orange-900/30 to-orange-700/20 rounded-lg p-3 mb-3 border border-orange-400/20">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-orange-300 text-xs font-medium">📍 Border City</span>
-                      <span className="text-orange-200 text-xs">27.0460° N, 84.8742° E</span>
+                      <div className="relative h-28 rounded border border-blue-300/30 overflow-hidden">
+                        {/* Google Maps Embed */}
+                        <iframe
+                          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d56516.277768685635!2d85.28493324095915!3d27.709030241454187!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb198a307baabf%3A0xb5137c1bf18db1ea!2sKathmandu%2044600!5e0!3m2!1sen!2snp!4v1750676388226!5m2!1sen!2snp&disableDefaultUI=true&scrollwheel=false&draggable=false&panControl=false&zoomControl=false&mapTypeControl=false&scaleControl=false&streetViewControl=false&overviewMapControl=false&rotateControl=false"
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0, pointerEvents: 'none' }}
+                          allowFullScreen=""
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title="Kathmandu Map"
+                          className="rounded"
+                        ></iframe>
+                        <span className="absolute bottom-0 right-1 text-blue-300 text-xs opacity-70 bg-black/50 px-1 rounded">KTM</span>
+                      </div>
                     </div>
-                    <div className="relative h-28 rounded border border-orange-300/30 overflow-hidden">
-                      <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d114570.08536938424!2d84.79427919318373!3d27.038093838583377!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3994f98e92b8e035%3A0x13af2c25cbfa2d86!2sBirgunj%2C%20Nepal!5e0!3m2!1sen!2sus!4v1697824856849!5m2!1sen!2sus&q=Birgunj"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0, filter: 'sepia(0.1) hue-rotate(15deg) saturate(1.1)' }}
-                        allowFullScreen=""
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-xs text-white/90">
-                    <div className="flex items-center gap-1">
-                      <span>💧</span>
-                      <span>71%</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span>💨</span>
-                      <span>15km/h</span>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs text-white/90">
+                      <div className="flex items-center gap-1">
+                        <span>💧</span>
+                        <span>{weatherData.kathmandu.humidity}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>💨</span>
+                        <span>{weatherData.kathmandu.windSpeed}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>🌡️</span>
+                        <span>{weatherData.kathmandu.feelsLike}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>👁️</span>
+                        <span>{weatherData.kathmandu.visibility}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Chitwan Weather Card */}
-              <div className="group relative backdrop-blur-xl bg-gradient-to-br from-green-900/50 via-green-800/40 to-green-700/30 border border-green-400/30 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
-                {/* Weather Map Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-green-500/25 via-emerald-500/20 to-teal-500/15 opacity-70"></div>
-                <div className="absolute inset-0 opacity-25">
-                  <div className="absolute top-4 left-6 w-1 h-1 bg-white/35 rounded-full"></div>
-                  <div className="absolute top-6 right-4 w-2 h-2 bg-white/40 rounded-full"></div>
-                  <div className="absolute bottom-6 left-4 w-2 h-2 bg-white/40 rounded-full"></div>
-                  <div className="absolute bottom-4 right-6 w-1 h-1 bg-white/30 rounded-full"></div>
-                </div>
-                
-                {/* Location Pin */}
-                <div className="absolute top-4 left-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-green-300 text-xs font-medium">📍 National Park</span>
-                </div>
-                  {/* LIVE Badge */}
-                <div className="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
-                  LIVE
-                </div>
-                  {/* 3-Day Forecast */}
-                <div className="absolute top-12 right-4 bg-green-900/70 backdrop-blur-sm border border-green-400/30 rounded-lg px-2 py-1 text-xs">
-                  <div className="text-green-200 text-xs space-y-0.5">
-                    {forecasts.chitwan.length > 0 ? (
-                      forecasts.chitwan.map((forecast, index) => (
-                        <div key={index} className="flex items-center gap-1">
-                          <span>{forecast.day}:</span>
-                          <span className="text-white">{forecast.temp}°</span>
-                          <span>{forecast.icon}</span>
-                        </div>
-                      ))                    ) : (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <span>Tomorrow:</span>
-                          <span className="text-white">23°</span>
-                          <span>⛅</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
-                          <span className="text-white">26°</span>
-                          <span>☀️</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
-                          <span className="text-white">24°</span>
-                          <span>🌧️</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Weather Content */}
-                <div className="relative z-10 p-6 pt-12">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="text-4xl">🌧️</div>
-                    <div className="text-5xl font-bold text-white">25°C</div>
-                  </div>                  <h3 className="text-xl font-bold text-white mb-2">Chitwan</h3>
-                    {/* Chitwan Map */}
-                  <div className="relative bg-gradient-to-br from-green-900/30 to-green-700/20 rounded-lg p-3 mb-3 border border-green-400/20">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-green-300 text-xs font-medium">📍 National Park</span>
-                      <span className="text-green-200 text-xs">27.5291° N, 84.3542° E</span>
-                    </div>
-                    <div className="relative h-28 rounded border border-green-300/30 overflow-hidden">
-                      <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d452504.73584058834!2d83.73378143491963!3d27.618530944965496!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3994439ad1ca5a8d%3A0x6c5e40f75e1f474f!2sChitwan%20District!5e0!3m2!1sen!2snp!4v1750675767795!5m2!1sen!2snp&disableDefaultUI=true&scrollwheel=false&draggable=false&panControl=false&zoomControl=false&mapTypeControl=false&scaleControl=false&streetViewControl=false&overviewMapControl=false&rotateControl=false"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0, filter: 'sepia(0.1) hue-rotate(90deg) saturate(1.3)', pointerEvents: 'none' }}
-                        allowFullScreen=""
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        title="Chitwan Map"
-                        className="rounded"
-                      />
-                      <span className="absolute bottom-0 right-1 text-green-300 text-xs opacity-70 bg-black/50 px-1 rounded">CNP</span>
-                    </div>
+                {/* Pokhara Weather Card */}
+                <div className="group relative backdrop-blur-xl bg-gradient-to-br from-slate-900/50 via-slate-800/40 to-slate-700/30 border border-slate-400/30 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                  {/* Weather Map Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-500/25 via-blue-500/20 to-cyan-500/15 opacity-70"></div>
+                  <div className="absolute inset-0 opacity-25">
+                    <div className="absolute top-6 left-6 w-1 h-1 bg-white/40 rounded-full"></div>
+                    <div className="absolute top-4 right-8 w-2 h-2 bg-white/35 rounded-full"></div>
+                    <div className="absolute bottom-8 left-4 w-2 h-2 bg-white/40 rounded-full"></div>
+                    <div className="absolute bottom-6 right-6 w-1 h-1 bg-white/30 rounded-full"></div>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-xs text-white/90">
-                    <div className="flex items-center gap-1">
-                      <span>💧</span>
-                      <span>83%</span>
+                  {/* Location Pin */}
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                    <span className="text-cyan-300 text-xs font-medium">📍 Lake City</span>
+                  </div>                  {/* LIVE Status */}
+                  <div className="absolute top-4 right-4 bg-cyan-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
+                    LIVE
+                  </div>                  {/* 3-Day Forecast */}
+                  <div className="absolute top-12 right-4 bg-cyan-900/70 backdrop-blur-sm border border-cyan-400/30 rounded-lg px-2 py-1 text-xs">
+                    <div className="text-cyan-200 text-xs space-y-0.5">
+                      {forecasts.pokhara.length > 0 ? (
+                        forecasts.pokhara.map((forecast, index) => (
+                          <div key={index} className="flex items-center gap-1">
+                            <span className="font-medium">{forecast.day}:</span>
+                            <span className="text-white">{forecast.temp}°</span>
+                            <span>{forecast.icon}</span>
+                            <span className="text-cyan-300 text-xs">{forecast.humidity}%</span>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <span>Tomorrow:</span>
+                            <span className="text-white">17°</span>
+                            <span>🌧️</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
+                            <span className="text-white">20°</span>
+                            <span>⛅</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span>{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
+                            <span className="text-white">22°</span>
+                            <span>☀️</span>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span>💨</span>
-                      <span>10km/h</span>
+                  </div>
+                    {/* Weather Content */}
+                  <div className="relative z-10 p-6 pt-12">                    <div className="flex items-center gap-3 mb-4">
+                      <div className="text-4xl">{weatherData.pokhara.icon}</div>
+                      <div className="text-4xl font-bold text-white">{weatherData.pokhara.temperature}</div>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-white mb-2">Pokhara</h3>
+                    <p className="text-cyan-200 text-sm mb-3 capitalize">{weatherData.pokhara.description}</p>
+                      {/* Pokhara Map */}
+                    <div className="relative bg-gradient-to-br from-cyan-900/30 to-cyan-700/20 rounded-lg p-3 mb-3 border border-cyan-400/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-cyan-300 text-xs font-medium">📍 Lake City</span>
+                        <span className="text-cyan-200 text-xs">28.2096° N, 83.9856° E</span>
+                      </div>
+                      <div className="relative h-28 rounded border border-cyan-300/30 overflow-hidden">
+                        <iframe 
+                          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d112488.25482335828!2d83.87421753369678!3d28.229848956021193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3995937bbf0376ff%3A0xf6cf823b25802164!2sPokhara!5e0!3m2!1sen!2snp!4v1750675437147!5m2!1sen!2snp&disableDefaultUI=true&scrollwheel=false&draggable=false&panControl=false&zoomControl=false&mapTypeControl=false&scaleControl=false&streetViewControl=false&overviewMapControl=false&rotateControl=false"
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0, filter: 'sepia(0.1) hue-rotate(180deg) saturate(1.2)', pointerEvents: 'none' }}
+                          allowFullScreen=""
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title="Pokhara Map"
+                          className="rounded"
+                        />
+                        <span className="absolute bottom-0 right-1 text-cyan-300 text-xs opacity-70 bg-black/50 px-1 rounded">PKR</span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs text-white/90">
+                      <div className="flex items-center gap-1">
+                        <span>💧</span>
+                        <span>{weatherData.pokhara.humidity}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>💨</span>
+                        <span>{weatherData.pokhara.windSpeed}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>🌡️</span>
+                        <span>{weatherData.pokhara.feelsLike}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>�️</span>
+                        <span>{weatherData.pokhara.visibility}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Birgunj Weather Card */}
+                <div className="group relative backdrop-blur-xl bg-gradient-to-br from-orange-900/50 via-orange-800/40 to-orange-700/30 border border-orange-400/30 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                  {/* Weather Map Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/25 via-orange-500/20 to-yellow-500/15 opacity-70"></div>
+                  <div className="absolute inset-0 opacity-25">
+                    <div className="absolute top-6 left-8 w-2 h-2 bg-white/40 rounded-full"></div>
+                    <div className="absolute top-8 right-4 w-1 h-1 bg-white/35 rounded-full"></div>
+                    <div className="absolute bottom-4 left-6 w-1 h-1 bg-white/30 rounded-full"></div>
+                    <div className="absolute bottom-8 right-8 w-2 h-2 bg-white/40 rounded-full"></div>
+                  </div>
+                  
+                  {/* Location Pin */}
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                    <span className="text-orange-300 text-xs font-medium">📍 Border City</span>
+                  </div>                  {/* LIVE Status */}
+                  <div className="absolute top-4 right-4 bg-orange-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
+                    LIVE
+                  </div>                  {/* 3-Day Forecast */}
+                  <div className="absolute top-12 right-4 bg-orange-900/70 backdrop-blur-sm border border-orange-400/30 rounded-lg px-2 py-1 text-xs">
+                    <div className="text-orange-200 text-xs space-y-0.5">
+                      {forecasts.birgunj.length > 0 ? (
+                        forecasts.birgunj.map((forecast, index) => (
+                          <div key={index} className="flex items-center gap-1">
+                            <span className="font-medium">{forecast.day}:</span>
+                            <span className="text-white">{forecast.temp}°</span>
+                            <span>{forecast.icon}</span>
+                            <span className="text-orange-300 text-xs">{forecast.humidity}%</span>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <span>Tomorrow:</span>
+                            <span className="text-white">30°</span>
+                            <span>☀️</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
+                            <span className="text-white">29°</span>
+                            <span>⛅</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span>{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
+                            <span className="text-white">31°</span>
+                            <span>☀️</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                    {/* Weather Content */}
+                  <div className="relative z-10 p-6 pt-12">                    <div className="flex items-center gap-3 mb-4">
+                      <div className="text-4xl">{weatherData.birgunj.icon}</div>
+                      <div className="text-4xl font-bold text-white">{weatherData.birgunj.temperature}</div>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-white mb-2">Birgunj</h3>
+                    <p className="text-orange-200 text-sm mb-3 capitalize">{weatherData.birgunj.description}</p>
+                      {/* Birgunj Map */}
+                    <div className="relative bg-gradient-to-br from-orange-900/30 to-orange-700/20 rounded-lg p-3 mb-3 border border-orange-400/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-orange-300 text-xs font-medium">📍 Border City</span>
+                        <span className="text-orange-200 text-xs">27.0460° N, 84.8742° E</span>
+                      </div>
+                      <div className="relative h-28 rounded border border-orange-300/30 overflow-hidden">
+                        <iframe 
+                          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d114570.08536938424!2d84.79427919318373!3d27.038093838583377!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3994f98e92b8e035%3A0x13af2c25cbfa2d86!2sBirgunj%2C%20Nepal!5e0!3m2!1sen!2sus!4v1697824856849!5m2!1sen!2sus&q=Birgunj"
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0, filter: 'sepia(0.1) hue-rotate(15deg) saturate(1.1)' }}
+                          allowFullScreen=""
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs text-white/90">
+                      <div className="flex items-center gap-1">
+                        <span>💧</span>
+                        <span>{weatherData.birgunj.humidity}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>💨</span>
+                        <span>{weatherData.birgunj.windSpeed}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>🌡️</span>
+                        <span>{weatherData.birgunj.feelsLike}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>👁️</span>
+                        <span>{weatherData.birgunj.visibility}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chitwan Weather Card */}
+                <div className="group relative backdrop-blur-xl bg-gradient-to-br from-green-900/50 via-green-800/40 to-green-700/30 border border-green-400/30 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                  {/* Weather Map Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/25 via-emerald-500/20 to-teal-500/15 opacity-70"></div>
+                  <div className="absolute inset-0 opacity-25">
+                    <div className="absolute top-4 left-6 w-1 h-1 bg-white/35 rounded-full"></div>
+                    <div className="absolute top-6 right-4 w-2 h-2 bg-white/40 rounded-full"></div>
+                    <div className="absolute bottom-6 left-4 w-2 h-2 bg-white/40 rounded-full"></div>
+                    <div className="absolute bottom-4 right-6 w-1 h-1 bg-white/30 rounded-full"></div>
+                  </div>
+                  
+                  {/* Location Pin */}
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-green-300 text-xs font-medium">📍 National Park</span>
+                  </div>                  {/* LIVE Badge */}
+                  <div className="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
+                    LIVE
+                  </div>                  {/* 3-Day Forecast */}
+                  <div className="absolute top-12 right-4 bg-green-900/70 backdrop-blur-sm border border-green-400/30 rounded-lg px-2 py-1 text-xs">
+                    <div className="text-green-200 text-xs space-y-0.5">
+                      {forecasts.chitwan.length > 0 ? (
+                        forecasts.chitwan.map((forecast, index) => (
+                          <div key={index} className="flex items-center gap-1">
+                            <span className="font-medium">{forecast.day}:</span>
+                            <span className="text-white">{forecast.temp}°</span>
+                            <span>{forecast.icon}</span>
+                            <span className="text-green-300 text-xs">{forecast.humidity}%</span>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <span>Tomorrow:</span>
+                            <span className="text-white">23°</span>
+                            <span>⛅</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span>{new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
+                            <span className="text-white">26°</span>
+                            <span>☀️</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span>{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' })}:</span>
+                            <span className="text-white">24°</span>
+                            <span>🌧️</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                    {/* Weather Content */}
+                  <div className="relative z-10 p-6 pt-12">                    <div className="flex items-center gap-3 mb-4">
+                      <div className="text-4xl">{weatherData.chitwan.icon}</div>
+                      <div className="text-4xl font-bold text-white">{weatherData.chitwan.temperature}</div>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-white mb-2">Chitwan</h3>
+                    <p className="text-green-200 text-sm mb-3 capitalize">{weatherData.chitwan.description}</p>
+                      {/* Chitwan Map */}
+                    <div className="relative bg-gradient-to-br from-green-900/30 to-green-700/20 rounded-lg p-3 mb-3 border border-green-400/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-green-300 text-xs font-medium">📍 National Park</span>
+                        <span className="text-green-200 text-xs">27.5291° N, 84.3542° E</span>
+                      </div>
+                      <div className="relative h-28 rounded border border-green-300/30 overflow-hidden">
+                        <iframe 
+                          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d452504.73584058834!2d83.73378143491963!3d27.618530944965496!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3994439ad1ca5a8d%3A0x6c5e40f75e1f474f!2sChitwan%20District!5e0!3m2!1sen!2snp!4v1750675767795!5m2!1sen!2snp&disableDefaultUI=true&scrollwheel=false&draggable=false&panControl=false&zoomControl=false&mapTypeControl=false&scaleControl=false&streetViewControl=false&overviewMapControl=false&rotateControl=false"
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0, filter: 'sepia(0.1) hue-rotate(90deg) saturate(1.3)', pointerEvents: 'none' }}
+                          allowFullScreen=""
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title="Chitwan Map"
+                          className="rounded"
+                        />
+                        <span className="absolute bottom-0 right-1 text-green-300 text-xs opacity-70 bg-black/50 px-1 rounded">CNP</span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs text-white/90">
+                      <div className="flex items-center gap-1">
+                        <span>💧</span>
+                        <span>{weatherData.chitwan.humidity}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>💨</span>
+                        <span>{weatherData.chitwan.windSpeed}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>🌡️</span>
+                        <span>{weatherData.chitwan.feelsLike}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>👁️</span>
+                        <span>{weatherData.chitwan.visibility}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>            {/* Weather Footer Info - Inside Main Card */}
-            <div className="relative z-10 mt-8 text-center">
-              <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full px-6 py-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-white/90 text-sm font-medium">Live Weather Data</span>
-              </div>
-            </div>
 
             {/* Decorative Elements for Main Card */}
             <div className="absolute -top-4 -right-4 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full shadow-lg opacity-70 animate-pulse"></div>
@@ -688,8 +839,7 @@ const UnifiedSections = () => {
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Top Bus Routes This Month
-            </h2>
-            <p className="text-white/70 text-lg max-w-2xl mx-auto mb-8">
+            </h2>            <p className="text-white/70 text-lg max-w-2xl mx-auto mb-8">
               Discover the most popular routes and start planning your next adventure!
             </p>
             

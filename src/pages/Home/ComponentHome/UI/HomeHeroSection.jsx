@@ -85,32 +85,33 @@ const HeroSection = () => {
         {/* Dark overlay for better text readability */}
         <div className="absolute inset-0 z-10 bg-black/40"></div>
       </div>      {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20">          <div className="max-w-4xl mx-auto">
-          {/* Service Tabs - Positioned to align with search form left corner */}          
-          <div className="absolute left-24 sm:left-28 lg:left-40 top-[95%] transform -translate-y-1/2 bg-white/10 backdrop-blur-md rounded-2xl p-6 max-w-md z-30 mt-20 mb-10">
-            <div className="flex space-x-2 justify-center"><Button 
-                className="h-12 px-6 rounded-lg bg-[#0a639d] hover:bg-[#07456e] text-white font-medium transition-colors flex-1"
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20">          <div className="max-w-4xl mx-auto">          {/* Service Tabs - Positioned to align with search form left corner */}          
+          <div className="absolute left-4 sm:left-8 md:left-16 lg:left-24 xl:left-40 top-[95%] transform -translate-y-1/2 bg-white/10 backdrop-blur-md rounded-2xl p-3 sm:p-4 md:p-6 max-w-xs sm:max-w-sm md:max-w-md z-30 mt-20 mb-10">
+            <div className="flex space-x-2 sm:space-x-3 justify-center">
+              <Button 
+                className="h-10 sm:h-12 px-3 sm:px-4 md:px-6 rounded-lg bg-[#0a639d] hover:bg-[#07456e] text-white font-medium transition-colors flex-1 text-sm sm:text-base flex items-center justify-center"
               >
-                <span className="mr-2">🚌</span>Bus
+                <span className="mr-1 sm:mr-2">🚌</span>Bus
               </Button>              
               <Button 
                 onClick={() => handleUnavailableService('Flight')}
-                className="h-12 px-6 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium transition-colors flex-1"
+                className="h-10 sm:h-12 px-3 sm:px-4 md:px-6 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium transition-colors flex-1 text-sm sm:text-base flex items-center justify-center"
                 variant="secondary"
               >
-                <span className="mr-2">✈️</span>Flight
+                <span className="mr-1 sm:mr-2">✈️</span>Flight
               </Button>
               <Button 
                 onClick={() => handleUnavailableService('Hotel')}
-                className="h-12 px-6 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium transition-colors flex-1"
+                className="h-10 sm:h-12 px-3 sm:px-4 md:px-6 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium transition-colors flex-1 text-sm sm:text-base flex items-center justify-center"
                 variant="secondary"
               >
-                <span className="mr-2">🏨</span>Hotel
+                <span className="mr-1 sm:mr-2">🏨</span>Hotel
               </Button>
             </div>
           </div>
         </div>
-      </div>{/* Scroll Down Indicator */}
+      </div>
+      {/* Scroll Down Indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
         <div className="animate-bounce">
           <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center">
