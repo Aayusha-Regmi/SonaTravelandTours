@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
+import { EyeSlashIcon,EyeIcon } from '@heroicons/react/24/outline';
 import { validateField } from '../../utils/authUtils';
 import { API_URLS } from '../../config/api';
 
@@ -25,6 +26,19 @@ const SignupPage = () => {
   });  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
+  
+  // Show/Hide password states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Toggle functions for password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(prev => !prev);
+  };
+  
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(prev => !prev);
+  };
 
   const validateName = (name) => {
     if (!name.trim()) {
@@ -329,12 +343,10 @@ const SignupPage = () => {
                 className="w-full"
                 error={errors.email}
               />
-            </div>
-
-            <div>
+            </div>            <div className="relative">
               <InputField
                 label="Password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -343,12 +355,24 @@ const SignupPage = () => {
                 className="w-full"
                 error={errors.password}
               />
+              {/* Show/Hide password toggle button */}
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none z-10"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="w-5 h-5 text-gray-500" />
+                ) : (
+                  <EyeIcon className="w-5 h-5 text-gray-500" />
+                )}
+              </button>
             </div>
 
-            <div>
+            <div className="relative">
               <InputField
                 label="Confirm Password"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
@@ -357,7 +381,20 @@ const SignupPage = () => {
                 className="w-full"
                 error={errors.confirmPassword}
               />
-            </div>            <Button
+              {/* Show/Hide confirm password toggle button */}
+              <button
+                type="button"
+                onClick={toggleConfirmPasswordVisibility}
+                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none z-10"
+              >
+                {showConfirmPassword ? (
+                  <EyeSlashIcon className="w-5 h-5 text-gray-500" />
+                ) : (
+                 <EyeIcon className="w-5 h-5 text-gray-500" />
+                )}
+              </button>            </div>
+
+            <Button
               type="submit"
               variant="primary"
               className="w-full bg-[#0a639d] hover:bg-[#085283] text-white py-3 rounded-lg font-medium"

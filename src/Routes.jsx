@@ -21,7 +21,7 @@ import TermsConditions from './pages/TermsConditions/TermsConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
 import FAQs from './pages/FAQs/FAQs';
 import Testimonials from './pages/Testimonials/Testimonials';
-
+import UserProfile from './pages/UserProfile/UserProfile';
 const AppRoutes = () => {
   return (    <Router>      
     <Routes>        {/* Public Routes */}
@@ -63,7 +63,7 @@ const AppRoutes = () => {
           } 
         />
         
-        {/* 
+        
         <Route 
           path="/bookings" 
           element={
@@ -86,7 +86,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } 
         />
-        */}
+        
         
         <Route
           path="/routes" 
@@ -109,7 +109,17 @@ const AppRoutes = () => {
               />
             </ProtectedRoute>
           } 
+        /> 
+        {/* User Profile Route */}
+        <Route 
+          path="/user-profile" 
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          } 
         />
+
       </Routes>
     </Router>
   );

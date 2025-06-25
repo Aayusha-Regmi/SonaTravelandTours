@@ -52,6 +52,8 @@ const BusListings = ({
   totalBuses = 0, 
   travelDate = '', 
   onSearchAgain,
+  // Search parameters for seat refresh
+  searchParams = {},
   // Add filter props
   selectedBoardingPlaces = [],
   selectedDroppingPlaces = [],
@@ -105,15 +107,38 @@ const BusListings = ({
     } catch (e) {
       return travelDate;
     }
-  }, [travelDate]);
-    // If no buses passed, use default data
+  }, [travelDate]);  // Process and normalize bus data from API response
+  // Expected API response format from /bus/search:
+  // {
+  //   "statusCode": 200,
+  //   "success": true,
+  //   "message": "Data Retrieved successfully",
+  //   "data": [
+  //     {
+  //       "busId": 102,
+  //       "busNumber": "BA-PRA01-006-5529",
+  //       "busName": "Sona Travel A/C",
+  //       "baseOrigin": "birgunj",
+  //       "baseDestination": "kathmandu",
+  //       "baseDate": "2023-02-22T00:00:00.000Z",
+  //       "secondaryBusNumber": "ST 5529",
+  //       "fair": 1100,
+  //       "status": true,
+  //       "routes": "Kalaiya,Birgunj,Simara,Hetauda,Chitwan,Thankot,Kalanki,Balaju,Chabahil,Koteshwor,Sallaghari,Banepa",
+  //       "facilities": "Front Rear protection sensors,IR camera,Orthopaedic Seats,GPS Location,Airbag seats,BS IV engine,Automatic air suspension",
+  //       "description": "This bus is a normal bus",
+  //       "bookedSeats": 9,
+  //       "availableSeats": 34
+  //     }
+  //   ]
+  // }
   const busData = useMemo(() => {
     if (buses.length === 0) return [];
       return buses.map(bus => {
-      // Ensure we have an ID for navigation
-      const busId = bus.id || bus._id || `bus-${Math.random().toString(36).substr(2, 9)}`;
+      // Use busId from API response (primary identifier)
+      const busId = bus.busId || bus.id || bus._id || `bus-${Math.random().toString(36).substr(2, 9)}`;
       
-      // Better bus name and number handling
+      // Use API field names: busName, secondaryBusNumber
       const busName = bus.busName || bus.name || bus.operatorName || 'Sona Travel';
       const busNumber = bus.secondaryBusNumber || bus.busNumber || bus.vehicleNumber || `STT-${Math.floor(Math.random() * 1000)}`;
       
@@ -135,47 +160,53 @@ const BusListings = ({
       // Determine if it's an early morning journey (departure before 8 AM)
       const isEarlyMorning = departureMinutes < timeToMinutes('08:00');
       
-      // Generate dynamic available seats count based on bus ID (same logic as SeatSelection)
-      const generateAvailableSeats = (busId) => {
-        const seed = busId ? parseInt(busId.toString().replace(/\D/g, '')) || 1 : 1;
-        const totalSeats = 32; // Total seats in the bus layout
-        const bookedCount = Math.floor((seed % 8) + 3); // Between 3-10 booked seats
-        return totalSeats - bookedCount;
-      };
+      // Use available seats from API response (NOT generated) - this is the key change
+      const availableSeats = bus.availableSeats || 0;
       
-      const calculatedAvailableSeats = generateAvailableSeats(busId);
-        return {
+      // Parse facilities from comma-separated string or use array
+      const facilities = typeof bus.facilities === 'string' 
+        ? bus.facilities.split(',').map(f => f.trim())
+        : bus.facilities || ['WiFi', 'AC', 'Charging Point'];
+      
+      // Return the processed bus object
+      return {
         id: busId,
-        rating: bus.rating || '4.8',
         name: busName,
         busNumber: busNumber,
-        type: bus.busType || bus.type || 'AC Bus',
+        type: bus.busType || bus.type || 'AC Sleeper',
         departureTime: depTime,
-        departureTimeFormatted: formattedDepartureTime,
-        departureLocation: bus.boardingPoint || bus.boarding_point || bus.baseOrigin || 'Bus Park',
         arrivalTime: arrTime,
+        departureTimeFormatted: formattedDepartureTime,
         arrivalTimeFormatted: formattedArrivalTime,
-        arrivalLocation: bus.droppingPoint || bus.dropping_point || bus.baseDestination || 'Bus Park',
         duration: duration,
-        price: bus.price || (bus.fare ? `Rs. ${bus.fare}` : (bus.fair ? `Rs. ${bus.fair}` : 'Rs. 1200')),
-        priceUnit: '/ Seat',
-        availableSeats: `${bus.availableSeats || calculatedAvailableSeats} Seats Available`,        
-        facilities: Array.isArray(bus.facilities) ? bus.facilities : (bus.facilities ? bus.facilities.split(',').map(f => f.trim()) : []),
+        price: `Rs. ${bus.fair || bus.fare || bus.price || 1500}`, // Use 'fair' from API
+        priceUnit: '/seat',
+        rating: bus.rating || 4.2,
+        availableSeats: availableSeats, // From API response - critical for accurate seat count
+        bookedSeats: bus.bookedSeats || 0, // Also from API
+        facilities: facilities,
+        routes: bus.routes || '', // Routes as comma-separated string from API
+        departureLocation: bus.baseOrigin || bus.origin || 'Departure Point',
+        arrivalLocation: bus.baseDestination || bus.destination || 'Arrival Point',
+        boardingPoints: bus.boardingPoints || bus.boarding_points || [],
+        droppingPoints: bus.droppingPoints || bus.dropping_points || [],
         isNightJourney,
         isEarlyMorning,
-        
-        // Store original data for passing to booking
-        originalData: bus
+        // Include all original bus data for seat selection and other components
+        ...bus
       };
     });
   }, [buses]);
 
+  // Component helper functions
   const toggleFacilities = (index) => {
     setExpandedFacilities(prev => ({
       ...prev,
       [index]: !prev[index]
     }));
-  };  const handleBookNow = (bus) => {
+  };
+
+  const handleBookNow = (bus) => {
     console.log('Navigating to seat selection for bus:', bus);
     if (!bus || !bus.id) {
       console.error('Bus data or ID is missing:', bus);
@@ -583,8 +614,11 @@ const BusListings = ({
               </div>              {/* Available Seats and Select Seats Button */}
               <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium text-green-600">
-                  {bus.availableSeats}
-                </span>                  <Button 
+                  {bus.availableSeats > 0 
+                    ? `${bus.availableSeats} seat${bus.availableSeats === 1 ? '' : 's'} available`
+                    : 'No seats available'
+                  }
+                </span><Button 
                   variant="primary"                
                   onClick={() => {
                     console.log('Select Seats clicked for bus:', bus);
@@ -614,11 +648,12 @@ const BusListings = ({
             <div 
               id={`seat-selection-${bus.id}`}
               className="mt-4 animate-fadeInSlideDown"
-            >
-              <InlineSeatSelection 
+            >              <InlineSeatSelection 
                 busData={bus} 
                 busId={bus.id}
-              />            </div>
+                searchParams={searchParams}
+                travelDate={travelDate}
+              /></div>
           )}
             </div>
           ))}
@@ -626,6 +661,6 @@ const BusListings = ({
       )}
     </div>
   );
-};
+      }
 
 export default BusListings;
