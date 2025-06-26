@@ -379,7 +379,7 @@ const PassengerDetail = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
                   <Dropdown
-                    label="Boarding Place"
+                    label="Boarding Point"
                     options={boardingOptions}
                     value={passenger.boardingPlace}
                     onChange={(value) => handlePassengerChange(index, 'boardingPlace', value)}
@@ -388,7 +388,7 @@ const PassengerDetail = () => {
                     error={errors[`${index}-boardingPlace`]}
                   />
                   <Dropdown
-                    label="Dropping Place"
+                    label="Dropping Point"
                     options={droppingOptions}
                     value={passenger.droppingPlace}
                     onChange={(value) => handlePassengerChange(index, 'droppingPlace', value)}
