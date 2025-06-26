@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
@@ -12,32 +12,53 @@ import ProgressBar from '../../components/common/BookingStepComponents/ProgressB
 
 const PassengerDetail = () => {
   const navigate = useNavigate();
-  const [passengers, setPassengers] = useState([
-    {
-      id: 'B16',
-      fullName: '',
-      gender: '',
-      email: '',
-      phoneNumber: '',
-      cityOfResidence: '',
-      boardingPlace: '',
-      droppingPlace: '',
-      applyToAll: false
-    },
-    {
-      id: 'B18',
-      fullName: '',
-      gender: '',
-      email: '',
-      phoneNumber: '',
-      cityOfResidence: '',
-      boardingPlace: '',
-      droppingPlace: '',
-      applyToAll: false
-    }
-  ]);
-
+  const location = useLocation();
+  
+  // 🔥 FIX: Get selected seats from navigation state
+  const { selectedSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails } = location.state || {};
+  
+  // 🔥 FIX: Create passengers array based on actual selected seats
+  const [passengers, setPassengers] = useState([]);
   const [errors, setErrors] = useState({});
+
+  // Initialize passengers based on selected seats
+  useEffect(() => {
+    if (selectedSeats && selectedSeats.length > 0) {
+      console.log('🎯 Initializing passengers for selected seats:', selectedSeats);
+      
+      const initialPassengers = selectedSeats.map(seatId => ({
+        id: seatId,                    // Use actual seat ID (A5, B7, etc.)
+        fullName: '',
+        gender: '',
+        email: '',
+        phoneNumber: '',
+        cityOfResidence: '',
+        boardingPlace: '',
+        droppingPlace: '',
+        applyToAll: false
+      }));
+      
+      setPassengers(initialPassengers);
+      console.log('✅ Passengers initialized:', initialPassengers);
+    } else {
+      // Fallback if no seats selected (redirect back)
+      console.error('❌ No selected seats found, redirecting back');
+      toast.error('No seats selected. Please select seats first.');
+      navigate(-1); // Go back to previous page
+    }
+  }, [selectedSeats, navigate]);
+
+  // Show loading if passengers not initialized yet
+  if (!passengers || passengers.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-['Inter',system-ui,sans-serif] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading passenger details...</p>
+        </div>
+      </div>
+    );
+  }
 
   const genderOptions = ['Male', 'Female', 'Other'];
 
@@ -179,8 +200,33 @@ const PassengerDetail = () => {
 
   const handleGoToPayment = () => {
     if (validateForm()) {
-      console.log('Proceeding to payment with passenger data:', passengers);
-      navigate('/payment');
+      console.log('🎯 Proceeding to payment with complete data:', {
+        passengers,
+        selectedSeats,
+        busData,
+        totalPrice,
+        travelDate,
+        bookingDetails
+      });
+      
+      // 🔥 FIX: Pass all booking data to payment page
+      navigate('/payment', {
+        state: {
+          passengers: passengers,          // Passenger details with actual seat numbers
+          selectedSeats: selectedSeats,    // Selected seat numbers
+          busData: busData,               // Bus information
+          searchParams: searchParams,      // Search parameters
+          travelDate: travelDate,         // Travel date
+          totalPrice: totalPrice,         // Total booking price
+          seatPrice: seatPrice,           // Price per seat
+          bookingDetails: {
+            ...bookingDetails,
+            totalSeats: selectedSeats.length,
+            farePerSeat: seatPrice,
+            totalFare: totalPrice
+          }
+        }
+      });
     } else {
       toast.error('Please fill in all required fields correctly', {
         position: "top-right",
@@ -198,13 +244,13 @@ const PassengerDetail = () => {
       <Header />      {/* Bus Detail Component */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pt-20 sm:pt-22 md:pt-24">
         <BusDetail
-          busName="Name or No of the bus"
-          busType="Tourist A/c, Delux"
-          date="06/06/2024"
-          time="16:00"
-          boardingPlace="Kathmandu"
-          droppingPlace="Birgunj"
-          duration="9h"
+          busName={busData?.busName || busData?.name || "Bus Information"}
+          busType={busData?.busType || busData?.type || "Standard"}
+          date={travelDate || new Date().toLocaleDateString()}
+          time={busData?.departureTime || "TBD"}
+          boardingPlace={searchParams?.fromCity || busData?.departureLocation || "Kathmandu"}
+          droppingPlace={searchParams?.toCity || busData?.arrivalLocation || "Birgunj"}
+          duration={busData?.duration || "TBD"}
         />        {/* Progress Bar */}
         <div className="mb-6 sm:mb-8 px-2 sm:px-0">
           <ProgressBar steps={steps} currentStep={1} />

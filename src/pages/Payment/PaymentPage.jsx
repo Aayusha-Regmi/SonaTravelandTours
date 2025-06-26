@@ -1,6 +1,6 @@
 // src/pages/Payment/index.jsx
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
@@ -9,18 +9,40 @@ import BusDetail from '../../components/common/BookingStepComponents/BusDetail';
 
 const PaymentPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   
-  // Get data from passenger details
+  // 🔥 FIX: Get complete data from passenger details
   const { 
-    bus = {}, 
+    passengers = [], 
     selectedSeats = [], 
+    busData = {}, 
+    searchParams = {},
+    travelDate = '',
     totalPrice = 0, 
-    bookingId = null, 
-    passengers = [] 
+    seatPrice = 0,
+    bookingDetails = {}
   } = location.state || {};
+
+  // Show error if no data
+  if (!passengers.length || !selectedSeats.length) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">No booking data found. Please start from seat selection.</p>
+          <button 
+            onClick={() => navigate('/search-results')}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+          >
+            Go Back to Search
+          </button>
+        </div>
+      </div>
+    );
+  }
   
   const [promoCode, setPromoCode] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];
   const currentStep = 2;
@@ -44,28 +66,119 @@ const PaymentPage = () => {
       toast.error('Please select a payment method');
       return;
     }
-      // Simulate payment processing
+
+    setIsProcessingPayment(true);
     toast.info(`Processing ${selectedPaymentMethod} payment...`);
     
-    // Simulate API call delay
-    setTimeout(() => {
-      // Always succeed for demo (in production, this would be a real API call)
-      const success = true;
+    try {
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      if (success) {
+      // Payment successful - now book the seats
+      const bookingSuccess = await bookSeatsAPI();
+      
+      if (bookingSuccess) {
         toast.success(`Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);
-        console.log('Payment completed:', {
-          bus,
-          selectedSeats,
-          totalPrice,
-          bookingId,
-          passengers,
-          paymentMethod: selectedPaymentMethod
+        console.log('✅ BOOKING COMPLETED:', {
+          bookingId: bookingSuccess.bookingId,
+          passengers: passengers.length,
+          seats: selectedSeats,
+          totalAmount: totalPrice
         });
+        
+        // Navigate back to search results with success message
+        // In a real app, you'd navigate to a booking confirmation page
+        setTimeout(() => {
+          navigate('/search-results', { 
+            state: { 
+              bookingSuccess: true, 
+              bookingId: bookingSuccess.bookingId,
+              bookedSeats: selectedSeats
+            } 
+          });
+        }, 2000);
       } else {
-        toast.error('Payment failed. Please try again.');
+        toast.error('Payment succeeded but booking failed. Please contact support.');
       }
-    }, 2000);
+    } catch (error) {
+      console.error('Payment/booking error:', error);
+      toast.error('Payment failed. Please try again.');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const bookSeatsAPI = async () => {
+    try {
+      console.log('🎯 Starting seat booking API call...');
+      
+      // Prepare booking data structure exactly as required by the API
+      const requestData = {
+        dateOfTravel: travelDate || new Date().toISOString().split('T')[0],
+        paymentAmount: totalPrice,
+        payment_status: "Completed",
+        paymentMode: selectedPaymentMethod === 'esewa' ? 'esewa' : 
+                    selectedPaymentMethod === 'connect-ips' ? 'connect-ips' : 'cash',
+        busId: parseInt(busData?.originalData?.busId || busData?.id || bookingDetails.busId || 102),
+        passengersList: passengers.map(passenger => ({
+          passengerName: passenger.fullName,
+          contactNumber: parseInt(passenger.phoneNumber),
+          seatNo: passenger.id, // This is the seat ID (A5, B7, etc.)
+          origin: bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu',
+          destination: bookingDetails?.destination || searchParams?.toCity || 'Birgunj',
+          gender: passenger.gender.toLowerCase(),
+          boardingLocation: passenger.boardingPlace || 'Bus Park',
+          deboardingLocation: passenger.droppingPlace || 'Kalanki',
+          residence: passenger.cityOfResidence,
+          email: passenger.email
+        }))
+      };
+
+      console.log('📤 SEAT BOOKING REQUEST:', {
+        url: `${import.meta.env.VITE_API_BASE_URL}/seat`,
+        method: 'POST',
+        requestData: requestData
+      });
+
+      // Get authentication token
+      let userToken = localStorage.getItem('token') || sessionStorage.getItem('token') || 
+                      localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (userToken) {
+        headers.Authorization = `Bearer ${userToken}`;
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/seat`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(requestData)
+      });
+
+      const result = await response.json();
+      
+      console.log('📥 SEAT BOOKING RESPONSE:', {
+        status: response.status,
+        success: result.success,
+        bookingId: result.bookingId || result.data?.bookingId,
+        message: result.message
+      });
+
+      if (response.ok && (result.success || response.status === 201)) {
+        return {
+          bookingId: result.bookingId || result.data?.bookingId || `BK${Date.now()}`,
+          ...result
+        };
+      } else {
+        throw new Error(result.message || `HTTP ${response.status}: Booking failed`);
+      }
+    } catch (error) {
+      console.error('❌ SEAT BOOKING ERROR:', error.message);
+      throw error;
+    }
   };
 
   const paymentMethods = [
@@ -96,13 +209,13 @@ const PaymentPage = () => {
         <main className="max-w-7xl mt-20 mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Bus Information Section */}
         <BusDetail
-          busName="Name or No of the bus"
-          busType="Tourist A/c, Delux"
-          date="06/06/2024"
-          time="16:00"
-          boardingPlace="Kathmandu"
-          droppingPlace="Birgunj"
-          duration="9h"
+          busName={busData?.busName || busData?.name || "Bus Information"}
+          busType={busData?.busType || busData?.type || "Standard"}
+          date={travelDate || new Date().toLocaleDateString()}
+          time={busData?.departureTime || "TBD"}
+          boardingPlace={bookingDetails?.origin || searchParams?.fromCity || "Kathmandu"}
+          droppingPlace={bookingDetails?.destination || searchParams?.toCity || "Birgunj"}
+          duration={busData?.duration || "TBD"}
         />
 
         {/* Progress Bar */}
@@ -113,159 +226,86 @@ const PaymentPage = () => {
           {/* Left Column - Seat Details */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              {/* Seat B18 Section */}
-              <div className="mb-8">                <h2 className="text-xl font-bold text-[#0a639d] text-center mb-2 font-opensans">
-                  Seat B18
-                </h2>
-                <div className="w-16 h-0.5 bg-[#0a639d] mx-auto mb-6"></div>                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-[#0a639d] mb-1 font-opensans">
-                      Kathmandu
-                    </h3>
-                    <p className="text-xs font-medium text-gray-600 font-opensans">
-                      Boarding Place Name
-                    </p>
+              {/* Dynamic Seat Sections for each selected seat */}
+              {passengers.map((passenger, index) => (
+                <div key={passenger.id} className={`mb-8 ${index < passengers.length - 1 ? 'border-b border-gray-200 pb-8' : ''}`}>
+                  <h2 className="text-xl font-bold text-[#0a639d] text-center mb-2 font-opensans">
+                    Seat {passenger.id}
+                  </h2>
+                  <div className="w-16 h-0.5 bg-[#0a639d] mx-auto mb-6"></div>
+                  
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-[#0a639d] mb-1 font-opensans">
+                        {bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu'}
+                      </h3>
+                      <p className="text-xs font-medium text-gray-600 font-opensans">
+                        Boarding Place: {passenger.boardingPlace || 'Not specified'}
+                      </p>
+                    </div>
+                    <img 
+                      src="/images/img_hicon_linear_right_3.svg" 
+                      alt="arrow" 
+                      className="w-5 h-5"
+                    />
+                    <div>
+                      <h3 className="text-lg font-bold text-[#0a639d] mb-1 font-opensans">
+                        {bookingDetails?.destination || searchParams?.toCity || 'Birgunj'}
+                      </h3>
+                      <p className="text-xs font-medium text-gray-600 font-opensans">
+                        Deboarding Place: {passenger.droppingPlace || 'Not specified'}
+                      </p>
+                    </div>
                   </div>
-                  <img 
-                    src="/images/img_hicon_linear_right_3.svg" 
-                    alt="arrow" 
-                    className="w-5 h-5"
-                  />
-                  <div>
-                    <h3 className="text-lg font-bold text-[#0a639d] mb-1 font-opensans">
-                      Birgunj
-                    </h3>
-                    <p className="text-xs font-medium text-gray-600 font-opensans">
-                      Deboarding Place Name
-                    </p>
-                  </div>
-                </div>
 
-                {/* Passenger Details */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      Name
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      Arjun Patel
-                    </p>
+                  {/* Passenger Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
+                        Name
+                      </h4>
+                      <p className="text-sm font-medium text-gray-600 font-opensans">
+                        {passenger.fullName || 'Not provided'}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
+                        Gender
+                      </h4>
+                      <p className="text-sm font-medium text-gray-600 font-opensans">
+                        {passenger.gender || 'Not specified'}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
+                        City of Residence
+                      </h4>
+                      <p className="text-sm font-medium text-gray-600 font-opensans">
+                        {passenger.cityOfResidence || 'Not specified'}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      Gender
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      Female
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      City of Residence
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      Nepal
-                    </p>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      Phone Number
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      454645656
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      Email
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      ArjunPatel@gmail.com
-                    </p>
-                  </div>
-                </div>
-
-                <div className="w-full h-px bg-gray-200 mb-6"></div>
-              </div>              {/* Seat B16 Section */}
-              <div>
-                <h2 className="text-xl font-bold text-[#0a639d] text-center mb-2 font-opensans">
-                  Seat B16
-                </h2>
-                <div className="w-16 h-0.5 bg-[#0a639d] mx-auto mb-6"></div>
-                
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-[#0a639d] mb-1 font-opensans">
-                      Kathmandu
-                    </h3>
-                    <p className="text-xs font-medium text-gray-600 font-opensans">
-                      Boarding Place Name
-                    </p>
-                  </div>
-                  <img 
-                    src="/images/img_hicon_linear_right_3.svg" 
-                    alt="arrow" 
-                    className="w-5 h-5"
-                  />
-                  <div>
-                    <h3 className="text-lg font-bold text-[#0a639d] mb-1 font-opensans">
-                      Birgunj
-                    </h3>
-                    <p className="text-xs font-medium text-gray-600 font-opensans">
-                      Deboarding Place Name
-                    </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
+                        Phone Number
+                      </h4>
+                      <p className="text-sm font-medium text-gray-600 font-opensans">
+                        {passenger.phoneNumber || 'Not provided'}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
+                        Email
+                      </h4>
+                      <p className="text-sm font-medium text-gray-600 font-opensans">
+                        {passenger.email || 'Not provided'}
+                      </p>
+                    </div>
                   </div>
                 </div>
-
-                {/* Passenger Details */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      Name
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      Arjun Patel
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      Gender
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      Female
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      City of Residence
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      Nepal
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      Phone Number
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      454645656
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                      Email
-                    </h4>
-                    <p className="text-sm font-medium text-gray-600 font-opensans">
-                      ArjunPatel@gmail.com
-                    </p>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>          {/* Right Column - Payment Details */}
           <div className="col-span-1">
@@ -424,15 +464,24 @@ const PaymentPage = () => {
           <div className="flex justify-end">
             <button 
               onClick={handleGoToPayment}
-              disabled={!selectedPaymentMethod}
+              disabled={!selectedPaymentMethod || isProcessingPayment}
               className="min-w-[280px] h-14 font-bold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0a639d] flex items-center justify-center font-opensans bg-[#0a639d] text-white hover:bg-[#084d7a] disabled:bg-gray-400 disabled:cursor-not-allowed px-6 text-base"
             >
-              <span className="mr-2">Go to payment gateway</span>
-              <img 
-                src="/images/img_hicon_outline_right_2.svg" 
-                alt="arrow" 
-                className="w-6 h-6"
-              />
+              {isProcessingPayment ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  <span>Processing Payment...</span>
+                </>
+              ) : (
+                <>
+                  <span className="mr-2">Go to payment gateway</span>
+                  <img 
+                    src="/images/img_hicon_outline_right_2.svg" 
+                    alt="arrow" 
+                    className="w-6 h-6"
+                  />
+                </>
+              )}
             </button>
           </div>
         </div>

@@ -259,24 +259,41 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
       toast.error('Please select at least one seat to continue.');
       return;
     }
-    
-    // For now, we'll simulate the booking process
-    const bookingResult = await bookSeats(selectedSeats);
-    
-    if (bookingResult && bookingResult.success) {
-      toast.success(`Seats ${selectedSeats.join(', ')} selected successfully!`);
-      // Navigate to passenger details page with booking data
-      navigate('/passenger-detail', {
-        state: {
-          bus: busData,
-          selectedSeats,
-          totalPrice,
-          bookingId: bookingResult.bookingId
+
+    console.log('🎯 Proceeding to passenger details with data:', {
+      selectedSeats,
+      busData,
+      searchParams,
+      travelDate,
+      totalPrice
+    });
+
+    // 🔥 FIX: Navigate with complete data structure
+    navigate('/passenger-detail', {
+      state: {
+        selectedSeats: selectedSeats,        // ["A5", "B7"] - actual selected seats
+        busData: busData,                    // Complete bus information
+        searchParams: searchParams,          // Search parameters (from/to cities, etc.)
+        travelDate: travelDate,              // Travel date
+        totalPrice: totalPrice,              // Total calculated price
+        seatPrice: seatPrice,                // Price per seat (2000)
+        bookingDetails: {
+          busId: busData?.originalData?.busId || busData?.id || busId,
+          busName: busData?.busName || busData?.name,
+          route: `${searchParams?.fromCity || busData?.departureLocation} → ${searchParams?.toCity || busData?.arrivalLocation}`,
+          departureTime: busData?.departureTime,
+          arrivalTime: busData?.arrivalTime,
+          totalSeats: selectedSeats.length,
+          farePerSeat: seatPrice,
+          totalFare: totalPrice,
+          origin: searchParams?.fromCity || busData?.departureLocation || 'Kathmandu',
+          destination: searchParams?.toCity || busData?.arrivalLocation || 'Birgunj'
         }
-      });
-    } else {
-      toast.error('Failed to process seat selection. Please try again.');
-    }
+      }
+    });
+
+    // Show success message
+    toast.success(`Seats ${selectedSeats.join(', ')} selected successfully!`);
   };
 
   const bookSeats = async (selectedSeats) => {
