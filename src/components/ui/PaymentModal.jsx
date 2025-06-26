@@ -37,14 +37,14 @@ const PaymentModal = ({
   const initializePayment = async () => {
     setIsLoading(true);
     try {
-      console.log('🚀 Initializing payment for amount:', totalPrice);
+      console.log(' Initializing payment for amount:', totalPrice);
       
       // Step 1: Initiate Payment
       const paymentInitiated = await api.initiatePayment(totalPrice);
       
       if (paymentInitiated.success) {
         setPaymentTransaction(paymentInitiated.data);
-        console.log('✅ Payment initiated successfully:', paymentInitiated.data);
+        console.log(' Payment initiated successfully:', paymentInitiated.data);
         
         // Step 2: Get Payment Instruments
         const instruments = await api.getPaymentInstruments();
@@ -53,12 +53,12 @@ const PaymentModal = ({
           setPaymentInstruments(instruments.data);
           toast.success('Payment initialized successfully. Please select a payment method.');
         } else {
-          console.error('❌ Failed to load payment instruments:', instruments.message);
+          console.error(' Failed to load payment instruments:', instruments.message);
           toast.error(`Failed to load payment methods: ${instruments.message}`);
           onClose();
         }
       } else {
-        console.error('❌ Payment initiation failed:', paymentInitiated);
+        console.error(' Payment initiation failed:', paymentInitiated);
         
         // Show detailed error message for debugging
         const errorMsg = paymentInitiated.message || 'Unknown error';
@@ -74,7 +74,7 @@ const PaymentModal = ({
         onClose();
       }
     } catch (error) {
-      console.error('❌ Payment initialization error:', error);
+      console.error(' Payment initialization error:', error);
       toast.error(`Payment system unavailable: ${error.message || 'Please try again later'}`);
       onClose();
     } finally {
@@ -268,7 +268,7 @@ const PaymentModal = ({
         toast.error(result.message || 'Payment verification failed');
       }
     } catch (error) {
-      console.error('❌ Payment status check error:', error);
+      console.error(' Payment status check error:', error);
       toast.error('Failed to verify payment. Please try again.');
     }
   };
@@ -277,7 +277,7 @@ const PaymentModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-gradient-to-br from-blue-50/30 to-indigo-50/20 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
           <div className="flex justify-between items-center">
