@@ -165,60 +165,78 @@ const TrendingOffers = () => {
 					</div>
 					{/* Offers Grid */}
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 mt-12">
-						{offers.map((offer, idx) => (
-							<div
-								key={idx}
-								className={`relative rounded-2xl overflow-hidden shadow-xl border border-gray-500/30 flex flex-col h-[420px] min-h-[420px] group
-        ${offer.type === 'festival' ? 'bg-gradient-to-br from-pink-100/80 to-yellow-100/80' : ''}
-        ${offer.type === 'big' ? 'bg-gradient-to-br from-orange-100/80 to-pink-100/80' : ''}
-        ${offer.type === 'year' ? 'bg-gradient-to-br from-blue-100/80 to-emerald-100/80' : ''}
-        ${offer.type === 'manson' ? 'bg-gradient-to-br from-blue-200/80 to-green-100/80' : ''}
-        ${!offer.type ? 'bg-gradient-to-br from-white/80 to-blue-50/80' : ''}`}
-							>
-								{/* HOT! Badge */}
-								<span className="absolute top-4 left-4 z-20 px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-bold shadow-lg tracking-widest animate-pulse select-none">
-									HOT!
-								</span>
-								{/* Image */}
-								<div className="w-full h-40 overflow-hidden flex-shrink-0">
-									<img
-										src={offer.image}
-										alt={offer.title}
-										className="w-full h-full object-cover object-center rounded-t-2xl"
-									/>
-								</div>
-								{/* Card Content */}
-								<div className="flex flex-col flex-1 justify-between px-7 py-6 bg-white/80">
-									<div>
-										<span className="block text-gray-400 text-sm font-semibold mb-1 uppercase tracking-wide">
-											{offer.title.includes('Maha Shivratri') ? 'Maha Shivratri' : offer.title.includes('UNLOCK') ? 'UNLOCK A YEAR OF' : ''}
-										</span>
-										<span className="block text-gray-900 text-2xl font-extrabold mb-1 leading-tight">
-											{offer.title}
-										</span>
-										<span className="block text-orange-500 text-lg font-bold mb-4">
-											{offer.subtitle}
-										</span>
+						{offers.map((offer, idx) => {
+							let bgClass = '';
+							if (offer.type === 'festival') {
+								bgClass = 'bg-gradient-to-br from-pink-100/90 via-yellow-100/80 to-orange-100/70';
+							} else if (offer.type === 'big') {
+								bgClass = 'bg-gradient-to-br from-orange-200/90 via-pink-100/80 to-yellow-100/70';
+							} else if (offer.type === 'year') {
+								bgClass = 'bg-gradient-to-br from-blue-100/90 via-emerald-100/80 to-white/80';
+							} else if (offer.type === 'manson') {
+								bgClass = 'bg-gradient-to-br from-blue-200/90 via-green-100/80 to-emerald-100/70';
+							} else {
+								bgClass = 'bg-gradient-to-br from-white/90 to-blue-50/80';
+							}
+							return (
+								<div
+									key={idx}
+									className={`relative rounded-2xl overflow-hidden shadow-xl border border-gray-300/40 flex flex-col h-[420px] min-h-[420px] group ${bgClass}`}
+								>
+									{/* HOT! Badge */}
+									<span className="absolute top-4 left-4 z-20 px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-bold shadow-lg tracking-widest animate-pulse select-none">
+										HOT!
+									</span>
+									{/* Image */}
+									<div className="w-full h-40 overflow-hidden flex-shrink-0 rounded-t-2xl">
+										<img
+											src={offer.image}
+											alt={offer.title}
+											className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+										/>
 									</div>
-									<div className="mt-auto">
-										<div className="flex items-center justify-between bg-blue-50/80 rounded-xl px-4 py-3 mt-2 border border-blue-200/40">
-											<span className="text-gray-700 text-base font-semibold">
-												Promo Code:
-												<span className="ml-2 font-bold text-gray-900">{offer.promo}</span>
+									{/* Card Content */}
+									<div className="flex flex-col flex-1 justify-between px-7 py-6 bg-white/80 rounded-b-2xl">
+										<div>
+											<span className="block text-gray-400 text-xs font-semibold mb-1 uppercase tracking-widest">
+												{offer.type === 'festival' && 'Festival Offer'}
+												{offer.type === 'big' && 'Big Discount'}
+												{offer.type === 'year' && 'Yearly Offer'}
+												{offer.type === 'manson' && 'Manson Special'}
 											</span>
-											<button
-												type="button"
-												className={`ml-4 px-5 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-bold shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400/60 ${copiedIdx === idx ? 'bg-green-500' : ''}`}
-												onClick={() => handleCopy(offer.promo, idx)}
-												aria-label={`Copy promo code ${offer.promo}`}
-											>
-												{copiedIdx === idx ? 'Copied!' : 'Copy'}
-											</button>
+											<span className="block text-gray-900 text-2xl font-extrabold mb-1 leading-tight truncate">
+												{offer.title}
+											</span>
+											<span className="block text-orange-500 text-lg font-bold mb-4">
+												{offer.subtitle}
+											</span>
+										</div>
+										<div className="mt-auto">
+											<div className="flex items-center justify-between bg-blue-50/80 rounded-xl px-4 py-3 mt-2 border border-blue-200/40">
+												<span className="text-gray-700 text-base font-semibold">
+													Promo Code:
+													<span className="ml-2 font-bold text-gray-900 tracking-wider">{offer.promo}</span>
+												</span>
+												<button
+													type="button"
+													className={`ml-4 px-5 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-bold shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400/60 ${copiedIdx === idx ? 'bg-green-500' : ''}`}
+													onClick={() => handleCopy(offer.promo, idx)}
+													aria-label={`Copy promo code ${offer.promo}`}
+												>
+													{copiedIdx === idx ? 'Copied!' : 'Copy'}
+												</button>
+											</div>
 										</div>
 									</div>
+									{/* Badge Icon */}
+									{offer.badge && (
+										<span className="absolute top-4 right-4 text-3xl drop-shadow-lg select-none">
+											{offer.badge}
+										</span>
+									)}
 								</div>
-							</div>
-						))}
+							);
+						})}
 					</div>
 				</div>
 				<Footer />
