@@ -40,9 +40,41 @@ const PassengerDetail = () => {
   const [errors, setErrors] = useState({});
 
   const genderOptions = ['Male', 'Female', 'Other'];
-  const cityOptions = ['Kathmandu', 'Pokhara', 'Chitwan', 'Birgunj', 'Dharan'];
-  const boardingOptions = ['Central Bus Station', 'New Bus Park', 'Ratna Park'];
-  const droppingOptions = ['Main Bus Terminal', 'City Center', 'Airport'];
+
+  const cityOptions = [
+// 🏙 Metropolises (6)
+  "Kathmandu", "Pokhara", "Bharatpur", "Lalitpur", "Biratnagar", "Birgunj",
+ // 🌆 Sub-metropolises (11)
+  "Ghorahi", "Tulsipur", "Jitpur Simara", "Dhangadhi",
+  "Hetauda", "Dharan", "Kalaiya", "Butwal",
+  "Itahari", "Janakpurdham", "Nepalgunj",
+ // 🏘 Municipal Councils (276) – complete list follows
+  "Aathabis", "Aathabiskot", "Amargadhi", "Arjundhara",
+  "Aurahi", "Badimalika", "Bagchaur", "Baglung", "Bagmati",
+  "Bahudarmai", "Balara", "Balawa", "Banepa", "Banganga",
+  "Bangad Kupinde", "Bansgadhi", "Barahachhetra", "Barahathwa",
+  "Baudhimai", "Bedkot", "Belaka", "Belauri", "Belbari",
+  "Belkotgadhi", "Beni", "Besisahar", "Bhadrapur", "Bhajani",
+  "Bhaktapur", "Bhangaha", "Bhanu", "Bheri", "Bheriganga",
+  "Bhimad", "Bhimdatta", "Bhimeshwor", "Bhirkot", "Bhojpur",
+  "Bhumikasthan", "Bideha", "Bidur", "Birendranagar",
+  "Birtamod", "Bodebarsain", "Buddhabhumi", "Budhanilkantha",
+  "Budhiganga", "Budhinanda", "Bungal", "Chainpur",
+  "Chamunda Bindrasaini", "Chandannath", "Chandragiri",
+  "Chandrapur", "Changunarayan", "Chapakot", "Chaudandigadhi",
+  "Chaurjahari", "Chautara Sangachokgadhi", "Chhayanath Rara",
+  "Chhedagad", "Dakneshwari", "Dakshinkali", "Damak",
+  "Dasharathchand", "Deumai", "Devchuli", "Devdaha",
+  "Dewahi Gonahi", "Dhangadimai", "Dhankuta", "Dhanushadham",
+  "Dharmadevi", "Dhorpatan", "Dhulikhel", "Dhunibeshi",
+  "Dipayal Silgadhi", "Dudhauli", "Duhabi", "Dullu", "Gadhimai",
+  "Gaindakot", "Galkot", "Galyang", "Ganeshman Charnath",
+  "Garuda", "Gaur", "Gauradaha", "Ghodaghodi", "Godawari",
+  "Gokarneshwor", "Gorkha", "Gulariya", "Gulariya", "Gulmi",];
+
+
+  const boardingOptions = ['Banepa', 'Sallaghari', 'Koteshwor','Airport','Gaushala','Chabahil'];
+  const droppingOptions = ['Simara', 'Jeetpur', 'Parwanipur','Gandak','Pipra','Ghantaghar'];
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];
 

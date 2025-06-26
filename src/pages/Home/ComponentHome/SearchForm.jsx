@@ -166,7 +166,8 @@ const SearchForm = () => {
     }
 
     setIsLoading(true);
-    setError(null);    try {      console.log('🔍 Searching with data:', { tripType, ...formData });
+    setError(null);    
+    try {console.log('🔍 Searching with data:', { tripType, ...formData });
 
       // Use the local api.js service for bus search
       const busResults = await api.searchBuses({
