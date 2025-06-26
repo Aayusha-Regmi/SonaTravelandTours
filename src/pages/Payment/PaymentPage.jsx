@@ -237,181 +237,205 @@ const PaymentPage = () => {
     }
   ];
   return (
-    <div className="min-h-screen bg-[#f5f5f5]">
-      <Header />
-        <main className="max-w-7xl mt-20 mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Bus Information Section */}
-        <BusDetail
-          busName={busData?.busName || busData?.name || "Bus Information"}
-          busType={busData?.busType || busData?.type || "Standard"}
-          date={travelDate || new Date().toLocaleDateString()}
-          time={busData?.departureTime || "TBD"}
-          boardingPlace={bookingDetails?.origin || searchParams?.fromCity || "Kathmandu"}
-          droppingPlace={bookingDetails?.destination || searchParams?.toCity || "Birgunj"}
-          duration={busData?.duration || "TBD"}
-        />
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-gray-50 to-blue-50 relative">
+      {/* Subtle background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Subtle floating orbs */}
+        <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-100/20 rounded-full filter blur-3xl"></div>
+        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-indigo-100/15 rounded-full filter blur-3xl"></div>
+        <div className="absolute top-1/3 right-1/3 w-72 h-72 bg-slate-100/25 rounded-full filter blur-3xl"></div>
+      </div>
 
-        {/* Progress Bar */}
-        <div className="mb-8">
+      <Header />
+        <main className="max-w-7xl mt-20 mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
+        {/* Bus Information Section with glassmorphism */}
+        <div className="mb-8 transform hover:scale-[1.02] transition-all duration-300">
+          <BusDetail
+            busName={busData?.busName || busData?.name || "Bus Information"}
+            busType={busData?.busType || busData?.type || "Standard"}
+            date={travelDate || new Date().toLocaleDateString()}
+            time={busData?.departureTime || "TBD"}
+            boardingPlace={bookingDetails?.origin || searchParams?.fromCity || "Kathmandu"}
+            droppingPlace={bookingDetails?.destination || searchParams?.toCity || "Birgunj"}
+            duration={busData?.duration || "TBD"}
+          />
+        </div>
+
+        {/* Progress Bar with clean styling */}
+        <div className="mb-8 backdrop-blur-sm bg-white/70 rounded-2xl p-6 border border-gray-200 shadow-lg">
           <ProgressBar steps={steps} currentStep={currentStep} />
-        </div>{/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        </div>        {/* Main Content with clean design */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Seat Details */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              {/* Dynamic Seat Sections for each selected seat */}
+            <div className="backdrop-blur-sm bg-white/80 rounded-2xl border border-gray-200 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+              {/* Clean header */}
+              <div className="mb-6 text-center">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  Passenger Details
+                </h2>
+                <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+              </div>
+
+              {/* Clean Seat Sections */}
               {passengers.map((passenger, index) => (
-                <div key={passenger.id} className={`mb-8 ${index < passengers.length - 1 ? 'border-b border-gray-200 pb-8' : ''}`}>
-                  <h2 className="text-xl font-bold text-[#0a639d] text-center mb-2 font-opensans">
-                    Seat {passenger.id}
-                  </h2>
-                  <div className="w-16 h-0.5 bg-[#0a639d] mx-auto mb-6"></div>
+                <div 
+                  key={passenger.id} 
+                  className={`mb-6 ${index < passengers.length - 1 ? 'border-b border-gray-200 pb-6' : ''}`}
+                >
+                  {/* Seat header */}
+                  <div className="mb-4">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                      <h2 className="text-lg font-bold text-gray-800 text-center font-opensans flex items-center justify-center gap-2">
+                        <span className="inline-block w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                          {passenger.id}
+                        </span>
+                        Seat {passenger.id}
+                      </h2>
+                    </div>
+                  </div>
                   
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-[#0a639d] mb-1 font-opensans">
+                  {/* Route section */}
+                  <div className="flex items-center justify-between mb-4 bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <div className="text-center flex-1">
+                      <h3 className="text-lg font-bold text-gray-800 mb-1 font-opensans">
                         {bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu'}
                       </h3>
-                      <p className="text-xs font-medium text-gray-600 font-opensans">
-                        Boarding Place: {passenger.boardingPlace || 'Not specified'}
+                      <p className="text-sm font-medium text-gray-600 font-opensans bg-white rounded-full px-3 py-1 inline-block">
+                        {passenger.boardingPlace || 'Bus Park'}
                       </p>
                     </div>
-                    <img 
-                      src="/images/img_hicon_linear_right_3.svg" 
-                      alt="arrow" 
-                      className="w-5 h-5"
-                    />
-                    <div>
-                      <h3 className="text-lg font-bold text-[#0a639d] mb-1 font-opensans">
+                    
+                    <div className="flex-shrink-0 mx-4">
+                      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center flex-1">
+                      <h3 className="text-lg font-bold text-gray-800 mb-1 font-opensans">
                         {bookingDetails?.destination || searchParams?.toCity || 'Birgunj'}
                       </h3>
-                      <p className="text-xs font-medium text-gray-600 font-opensans">
-                        Deboarding Place: {passenger.droppingPlace || 'Not specified'}
+                      <p className="text-sm font-medium text-gray-600 font-opensans bg-white rounded-full px-3 py-1 inline-block">
+                        {passenger.droppingPlace || 'Bus Terminal'}
                       </p>
                     </div>
                   </div>
 
-                  {/* Passenger Details */}
+                  {/* Passenger Details with clean cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                        Name
-                      </h4>
-                      <p className="text-sm font-medium text-gray-600 font-opensans">
-                        {passenger.fullName || 'Not provided'}
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                        Gender
-                      </h4>
-                      <p className="text-sm font-medium text-gray-600 font-opensans">
-                        {passenger.gender || 'Not specified'}
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                        City of Residence
-                      </h4>
-                      <p className="text-sm font-medium text-gray-600 font-opensans">
-                        {passenger.cityOfResidence || 'Not specified'}
-                      </p>
-                    </div>
+                    {[
+                      { label: 'Name', value: passenger.fullName || 'Not provided' },
+                      { label: 'Gender', value: passenger.gender || 'Not specified' },
+                      { label: 'City of Residence', value: passenger.cityOfResidence || 'Not specified' }
+                    ].map((item, idx) => (
+                      <div key={idx} className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-all duration-200">
+                        <h4 className="text-sm font-bold text-gray-800 font-opensans mb-1">
+                          {item.label}
+                        </h4>
+                        <p className="text-sm font-medium text-gray-600 font-opensans">
+                          {item.value}
+                        </p>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                        Phone Number
-                      </h4>
-                      <p className="text-sm font-medium text-gray-600 font-opensans">
-                        {passenger.phoneNumber || 'Not provided'}
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="text-base font-bold text-gray-800 mb-1 font-opensans">
-                        Email
-                      </h4>
-                      <p className="text-sm font-medium text-gray-600 font-opensans">
-                        {passenger.email || 'Not provided'}
-                      </p>
-                    </div>
+                    {[
+                      { label: 'Phone Number', value: passenger.phoneNumber || 'Not provided' },
+                      { label: 'Email', value: passenger.email || 'Not provided' }
+                    ].map((item, idx) => (
+                      <div key={idx} className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-all duration-200">
+                        <h4 className="text-sm font-bold text-gray-800 font-opensans mb-1">
+                          {item.label}
+                        </h4>
+                        <p className="text-sm font-medium text-gray-600 font-opensans">
+                          {item.value}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
             </div>
-          </div>          {/* Right Column - Payment Details */}
+          </div>          {/* Right Column - Compact Payment Details */}
           <div className="col-span-1">
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <div className="border-l-4 border-[#0a639d] pl-6">                <h2 className="text-xl font-bold text-gray-800 mb-4 font-opensans">
-                  Payment Details
-                </h2>
+            <div className="sticky top-24">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                {/* Clean header */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800 font-opensans">
+                      Payment Summary
+                    </h2>
+                  </div>
+                  <div className="w-full h-px bg-gray-200"></div>
+                </div>
 
-                {/* Fare Breakdown */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-semibold text-[#0a639d] font-opensans">
+                {/* Compact Fare Breakdown */}
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700 font-opensans">
                       Base Fare ({selectedSeats.length} seat{selectedSeats.length > 1 ? 's' : ''})
                     </span>
-                    <span className="text-sm font-semibold text-[#0a639d] font-opensans">
-                      Rs. {(seatPrice * selectedSeats.length || totalPrice || 2400).toLocaleString()}.00
+                    <span className="text-sm font-semibold text-gray-800 font-opensans">
+                      Rs. {(seatPrice * selectedSeats.length || totalPrice || 2400).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs font-medium text-gray-600 font-opensans">
-                      Banking Charge
-                    </span>
-                    <span className="text-xs font-medium text-gray-600 font-opensans">
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600 font-opensans">Banking Charge</span>
+                    <span className="text-xs text-gray-600 font-opensans">
                       Rs. {Math.round((totalPrice || 2400) * 0.012).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs font-medium text-gray-600 font-opensans">
-                      Transaction Charge
-                    </span>
-                    <span className="text-xs font-medium text-gray-600 font-opensans">
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600 font-opensans">Transaction Charge</span>
+                    <span className="text-xs text-gray-600 font-opensans">
                       Rs. {Math.round((totalPrice || 2400) * 0.01).toLocaleString()}
                     </span>
                   </div>
                 </div>
 
-                <div className="w-full h-px bg-gray-200 mb-3"></div>
+                <div className="w-full h-px bg-gray-200 mb-4"></div>
 
+                {/* Discount section */}
                 <div className="space-y-2 mb-4">
-                  <div className="flex justify-between">
-                    <span className="text-xs font-medium text-gray-600 font-opensans">
-                      Gross Fare
-                    </span>
-                    <span className="text-xs font-medium text-gray-600 font-opensans">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700 font-opensans">Gross Fare</span>
+                    <span className="text-sm text-gray-700 font-opensans">
                       Rs. {Math.round((totalPrice || 2400) * 1.022).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-semibold text-[#0a639d] font-opensans">
-                      Special Sona Discount
-                    </span>
-                    <span className="text-sm font-semibold text-[#0a639d] font-opensans">
-                      Rs. {Math.round((totalPrice || 2400) * 0.176).toLocaleString()}
+                  <div className="flex justify-between items-center text-green-600">
+                    <span className="text-sm font-medium font-opensans">Special Discount</span>
+                    <span className="text-sm font-medium font-opensans">
+                      -Rs. {Math.round((totalPrice || 2400) * 0.176).toLocaleString()}
                     </span>
                   </div>
                 </div>
 
-                <div className="w-full h-px bg-gray-200 mb-3"></div>
+                <div className="w-full h-px bg-gray-200 mb-4"></div>
 
+                {/* Final calculations */}
                 <div className="space-y-2 mb-4">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-semibold text-[#0a639d] font-opensans">
-                      Bus Fare
-                    </span>
-                    <span className="text-sm font-semibold text-[#0a639d] font-opensans">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700 font-opensans">Bus Fare</span>
+                    <span className="text-sm text-gray-700 font-opensans">
                       Rs. {Math.round((totalPrice || 2400) * 0.842).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs font-medium text-gray-600 font-opensans">
-                      VAT (13%)
-                    </span>
-                    <span className="text-xs font-medium text-gray-600 font-opensans">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600 font-opensans">VAT (13%)</span>
+                    <span className="text-xs text-gray-600 font-opensans">
                       Rs. {Math.round((totalPrice || 2400) * 0.159).toLocaleString()}
                     </span>
                   </div>
@@ -419,105 +443,110 @@ const PaymentPage = () => {
 
                 <div className="w-full h-px bg-gray-200 mb-4"></div>
 
-                <div className="flex justify-between mb-6">
-                  <span className="text-base font-bold text-[#388b68] font-opensans">
-                    Total Fare
-                  </span>
-                  <span className="text-base font-bold text-[#388b68] font-opensans">
-                    Rs. {(totalPrice || 2600).toLocaleString()}.00
-                  </span>
-                </div>                {/* Promo Code */}
-                <div className="mb-4">
-                  <h3 className="text-lg font-bold text-gray-700 mb-3 font-opensans">
-                    Promo/Coupon Code
+                {/* Total fare */}
+                <div className="bg-green-50 rounded-lg p-3 mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-base font-bold text-green-700 font-opensans">
+                      Total Fare
+                    </span>
+                    <span className="text-lg font-bold text-green-700 font-opensans">
+                      Rs. {(totalPrice || 2600).toLocaleString()}.00
+                    </span>
+                  </div>
+                </div>
+
+                {/* Compact Promo Code */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2 font-opensans">
+                    Promo Code
                   </h3>
                   <div className="flex space-x-2">
                     <input
                       type="text"
-                      placeholder="Enter Promo/Coupon Code"
+                      placeholder="Enter code"
                       value={promoCode}
                       onChange={handlePromoCodeChange}
-                      className="flex-1 px-3 py-2 rounded-lg border border-gray-300 bg-gray-50 text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0a639d] focus:border-transparent font-opensans"
+                      className="flex-1 px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-opensans"
                     />
                     <button 
                       onClick={handleApplyPromo}
-                      className="px-4 py-2 font-bold rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center font-opensans bg-[#0a639d] text-white hover:bg-[#084d7a] disabled:bg-gray-400 text-sm"
+                      className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-opensans"
                     >
                       Apply
                     </button>
                   </div>
                 </div>
 
-                {/* Total Amount */}
-                <div className="flex justify-between mb-4">
-                  <span className="text-xl font-bold text-[#0a639d] font-opensans">
-                    Total Amount
-                  </span>
-                  <span className="text-xl font-bold text-[#0a639d] font-opensans">
-                    Rs. {(totalPrice || 2600).toLocaleString()}.00
-                  </span>
+                {/* Final Total */}
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-blue-800 font-opensans">
+                      Total Amount
+                    </span>
+                    <span className="text-xl font-bold text-blue-800 font-opensans">
+                      Rs. {(totalPrice || 2600).toLocaleString()}.00
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>        {/* Payment Method Selection */}
-        <div className="mt-6 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        </div>        {/* Clean Payment Method Selection */}
+        <div className="mt-8 bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200 p-6 shadow-lg">
           <div className="text-center mb-6">
             <h2 className="text-xl font-bold text-gray-800 mb-2 font-opensans">
-              Confirm your payment method
+              Select Payment Method
             </h2>
             <p className="text-sm font-medium text-gray-600 font-opensans">
-              Choose, add, update your payment method
+              Choose your preferred payment option
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             {paymentMethods.map((method) => (
               <button
                 key={method.id}
                 onClick={() => handlePaymentMethodSelect(method.name)}
-                className={`h-16 border-2 rounded-lg flex items-center px-4 transition-all duration-200 ${
+                className={`h-16 border-2 rounded-xl flex items-center justify-center px-4 transition-all duration-200 ${
                   selectedPaymentMethod === method.name
-                    ? 'border-[#0a639d] bg-blue-50 shadow-md'
-                    : 'border-gray-300 hover:border-[#0a639d] hover:shadow-sm'
+                    ? 'border-blue-600 bg-blue-50 shadow-md transform scale-105'
+                    : 'border-gray-300 hover:border-blue-400 hover:shadow-sm hover:bg-gray-50'
                 }`}
               >
                 <img 
                   src={method.icon} 
                   alt={method.name} 
-                  className="w-7 h-7 mr-3"
+                  className="w-8 h-8 mr-3"
                   onError={(e) => {
                     if (method.fallbackIcon) {
                       e.target.src = method.fallbackIcon;
                     }
                   }}
                 />
-                <span className="text-lg font-semibold text-gray-800 font-opensans">
+                <span className="text-sm font-semibold text-gray-800 font-opensans">
                   {method.name}
                 </span>
               </button>
             ))}
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-center">
             <button 
               onClick={handleGoToPayment}
               disabled={!selectedPaymentMethod || isProcessingPayment}
-              className="min-w-[280px] h-14 font-bold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0a639d] flex items-center justify-center font-opensans bg-[#0a639d] text-white hover:bg-[#084d7a] disabled:bg-gray-400 disabled:cursor-not-allowed px-6 text-base"
+              className="min-w-[300px] h-12 font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 flex items-center justify-center font-opensans bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed px-6"
             >
               {isProcessingPayment ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  <span>Processing Payment...</span>
+                  <span>Processing...</span>
                 </>
               ) : (
                 <>
-                  <span className="mr-2">Go to payment gateway</span>
-                  <img 
-                    src="/images/img_hicon_outline_right_2.svg" 
-                    alt="arrow" 
-                    className="w-6 h-6"
-                  />
+                  <span className="mr-2">Proceed to Payment</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
                 </>
               )}
             </button>
