@@ -277,7 +277,7 @@ const PassengerDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-['Inter',system-ui,sans-serif]">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 font-['Inter',system-ui,sans-serif]">
       <Header />      {/* Bus Detail Component */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pt-20 sm:pt-22 md:pt-24">
         <BusDetail
@@ -294,153 +294,180 @@ const PassengerDetail = () => {
         </div>
 
         {/* Passenger Details Form */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg shadow-blue-100/50 p-3 sm:p-4 md:p-6 lg:p-8 border border-gray-100">
-          {passengers.map((passenger, index) => (
-            <div key={passenger.id} className={`relative p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl mb-8 sm:mb-12 md:mb-16 last:mb-0 ${index % 2 === 0 ? 'bg-gradient-to-br from-blue-50/30 to-indigo-50/20' : 'bg-gradient-to-br from-gray-50 to-slate-50/50'} border-2 border-transparent hover:border-blue-200/50 transition-all duration-300`}>              {/* Seat Header */}
-              <div className="mb-3 sm:mb-4 md:mb-6">
-                <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-2 sm:mb-3 md:mb-4">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#0a639d] rounded-lg sm:rounded-xl flex items-center justify-center text-white font-bold text-sm sm:text-base md:text-lg shadow-md">
-                    {passenger.id}
-                  </div>
-                  <div>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#0a639d] tracking-tight">
-                      Seat {passenger.id}
-                    </h2>
-                    <div className="w-12 sm:w-16 md:w-20 h-0.5 sm:h-1 bg-[#0a639d] rounded-full mt-1 sm:mt-1 md:mt-2"></div>
+        <div className="backdrop-blur-xl bg-white/70 rounded-2xl shadow-2xl shadow-blue-100/20 p-6 lg:p-8 border border-white/30 relative overflow-hidden">
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/10 to-indigo-50/5 pointer-events-none"></div>
+          
+          <div className="relative z-10">
+            {passengers.map((passenger, index) => (
+              <div key={passenger.id} className={`relative mb-8 lg:mb-12 last:mb-0`}>
+                {/* Modern Passenger Card */}
+                <div className="backdrop-blur-md bg-white/80 rounded-2xl p-6 lg:p-8 border border-white/40 shadow-lg shadow-blue-100/10 hover:shadow-xl hover:shadow-blue-200/20 transition-all duration-300 relative overflow-hidden group">
+                  {/* Card background gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-white/10 to-indigo-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>                  
+                  <div className="relative z-10">
+                    {/* Seat Header */}
+                    <div className="mb-6">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                          {passenger.id}
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
+                            Seat {passenger.id}
+                          </h2>
+                          <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-2"></div>
+                        </div>
+                      </div>
+                    </div>                    {/* Passenger Details Section */}
+                    <div className="backdrop-blur-sm bg-white/60 rounded-xl p-6 mb-4 border border-white/30 shadow-sm">
+                      <h3 className="text-lg font-bold bg-gradient-to-r from-gray-700 to-gray-600 bg-clip-text text-transparent mb-6 flex items-center gap-3">
+                        <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
+                        Passenger Details
+                      </h3>
+
+                      {/* Form Fields Row 1 */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <InputField
+                          label="Full Name"
+                          value={passenger.fullName}
+                          onChange={(e) => handlePassengerChange(index, 'fullName', e.target.value)}
+                          placeholder="Enter full name"
+                          required
+                          error={errors[`${index}-fullName`]}
+                        />
+                        <Dropdown
+                          label="Gender"
+                          options={genderOptions}
+                          value={passenger.gender}
+                          onChange={(value) => handlePassengerChange(index, 'gender', value)}
+                          placeholder="Select gender"
+                          required
+                          error={errors[`${index}-gender`]}
+                        />
+                      </div>
+
+                      {/* Form Fields Row 2 */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <InputField
+                          label="Email"
+                          type="email"
+                          value={passenger.email}
+                          onChange={(e) => handlePassengerChange(index, 'email', e.target.value)}
+                          placeholder="Enter email address"
+                          required
+                          error={errors[`${index}-email`]}
+                        />
+                        <InputField
+                          label="Phone Number"
+                          type="tel"
+                          value={passenger.phoneNumber}
+                          onChange={(e) => handlePassengerChange(index, 'phoneNumber', e.target.value)}
+                          placeholder="Enter phone number"
+                          required
+                          error={errors[`${index}-phoneNumber`]}
+                        />
+                      </div>
+
+                      {/* City of Residence */}
+                      <div className="mb-6 relative z-[200]" style={{zIndex: 200}}>
+                        <div className="w-full md:w-1/2 relative z-[200]">
+                          <Dropdown
+                            label="City of Residence"
+                            options={cityOptions}
+                            value={passenger.cityOfResidence}
+                            onChange={(value) => handlePassengerChange(index, 'cityOfResidence', value)}
+                            placeholder="Select city"
+                            required
+                            error={errors[`${index}-cityOfResidence`]}
+                            containerClassName="relative z-[200]"
+                          />
+                        </div>
+                      </div>
+                    </div>                    {/* Boarding/Dropping Details */}
+                    <div className="backdrop-blur-sm bg-white/60 rounded-xl p-6 mb-6 border border-white/30 shadow-sm relative z-[1]">
+                      <h3 className="text-lg font-bold bg-gradient-to-r from-gray-700 to-gray-600 bg-clip-text text-transparent mb-6 flex items-center gap-3">
+                        <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
+                        Boarding / Dropping Details
+                      </h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <Dropdown
+                          label="Boarding Point"
+                          options={boardingOptions}
+                          value={passenger.boardingPlace}
+                          onChange={(value) => handlePassengerChange(index, 'boardingPlace', value)}
+                          placeholder="Select boarding point"
+                          required
+                          error={errors[`${index}-boardingPlace`]}
+                        />
+                        <Dropdown
+                          label="Dropping Point"
+                          options={droppingOptions}
+                          value={passenger.droppingPlace}
+                          onChange={(value) => handlePassengerChange(index, 'droppingPlace', value)}
+                          placeholder="Select dropping point"
+                          required
+                          error={errors[`${index}-droppingPlace`]}
+                        />
+                      </div>
+
+                      {/* Apply to All Checkbox - Show on every passenger card when multiple passengers */}
+                      {passengers.length > 1 && (
+                        <div className="backdrop-blur-sm bg-gradient-to-r from-blue-50/60 to-indigo-50/40 rounded-xl border border-blue-200/30 p-4 shadow-sm">
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              label={`Apply Seat ${passenger.id} details to all other passengers`}
+                              checked={passenger.applyToAll}
+                              onChange={(checked) => handleApplyToAll(index, checked)}
+                            />
+                            <div className="ml-2 text-xs text-gray-600">
+                              {passenger.applyToAll 
+                                ? `✓ Applied to ${passengers.length - 1} other passenger${passengers.length > 2 ? 's' : ''}`
+                                : 'Check to copy these details to other passengers'
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>              {/* Passenger Details Section */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 mb-2 sm:mb-3 md:mb-4 shadow-sm border border-gray-100/50 relative z-10">
-                <h3 className="text-sm sm:text-base md:text-lg font-bold text-[#2b2b2b] mb-3 sm:mb-4 md:mb-6 flex items-center gap-1.5 sm:gap-2 md:gap-3">
-                  <div className="w-0.5 sm:w-1 md:w-1.5 h-4 sm:h-5 md:h-6 bg-[#0a639d] rounded-full"></div>
-                  Passenger Details
-                </h3>
 
-                {/* Form Fields Row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
-                  <InputField
-                    label="Full Name"
-                    value={passenger.fullName}
-                    onChange={(e) => handlePassengerChange(index, 'fullName', e.target.value)}
-                    placeholder="Enter full name"
-                    required
-                    error={errors[`${index}-fullName`]}
-                  />
-                  <Dropdown
-                    label="Gender"
-                    options={genderOptions}
-                    value={passenger.gender}
-                    onChange={(value) => handlePassengerChange(index, 'gender', value)}
-                    placeholder="Select gender"
-                    required
-                    error={errors[`${index}-gender`]}
-                  />
-                </div>                {/* Form Fields Row 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
-                  <InputField
-                    label="Email"
-                    type="email"
-                    value={passenger.email}
-                    onChange={(e) => handlePassengerChange(index, 'email', e.target.value)}
-                    placeholder="Enter email address"
-                    required
-                    error={errors[`${index}-email`]}
-                  />
-                  <InputField
-                    label="Phone Number"
-                    type="tel"
-                    value={passenger.phoneNumber}
-                    onChange={(e) => handlePassengerChange(index, 'phoneNumber', e.target.value)}
-                    placeholder="Enter phone number"
-                    required
-                    error={errors[`${index}-phoneNumber`]}
-                  />
-                </div>                {/* City of Residence */}
-                <div className="mb-3 sm:mb-4 md:mb-6 relative z-[200]" style={{zIndex: 200}}>
-                  <div className="w-full md:w-1/2 relative z-[200]">
-                    <Dropdown
-                      label="City of Residence"
-                      options={cityOptions}
-                      value={passenger.cityOfResidence}
-                      onChange={(value) => handlePassengerChange(index, 'cityOfResidence', value)}
-                      placeholder="Select city"
-                      required
-                      error={errors[`${index}-cityOfResidence`]}
-                      containerClassName="relative z-[200]"
-                    />
-                  </div>
-                </div>
-              </div>              {/* Boarding/Dropping Details */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6 shadow-sm border border-gray-100/50 relative z-[1]">
-                <h3 className="text-sm sm:text-base md:text-lg font-bold text-[#2b2b2b] mb-3 sm:mb-4 md:mb-6 flex items-center gap-1.5 sm:gap-2 md:gap-3">
-                  <div className="w-0.5 sm:w-1 md:w-1.5 h-4 sm:h-5 md:h-6 bg-[#0a639d] rounded-full"></div>
-                  Boarding / Dropping Details
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
-                  <Dropdown
-                    label="Boarding Point"
-                    options={boardingOptions}
-                    value={passenger.boardingPlace}
-                    onChange={(value) => handlePassengerChange(index, 'boardingPlace', value)}
-                    placeholder="Select boarding place"
-                    required
-                    error={errors[`${index}-boardingPlace`]}
-                  />
-                  <Dropdown
-                    label="Dropping Point"
-                    options={droppingOptions}
-                    value={passenger.droppingPlace}
-                    onChange={(value) => handlePassengerChange(index, 'droppingPlace', value)}
-                    placeholder="Select dropping place"
-                    required
-                    error={errors[`${index}-droppingPlace`]}
-                  />
-                </div>                {/* Apply to All Checkbox - Show on every passenger card when multiple passengers */}
-                {passengers.length > 1 && (
-                  <div className="flex items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 md:p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border border-blue-200/50 shadow-sm">
-                    <Checkbox
-                      label={`Apply Seat ${passenger.id} details to all other passengers`}
-                      checked={passenger.applyToAll}
-                      onChange={(checked) => handleApplyToAll(index, checked)}
-                    />
-                    <div className="ml-2 text-xs text-gray-600">
-                      {passenger.applyToAll 
-                        ? `✓ Applied to ${passengers.length - 1} other passenger${passengers.length > 2 ? 's' : ''}`
-                        : 'Check to copy these details to other passengers'
-                      }
+                {/* Elegant Separator Between Passengers */}
+                {index < passengers.length - 1 && (
+                  <div className="relative my-12">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gradient-to-r from-transparent via-blue-200/50 to-transparent"></div>
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="backdrop-blur-sm bg-white/80 px-6 py-2 text-sm text-gray-500 font-medium rounded-full border border-white/40 shadow-sm">
+                        Next Passenger
+                      </span>
                     </div>
                   </div>
                 )}
-              </div>              {/* Strong Separator Between Seats */}
-              {index < passengers.length - 1 && (
-                <div className="relative my-6 sm:my-8 md:my-12">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t-2 border-dashed border-gray-300"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs sm:text-sm">
-                    <span className="bg-white px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-gray-500 font-medium rounded-full border border-gray-200 shadow-sm">
-                      Next Passenger
-                    </span>
-                  </div>
-                </div>
-              )}
+              </div>
+            ))}
+
+            {/* Modern Payment Button */}
+            <div className="flex justify-center sm:justify-end mt-10 pt-6">
+              <div className="backdrop-blur-sm bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-0.5 shadow-xl shadow-blue-200/30 hover:shadow-blue-300/40 transition-all duration-300">
+                <Button
+                  onClick={handleGoToPayment}
+                  variant="primary"
+                  size="large"
+                  className="w-full sm:w-auto sm:min-w-[200px] md:w-[246px] h-[55px] md:h-[60px] bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 backdrop-blur-sm border-0 shadow-none text-white font-semibold rounded-2xl transition-all duration-300 text-base flex items-center justify-center gap-2"
+                >
+                  <span>Go to payment</span>
+                  <img 
+                    src="/images/img_hicon_bold_right_2.svg" 
+                    alt="arrow" 
+                    className="w-[24px] h-[24px] md:w-[28px] md:h-[28px] filter brightness-0 invert"
+                  />
+                </Button>
+              </div>
             </div>
-          ))}          {/* Go to Payment Button */}
-          <div className="flex justify-center sm:justify-end mt-6 sm:mt-8 md:mt-10 pt-3 sm:pt-4 md:pt-6 border-t border-gray-200">
-            <Button
-              onClick={handleGoToPayment}
-              variant="primary"
-              size="large"
-              className="w-full sm:w-auto sm:min-w-[200px] md:w-[246px] h-[50px] sm:h-[55px] md:h-[60px] shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
-            >
-              <span className="mr-1 sm:mr-2">Go to payment</span>
-              <img 
-                src="/images/img_hicon_bold_right_2.svg" 
-                alt="arrow" 
-                className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] md:w-[28px] md:h-[28px]"
-              />
-            </Button>
           </div>
         </div>
       </div>
