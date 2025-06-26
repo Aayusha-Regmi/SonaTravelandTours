@@ -294,17 +294,17 @@ const PassengerDetail = () => {
         </div>
 
         {/* Passenger Details Form */}
-        <div className="backdrop-blur-xl bg-white/70 rounded-2xl shadow-2xl shadow-blue-100/20 p-6 lg:p-8 border border-white/30 relative overflow-hidden">
+        <div className="backdrop-blur-xl bg-white/70 rounded-2xl shadow-2xl shadow-blue-100/20 p-6 lg:p-8 border border-white/30 relative">
           {/* Subtle background pattern */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/10 to-indigo-50/5 pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/10 to-indigo-50/5 pointer-events-none rounded-2xl"></div>
           
           <div className="relative z-10">
             {passengers.map((passenger, index) => (
-              <div key={passenger.id} className={`relative mb-8 lg:mb-12 last:mb-0`}>
+              <div key={passenger.id} className={`relative mb-8 lg:mb-12 last:mb-0`} style={{ zIndex: 1000 - index * 10 }}>
                 {/* Modern Passenger Card */}
-                <div className="backdrop-blur-md bg-white/80 rounded-2xl p-6 lg:p-8 border border-white/40 shadow-lg shadow-blue-100/10 hover:shadow-xl hover:shadow-blue-200/20 transition-all duration-300 relative overflow-hidden group">
+                <div className="backdrop-blur-md bg-white/80 rounded-2xl p-6 lg:p-8 border border-white/40 shadow-lg shadow-blue-100/10 hover:shadow-xl hover:shadow-blue-200/20 transition-all duration-300 relative group">
                   {/* Card background gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-white/10 to-indigo-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>                  
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-white/10 to-indigo-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>                  
                   <div className="relative z-10">
                     {/* Seat Header */}
                     <div className="mb-6">
@@ -319,15 +319,16 @@ const PassengerDetail = () => {
                           <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-2"></div>
                         </div>
                       </div>
-                    </div>                    {/* Passenger Details Section */}
-                    <div className="backdrop-blur-sm bg-white/60 rounded-xl p-6 mb-4 border border-white/30 shadow-sm">
-                      <h3 className="text-lg font-bold bg-gradient-to-r from-gray-700 to-gray-600 bg-clip-text text-transparent mb-6 flex items-center gap-3">
+                    </div>                    {/* Compact Form Layout */}
+                    <div className="backdrop-blur-sm bg-white/60 rounded-xl p-6 mb-6 border border-white/30 shadow-sm">
+                      <h3 className="text-lg font-bold bg-gradient-to-r from-gray-700 to-gray-600 bg-clip-text text-transparent mb-4 flex items-center gap-3" style={{ zIndex: 1 }}>
                         <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
-                        Passenger Details
+                        Passenger Information
                       </h3>
 
-                      {/* Form Fields Row 1 */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      {/* Optimized Form Grid - All fields in structured layout */}
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                        {/* Row 1: Name, Gender, Email */}
                         <InputField
                           label="Full Name"
                           value={passenger.fullName}
@@ -336,19 +337,18 @@ const PassengerDetail = () => {
                           required
                           error={errors[`${index}-fullName`]}
                         />
-                        <Dropdown
-                          label="Gender"
-                          options={genderOptions}
-                          value={passenger.gender}
-                          onChange={(value) => handlePassengerChange(index, 'gender', value)}
-                          placeholder="Select gender"
-                          required
-                          error={errors[`${index}-gender`]}
-                        />
-                      </div>
-
-                      {/* Form Fields Row 2 */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div className="relative" style={{ zIndex: 1500 - index * 10 }}>
+                          <Dropdown
+                            label="Gender"
+                            options={genderOptions}
+                            value={passenger.gender}
+                            onChange={(value) => handlePassengerChange(index, 'gender', value)}
+                            placeholder="Select gender"
+                            required
+                            error={errors[`${index}-gender`]}
+                            searchable={true}
+                          />
+                        </div>
                         <InputField
                           label="Email"
                           type="email"
@@ -358,6 +358,10 @@ const PassengerDetail = () => {
                           required
                           error={errors[`${index}-email`]}
                         />
+                      </div>
+
+                      {/* Row 2: Phone, City, Boarding & Dropping Points */}
+                      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
                         <InputField
                           label="Phone Number"
                           type="tel"
@@ -367,11 +371,7 @@ const PassengerDetail = () => {
                           required
                           error={errors[`${index}-phoneNumber`]}
                         />
-                      </div>
-
-                      {/* City of Residence */}
-                      <div className="mb-6 relative z-[200]" style={{zIndex: 200}}>
-                        <div className="w-full md:w-1/2 relative z-[200]">
+                        <div className="relative" style={{ zIndex: 1400 - index * 10 }}>
                           <Dropdown
                             label="City of Residence"
                             options={cityOptions}
@@ -380,51 +380,48 @@ const PassengerDetail = () => {
                             placeholder="Select city"
                             required
                             error={errors[`${index}-cityOfResidence`]}
-                            containerClassName="relative z-[200]"
+                            searchable={true}
+                          />
+                        </div>
+                        <div className="relative" style={{ zIndex: 1300 - index * 10 }}>
+                          <Dropdown
+                            label="Boarding Point"
+                            options={boardingOptions}
+                            value={passenger.boardingPlace}
+                            onChange={(value) => handlePassengerChange(index, 'boardingPlace', value)}
+                            placeholder="Select boarding point"
+                            required
+                            error={errors[`${index}-boardingPlace`]}
+                            searchable={true}
+                          />
+                        </div>
+                        <div className="relative" style={{ zIndex: 1200 - index * 10 }}>
+                          <Dropdown
+                            label="Dropping Point"
+                            options={droppingOptions}
+                            value={passenger.droppingPlace}
+                            onChange={(value) => handlePassengerChange(index, 'droppingPlace', value)}
+                            placeholder="Select dropping point"
+                            required
+                            error={errors[`${index}-droppingPlace`]}
+                            searchable={true}
                           />
                         </div>
                       </div>
-                    </div>                    {/* Boarding/Dropping Details */}
-                    <div className="backdrop-blur-sm bg-white/60 rounded-xl p-6 mb-6 border border-white/30 shadow-sm relative z-[1]">
-                      <h3 className="text-lg font-bold bg-gradient-to-r from-gray-700 to-gray-600 bg-clip-text text-transparent mb-6 flex items-center gap-3">
-                        <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
-                        Boarding / Dropping Details
-                      </h3>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <Dropdown
-                          label="Boarding Point"
-                          options={boardingOptions}
-                          value={passenger.boardingPlace}
-                          onChange={(value) => handlePassengerChange(index, 'boardingPlace', value)}
-                          placeholder="Select boarding point"
-                          required
-                          error={errors[`${index}-boardingPlace`]}
-                        />
-                        <Dropdown
-                          label="Dropping Point"
-                          options={droppingOptions}
-                          value={passenger.droppingPlace}
-                          onChange={(value) => handlePassengerChange(index, 'droppingPlace', value)}
-                          placeholder="Select dropping point"
-                          required
-                          error={errors[`${index}-droppingPlace`]}
-                        />
-                      </div>
-
-                      {/* Apply to All Checkbox - Show on every passenger card when multiple passengers */}
+                      {/* Apply to All Checkbox - Compact Design */}
                       {passengers.length > 1 && (
-                        <div className="backdrop-blur-sm bg-gradient-to-r from-blue-50/60 to-indigo-50/40 rounded-xl border border-blue-200/30 p-4 shadow-sm">
-                          <div className="flex items-start gap-3">
+                        <div className="backdrop-blur-sm bg-gradient-to-r from-blue-50/60 to-indigo-50/40 rounded-lg border border-blue-200/30 p-3 shadow-sm">
+                          <div className="flex items-center justify-between">
                             <Checkbox
-                              label={`Apply Seat ${passenger.id} details to all other passengers`}
+                              label={`Apply Seat ${passenger.id} details to all passengers`}
                               checked={passenger.applyToAll}
                               onChange={(checked) => handleApplyToAll(index, checked)}
                             />
-                            <div className="ml-2 text-xs text-gray-600">
+                            <div className="text-xs text-gray-600 ml-3">
                               {passenger.applyToAll 
-                                ? `✓ Applied to ${passengers.length - 1} other passenger${passengers.length > 2 ? 's' : ''}`
-                                : 'Check to copy these details to other passengers'
+                                ? `✓ Applied to ${passengers.length - 1} other${passengers.length > 2 ? 's' : ''}`
+                                : 'Copy to all'
                               }
                             </div>
                           </div>
@@ -434,15 +431,15 @@ const PassengerDetail = () => {
                   </div>
                 </div>
 
-                {/* Elegant Separator Between Passengers */}
+                {/* Minimal Separator Between Passengers */}
                 {index < passengers.length - 1 && (
-                  <div className="relative my-12">
+                  <div className="relative my-8" style={{ zIndex: -1 }}>
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gradient-to-r from-transparent via-blue-200/50 to-transparent"></div>
+                      <div className="w-full border-t border-blue-200/30"></div>
                     </div>
                     <div className="relative flex justify-center">
-                      <span className="backdrop-blur-sm bg-white/80 px-6 py-2 text-sm text-gray-500 font-medium rounded-full border border-white/40 shadow-sm">
-                        Next Passenger
+                      <span className="backdrop-blur-sm bg-white/90 px-4 py-1 text-xs text-gray-500 font-medium rounded-full border border-white/40 shadow-sm">
+                        Passenger {index + 2}
                       </span>
                     </div>
                   </div>
