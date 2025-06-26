@@ -2,22 +2,21 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 const ProgressBar = ({ steps, currentStep }) => {
-  const [animatedWidth, setAnimatedWidth] = useState(0);
+  const [animatedStep, setAnimatedStep] = useState(0);
 
   useEffect(() => {
-    // Reset animation and start drawing line from first step to current
-    setAnimatedWidth(0);
+    // Reset animation and start drawing line progressively
+    setAnimatedStep(0);
     
-    const timer = setTimeout(() => {
-      if (currentStep > 0) {
-        // Calculate the width percentage based on current step
-        const progressPercentage = (currentStep / (steps.length - 1)) * 100;
-        setAnimatedWidth(progressPercentage);
+    if (currentStep > 0) {
+      // Animate step by step with delays
+      for (let i = 1; i <= currentStep; i++) {
+        setTimeout(() => {
+          setAnimatedStep(i);
+        }, i * 800); // 800ms delay between each step animation
       }
-    }, 150); // Small delay for smooth animation start
-
-    return () => clearTimeout(timer);
-  }, [currentStep, steps.length]);
+    }
+  }, [currentStep]);
 
   return (
     <div className="flex items-center justify-center w-full max-w-4xl mx-auto px-4 py-8">
@@ -25,15 +24,17 @@ const ProgressBar = ({ steps, currentStep }) => {
         {/* Background line - behind all circles */}
         <div className="absolute top-6 left-6 right-6 h-1 bg-gray-200 rounded-full z-0"></div>
         
-        {/* Animated progress line - draws from start to current step */}
+        {/* Animated progress line - draws progressively step by step */}
         <div 
-          className="absolute top-6 left-6 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full z-10 transition-all duration-2000 ease-out"
+          className="absolute top-6 left-6 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full z-10 transition-all duration-700 ease-out"
           style={{
-            width: `calc(${animatedWidth}% - 24px + ${24 * animatedWidth / 100}px)`
+            width: animatedStep > 0 
+              ? `calc(${(animatedStep / (steps.length - 1)) * 100}% - 24px + ${24 * animatedStep / (steps.length - 1)}px)`
+              : '0%'
           }}
         >
           {/* Shimmer effect during animation */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full animate-[shimmer_2s_ease-in-out_infinite]"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full animate-[shimmer_1.5s_ease-in-out_infinite]"></div>
         </div>
         
         {steps.map((step, index) => (
@@ -43,7 +44,7 @@ const ProgressBar = ({ steps, currentStep }) => {
               index === currentStep ? 'animate-bounce' : ''
             }`}>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${
-                index < currentStep 
+                index < animatedStep 
                   ? 'bg-gradient-to-br from-green-500 to-green-600 border-green-400 text-white shadow-lg' 
                   : index === currentStep 
                   ? 'bg-gradient-to-br from-blue-500 to-indigo-600 border-blue-400 text-white shadow-xl shadow-blue-400/50' 
@@ -51,7 +52,7 @@ const ProgressBar = ({ steps, currentStep }) => {
               }`}>
                 
                 {/* Completed step checkmark */}
-                {index < currentStep ? (
+                {index < animatedStep ? (
                   <svg 
                     className="w-5 h-5" 
                     fill="currentColor" 
@@ -79,12 +80,12 @@ const ProgressBar = ({ steps, currentStep }) => {
             {/* Step Label */}
             <div className="text-center">
               <span className={`text-xs font-medium block mb-1 transition-all duration-300 ${
-                index <= currentStep ? 'text-blue-600' : 'text-gray-500'
+                index <= animatedStep ? 'text-blue-600' : 'text-gray-500'
               }`}>
                 Step {index + 1}
               </span>
               <span className={`text-sm font-semibold transition-all duration-300 ${
-                index <= currentStep ? 'text-blue-700' : 'text-gray-400'
+                index <= animatedStep ? 'text-blue-700' : 'text-gray-400'
               }`}>
                 {step}
               </span>
