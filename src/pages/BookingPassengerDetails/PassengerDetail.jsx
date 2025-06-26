@@ -148,51 +148,88 @@ const PassengerDetail = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleApplyToAll = (index, checked) => {
+  const handleApplyToAll = (sourceIndex, checked) => {
     const updatedPassengers = [...passengers];
-    updatedPassengers[index].applyToAll = checked;
     
-    if (checked && index === 0) {
-      // Apply first passenger's data to all others
-      const firstPassenger = updatedPassengers[0];
+    if (checked) {
+      // First, uncheck all other "Apply to All" checkboxes
+      updatedPassengers.forEach((passenger, index) => {
+        if (index !== sourceIndex) {
+          updatedPassengers[index].applyToAll = false;
+        }
+      });
+      
+      // Set the current one as checked
+      updatedPassengers[sourceIndex].applyToAll = checked;
+      
+      // Apply source passenger's data to all others
+      const sourcePassenger = updatedPassengers[sourceIndex];
       const newErrors = { ...errors };
       
-      for (let i = 1; i < updatedPassengers.length; i++) {
-        updatedPassengers[i] = {
-          ...updatedPassengers[i],
-          fullName: firstPassenger.fullName,
-          gender: firstPassenger.gender,
-          email: firstPassenger.email,
-          phoneNumber: firstPassenger.phoneNumber,
-          cityOfResidence: firstPassenger.cityOfResidence,
-          boardingPlace: firstPassenger.boardingPlace,
-          droppingPlace: firstPassenger.droppingPlace
-        };
-        
-        // Clear errors for all fields of other passengers when applying data
-        const fieldsToUpdate = ['fullName', 'gender', 'email', 'phoneNumber', 'cityOfResidence', 'boardingPlace', 'droppingPlace'];
-        fieldsToUpdate.forEach(field => {
-          if (newErrors[`${i}-${field}`]) {
-            delete newErrors[`${i}-${field}`];
-          }
-        });
+      console.log(`🔄 Applying passenger ${sourceIndex + 1} (Seat ${sourcePassenger.id}) data to all others`);
+      
+      for (let i = 0; i < updatedPassengers.length; i++) {
+        if (i !== sourceIndex) {
+          // Store the previous data before overwriting
+          const previousData = { ...updatedPassengers[i] };
+          
+          updatedPassengers[i] = {
+            ...updatedPassengers[i],
+            fullName: sourcePassenger.fullName,
+            gender: sourcePassenger.gender,
+            email: sourcePassenger.email,
+            phoneNumber: sourcePassenger.phoneNumber,
+            cityOfResidence: sourcePassenger.cityOfResidence,
+            boardingPlace: sourcePassenger.boardingPlace,
+            droppingPlace: sourcePassenger.droppingPlace,
+            // Store previous data for restoration when unchecked
+            previousData: {
+              fullName: previousData.fullName,
+              gender: previousData.gender,
+              email: previousData.email,
+              phoneNumber: previousData.phoneNumber,
+              cityOfResidence: previousData.cityOfResidence,
+              boardingPlace: previousData.boardingPlace,
+              droppingPlace: previousData.droppingPlace
+            }
+          };
+          
+          // Clear errors for all fields of other passengers when applying data
+          const fieldsToUpdate = ['fullName', 'gender', 'email', 'phoneNumber', 'cityOfResidence', 'boardingPlace', 'droppingPlace'];
+          fieldsToUpdate.forEach(field => {
+            if (newErrors[`${i}-${field}`]) {
+              delete newErrors[`${i}-${field}`];
+            }
+          });
+        }
       }
       
       setErrors(newErrors);
-    } else if (!checked && index === 0) {
-      // Reset all other passengers' data when unchecking
-      for (let i = 1; i < updatedPassengers.length; i++) {
-        updatedPassengers[i] = {
-          ...updatedPassengers[i],
-          fullName: '',
-          gender: '',
-          email: '',
-          phoneNumber: '',
-          cityOfResidence: '',
-          boardingPlace: '',
-          droppingPlace: ''
-        };
+      console.log('✅ Applied data to all other passengers');
+    } else {
+      // Uncheck and restore previous data
+      updatedPassengers[sourceIndex].applyToAll = checked;
+      
+      console.log(`🔙 Restoring previous data for other passengers (unchecked from Seat ${updatedPassengers[sourceIndex].id})`);
+      
+      for (let i = 0; i < updatedPassengers.length; i++) {
+        if (i !== sourceIndex && updatedPassengers[i].previousData) {
+          // Restore from stored previous data
+          updatedPassengers[i] = {
+            ...updatedPassengers[i],
+            fullName: updatedPassengers[i].previousData.fullName || '',
+            gender: updatedPassengers[i].previousData.gender || '',
+            email: updatedPassengers[i].previousData.email || '',
+            phoneNumber: updatedPassengers[i].previousData.phoneNumber || '',
+            cityOfResidence: updatedPassengers[i].previousData.cityOfResidence || '',
+            boardingPlace: updatedPassengers[i].previousData.boardingPlace || '',
+            droppingPlace: updatedPassengers[i].previousData.droppingPlace || '',
+            previousData: undefined // Clear stored data
+          };
+        }
       }
+      
+      console.log('✅ Restored previous data for all passengers');
     }
     
     setPassengers(updatedPassengers);
@@ -359,14 +396,20 @@ const PassengerDetail = () => {
                     required
                     error={errors[`${index}-droppingPlace`]}
                   />
-                </div>                {/* Apply to All Checkbox - Only show for first passenger */}
-                {index === 0 && (
-                  <div className="flex items-start sm:items-center gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border border-blue-200/50 shadow-sm">
+                </div>                {/* Apply to All Checkbox - Show on every passenger card when multiple passengers */}
+                {passengers.length > 1 && (
+                  <div className="flex items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 md:p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border border-blue-200/50 shadow-sm">
                     <Checkbox
-                      label="Apply these details to all passengers"
+                      label={`Apply Seat ${passenger.id} details to all other passengers`}
                       checked={passenger.applyToAll}
                       onChange={(checked) => handleApplyToAll(index, checked)}
                     />
+                    <div className="ml-2 text-xs text-gray-600">
+                      {passenger.applyToAll 
+                        ? `✓ Applied to ${passengers.length - 1} other passenger${passengers.length > 2 ? 's' : ''}`
+                        : 'Check to copy these details to other passengers'
+                      }
+                    </div>
                   </div>
                 )}
               </div>              {/* Strong Separator Between Seats */}
