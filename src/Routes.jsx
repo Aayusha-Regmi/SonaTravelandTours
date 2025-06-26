@@ -22,6 +22,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
 import FAQs from './pages/FAQs/FAQs';
 import Testimonials from './pages/Testimonials/Testimonials';
 import UserProfile from './pages/UserProfile/UserProfile';
+import TrendingOffers from './pages/TrendingOffers/TrendingOffers';
+
 const AppRoutes = () => {
   return (    <Router>      
     <Routes>        {/* Public Routes */}
@@ -119,6 +121,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } 
         />
+        <Route path="/trending-offers" element={<TrendingOffers />} />
 
       </Routes>
     </Router>

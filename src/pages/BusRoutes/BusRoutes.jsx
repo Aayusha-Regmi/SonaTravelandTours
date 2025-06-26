@@ -169,7 +169,7 @@ const BusRoutes = () => {
                       </div>
                       
                       <h2 className="text-6xl md:text-7xl lg:text-8xl font-black mb-12 leading-tight tracking-tight">
-                        <span className="bg-gradient-to-r from-blue-600 via-purple-600 via-pink-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent drop-shadow-2xl">
+                        <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-2xl">
                           Journey Through Nepal
                         </span>
                       </h2>
@@ -189,7 +189,7 @@ const BusRoutes = () => {
                         <div className="relative w-full overflow-hidden rounded-[2rem] shadow-3xl" style={{ paddingBottom: '56.25%' }}>
                           <iframe
                             className="absolute top-0 left-0 w-full h-full rounded-[2rem]"
-                            src="https://www.youtube.com/embed/zbhOpmmWnPk?autoplay=1&loop=1&mute=1&playlist=zbhOpmmWnPk&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&quality=hd1080&cc_load_policy=1&hl=en&cc_lang_pref=en"
+                            src="https://www.youtube.com/embed/3HtnJHP0sRI?si=jLIEqPtu0Co3k_rP&autoplay=1&loop=1&mute=1&playlist=3HtnJHP0sRI&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&quality=hd1080&cc_load_policy=1&hl=en&cc_lang_pref=en"
                             title="Sona Travel & Tours - Premium Bus Routes Network Journey Across Nepal | Ultra HD Experience"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowFullScreen
@@ -355,7 +355,7 @@ const BusRoutes = () => {
                           </div>
                           <div className="flex items-center py-3 px-4 bg-gradient-to-r from-green-50/60 to-emerald-50/60 rounded-xl border border-green-100/40 hover:bg-gradient-to-r hover:from-green-50/80 hover:to-emerald-50/80 transition-all duration-300">
                             <div className="w-8 h-8 bg-green-100/80 rounded-lg flex items-center justify-center mr-3 text-lg">💺</div>
-                            <span className="text-gray-800 font-semibold text-sm">Comfortable Seating</span>
+                            <span className="text-gray-800 font-semibold text-sm">Sofa Seat</span>
                           </div>
                           <div className="flex items-center py-3 px-4 bg-gradient-to-r from-green-50/60 to-emerald-50/60 rounded-xl border border-green-100/40 hover:bg-gradient-to-r hover:from-green-50/80 hover:to-emerald-50/80 transition-all duration-300">
                             <div className="w-8 h-8 bg-green-100/80 rounded-lg flex items-center justify-center mr-3 text-lg">🛡️</div>
