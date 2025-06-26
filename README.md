@@ -145,3 +145,14 @@ Contributions are welcome! Please open issues or submit pull requests for improv
 ## License
 This project is licensed under the MIT License.
 
+---
+
+## Developed By
+
+**Sona Consolidate**  
+Developed by [Rohit Jha](https://github.com/jrohitofficial) and [Aayusha Regmi](https://github.com/aayusha-regmi)
+
+For more information, visit:
+- https://github.com/jrohitofficial
+- https://github.com/aayusha-regmi
+
