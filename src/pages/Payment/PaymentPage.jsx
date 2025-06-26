@@ -6,6 +6,7 @@ import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import ProgressBar from '../../components/common/BookingStepComponents/ProgressBar';
 import BusDetail from '../../components/common/BookingStepComponents/BusDetail';
+import PaymentModal from '../../components/ui/PaymentModal';
 
 const PaymentPage = () => {
   const location = useLocation();
@@ -43,6 +44,7 @@ const PaymentPage = () => {
   const [promoCode, setPromoCode] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];
   const currentStep = 2;
@@ -67,45 +69,70 @@ const PaymentPage = () => {
       return;
     }
 
-    setIsProcessingPayment(true);
-    toast.info(`Processing ${selectedPaymentMethod} payment...`);
-    
-    try {
-      // Simulate payment processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Payment successful - now book the seats
-      const bookingSuccess = await bookSeatsAPI();
-      
-      if (bookingSuccess) {
-        toast.success(`Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);
-        console.log('✅ BOOKING COMPLETED:', {
-          bookingId: bookingSuccess.bookingId,
-          passengers: passengers.length,
-          seats: selectedSeats,
-          totalAmount: totalPrice
-        });
-        
-        // Navigate back to search results with success message
-        // In a real app, you'd navigate to a booking confirmation page
-        setTimeout(() => {
-          navigate('/search-results', { 
-            state: { 
-              bookingSuccess: true, 
-              bookingId: bookingSuccess.bookingId,
-              bookedSeats: selectedSeats
-            } 
-          });
-        }, 2000);
-      } else {
-        toast.error('Payment succeeded but booking failed. Please contact support.');
-      }
-    } catch (error) {
-      console.error('Payment/booking error:', error);
-      toast.error('Payment failed. Please try again.');
-    } finally {
-      setIsProcessingPayment(false);
+    // Validate required data before opening modal
+    if (!passengers.length || !selectedSeats.length) {
+      toast.error('Missing booking data. Please start from seat selection.');
+      return;
     }
+
+    if (totalPrice <= 0) {
+      toast.error('Invalid payment amount. Please check your booking details.');
+      return;
+    }
+
+    console.log('🚀 Opening payment gateway with data:', {
+      totalPrice,
+      passengers: passengers.length,
+      selectedSeats,
+      paymentMethod: selectedPaymentMethod
+    });
+
+    // Open the payment gateway modal
+    setIsPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = (paymentDetails) => {
+    console.log('✅ PAYMENT COMPLETED SUCCESSFULLY:', paymentDetails);
+    
+    // Show success message
+    toast.success(`🎉 Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);
+    
+    // Close the modal
+    setIsPaymentModalOpen(false);
+    
+    // Store booking details in localStorage for later reference
+    const completedBooking = {
+      ...paymentDetails,
+      passengers,
+      selectedSeats,
+      busData,
+      travelDate,
+      bookingDate: new Date().toISOString(),
+      totalAmount: paymentDetails.amount,
+      paymentMethod: selectedPaymentMethod,
+      origin: bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu',
+      destination: bookingDetails?.destination || searchParams?.toCity || 'Birgunj'
+    };
+    
+    // Save to localStorage for receipt/confirmation page
+    localStorage.setItem('lastBooking', JSON.stringify(completedBooking));
+    
+    // Navigate to search results with success state
+    setTimeout(() => {
+      navigate('/search-results', { 
+        state: { 
+          bookingSuccess: true, 
+          bookingId: paymentDetails.bookingId || paymentDetails.merchantTransactionId,
+          bookedSeats: selectedSeats,
+          paymentDetails: completedBooking,
+          totalAmount: paymentDetails.amount
+        } 
+      });
+    }, 2000);
+  };
+
+  const handlePaymentModalClose = () => {
+    setIsPaymentModalOpen(false);
   };
 
   const bookSeatsAPI = async () => {
@@ -191,6 +218,12 @@ const PaymentPage = () => {
       id: 'esewa',
       name: 'eSewa',
       icon: '/images/img_esewazoneofficebayalbasgoogleplayiphoneiphoneremovebgpreview_1.png'
+    },
+    {
+      id: 'fonepay',
+      name: 'FonePay',
+      icon: '/images/img_fonepay_logo.png',
+      fallbackIcon: '/images/img_848280_1.png' // Use mobile banking icon as fallback
     },
     {
       id: 'mobile-banking',
@@ -318,10 +351,10 @@ const PaymentPage = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between">
                     <span className="text-sm font-semibold text-[#0a639d] font-opensans">
-                      Base Fare
+                      Base Fare ({selectedSeats.length} seat{selectedSeats.length > 1 ? 's' : ''})
                     </span>
                     <span className="text-sm font-semibold text-[#0a639d] font-opensans">
-                      Rs. 2,400.00
+                      Rs. {(seatPrice * selectedSeats.length || totalPrice || 2400).toLocaleString()}.00
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -329,7 +362,7 @@ const PaymentPage = () => {
                       Banking Charge
                     </span>
                     <span className="text-xs font-medium text-gray-600 font-opensans">
-                      Rs. 28.80
+                      Rs. {Math.round((totalPrice || 2400) * 0.012).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -337,7 +370,7 @@ const PaymentPage = () => {
                       Transaction Charge
                     </span>
                     <span className="text-xs font-medium text-gray-600 font-opensans">
-                      Rs. 25.50
+                      Rs. {Math.round((totalPrice || 2400) * 0.01).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -350,7 +383,7 @@ const PaymentPage = () => {
                       Gross Fare
                     </span>
                     <span className="text-xs font-medium text-gray-600 font-opensans">
-                      Rs. 2,654.00
+                      Rs. {Math.round((totalPrice || 2400) * 1.022).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -358,7 +391,7 @@ const PaymentPage = () => {
                       Special Sona Discount
                     </span>
                     <span className="text-sm font-semibold text-[#0a639d] font-opensans">
-                      Rs. 468.08
+                      Rs. {Math.round((totalPrice || 2400) * 0.176).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -371,7 +404,7 @@ const PaymentPage = () => {
                       Bus Fare
                     </span>
                     <span className="text-sm font-semibold text-[#0a639d] font-opensans">
-                      Rs. 2,185.92
+                      Rs. {Math.round((totalPrice || 2400) * 0.842).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -379,7 +412,7 @@ const PaymentPage = () => {
                       VAT (13%)
                     </span>
                     <span className="text-xs font-medium text-gray-600 font-opensans">
-                      Rs. 414.17
+                      Rs. {Math.round((totalPrice || 2400) * 0.159).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -391,7 +424,7 @@ const PaymentPage = () => {
                     Total Fare
                   </span>
                   <span className="text-base font-bold text-[#388b68] font-opensans">
-                    Rs. 2,600.00
+                    Rs. {(totalPrice || 2600).toLocaleString()}.00
                   </span>
                 </div>                {/* Promo Code */}
                 <div className="mb-4">
@@ -421,7 +454,7 @@ const PaymentPage = () => {
                     Total Amount
                   </span>
                   <span className="text-xl font-bold text-[#0a639d] font-opensans">
-                    Rs. 2,600.00
+                    Rs. {(totalPrice || 2600).toLocaleString()}.00
                   </span>
                 </div>
               </div>
@@ -453,6 +486,11 @@ const PaymentPage = () => {
                   src={method.icon} 
                   alt={method.name} 
                   className="w-7 h-7 mr-3"
+                  onError={(e) => {
+                    if (method.fallbackIcon) {
+                      e.target.src = method.fallbackIcon;
+                    }
+                  }}
                 />
                 <span className="text-lg font-semibold text-gray-800 font-opensans">
                   {method.name}
@@ -488,6 +526,19 @@ const PaymentPage = () => {
       </main>
 
       <Footer />
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={handlePaymentModalClose}
+        totalPrice={totalPrice}
+        passengers={passengers}
+        selectedSeats={selectedSeats}
+        travelDate={travelDate}
+        bookingDetails={bookingDetails}
+        searchParams={searchParams}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 };

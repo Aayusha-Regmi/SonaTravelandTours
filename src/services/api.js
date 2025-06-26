@@ -408,6 +408,478 @@ const getRoutes = async () => {
   ];
 };
 
+/**
+ * Payment Gateway API Functions
+ */
+
+/**
+ * Step 1: Initiate payment process
+ * @param {number} amount - Payment amount
+ * @returns {Promise} - Promise resolving to payment initiation data
+ */
+const initiatePayment = async (amount) => {
+  try {
+    console.log('🎯 Step 1: Initiating payment for amount:', amount);
+    console.log('🌐 Using API URL:', `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`);
+    
+    // Check for authentication token
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token') || 
+                  localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+      console.log('🔐 Adding authorization header');
+    } else {
+      console.log('⚠️ No authentication token found');
+    }
+    
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ amount })
+    });
+
+    console.log('📊 Response status:', response.status, response.statusText);
+    console.log('📊 Response headers:', Object.fromEntries(response.headers.entries()));
+    
+    // Get response text first to see what the server is actually returning
+    const responseText = await response.text();
+    console.log('📥 Raw response text:', responseText);
+    
+    let result;
+    try {
+      if (responseText) {
+        result = JSON.parse(responseText);
+      } else {
+        result = { message: 'Empty response from server' };
+      }
+    } catch (parseError) {
+      console.error('❌ Failed to parse JSON response:', parseError);
+      result = { 
+        message: 'Invalid JSON response from server',
+        rawResponse: responseText 
+      };
+    }
+    
+    console.log('📥 Parsed payment initiation response:', result);
+
+    if (response.ok) {
+      return {
+        success: true,
+        data: {
+          merchantId: result.merchantId,
+          merchantName: result.merchantName,
+          amount: result.amount,
+          merchantTransactionId: result.merchantTransactionId,
+          processId: result.processId
+        }
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || result.error || `HTTP ${response.status}: ${response.statusText}`,
+        details: result,
+        statusCode: response.status
+      };
+    }
+  } catch (error) {
+    console.error('❌ Payment initiation error:', error);
+    return {
+      success: false,
+      message: error.message || 'Network error occurred',
+      error: error.name
+    };
+  }
+};
+
+/**
+ * Step 2: Get all available payment instruments
+ * @returns {Promise} - Promise resolving to payment instruments list
+ */
+const getPaymentInstruments = async () => {
+  try {
+    console.log('🎯 Step 2: Getting payment instruments...');
+    
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/get-all-payment-instruments`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    console.log('📊 Payment instruments response status:', response.status);
+
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      console.error('❌ Failed to parse payment instruments JSON:', parseError);
+      result = [];
+    }
+    
+    console.log('📥 Payment instruments response:', result);
+
+    if (response.ok && Array.isArray(result)) {
+      return {
+        success: true,
+        data: result
+      };
+    } else if (response.ok && result.data && Array.isArray(result.data)) {
+      return {
+        success: true,
+        data: result.data
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || `HTTP ${response.status}: Failed to load payment instruments`
+      };
+    }
+  } catch (error) {
+    console.error('❌ Get payment instruments error:', error);
+    return {
+      success: false,
+      message: error.message || 'Network error occurred'
+    };
+  }
+};
+
+/**
+ * Step 3: Get service charge for selected instrument
+ * @param {number} amount - Payment amount
+ * @param {string} instrumentCode - Selected payment instrument code
+ * @returns {Promise} - Promise resolving to service charge data
+ */
+const getServiceCharge = async (amount, instrumentCode) => {
+  try {
+    console.log('🎯 Step 3: Getting service charge for:', instrumentCode);
+    
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/get-service-charge`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amount,
+        instrumentCode: instrumentCode
+      })
+    });
+
+    console.log('📊 Service charge response status:', response.status);
+
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      console.error('❌ Failed to parse service charge JSON:', parseError);
+      result = { serviceCharge: 0 };
+    }
+    
+    console.log('📥 Service charge response:', result);
+
+    if (response.ok) {
+      return {
+        success: true,
+        serviceCharge: result.serviceCharge || result.data?.serviceCharge || 0
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || `HTTP ${response.status}: Failed to get service charge`
+      };
+    }
+  } catch (error) {
+    console.error('❌ Get service charge error:', error);
+    return {
+      success: false,
+      message: error.message || 'Network error occurred'
+    };
+  }
+};
+
+/**
+ * Step 4: Generate QR code for payment
+ * @param {number} amount - Total amount including service charge
+ * @param {string} travelDate - Travel date (remarks1)
+ * @param {string} seatNumbers - Comma-separated seat numbers (remarks2)
+ * @returns {Promise} - Promise resolving to QR code data
+ */
+const generateQRCode = async (amount, travelDate, seatNumbers) => {
+  try {
+    console.log('🎯 Step 4: Generating QR code...');
+    
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/qr/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amount,
+        remarks1: travelDate,
+        remarks2: seatNumbers
+      })
+    });
+
+    const result = await response.json();
+    
+    console.log('📥 QR generation response:', result);
+
+    if (response.ok && result.qrMessage) {
+      return {
+        success: true,
+        data: {
+          qrMessage: result.qrMessage,
+          thirdpartyQrWebSocketUrl: result.thirdpartyQrWebSocketUrl,
+          prn: result.prn
+        }
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || 'Failed to generate QR code'
+      };
+    }
+  } catch (error) {
+    console.error('❌ QR generation error:', error);
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+};
+
+/**
+ * Step 5: Check payment status and complete booking
+ * @param {Object} seatInfo - Complete seat and passenger information
+ * @param {Object} paymentInfo - Payment information with PRN
+ * @returns {Promise} - Promise resolving to payment verification result
+ */
+const checkPaymentStatus = async (seatInfo, paymentInfo) => {
+  try {
+    console.log('🎯 Step 5: Checking payment status...');
+    
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/qr/check-payment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        seatInfo: seatInfo,
+        paymentInfo: paymentInfo
+      })
+    });
+
+    const result = await response.json();
+    
+    console.log('📥 Payment status response:', result);
+
+    if (response.ok && result.paymentStatus === 'success') {
+      return {
+        success: true,
+        data: result
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || 'Payment verification failed'
+      };
+    }
+  } catch (error) {
+    console.error('❌ Payment status check error:', error);
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+};
+
+/**
+ * FonePay API Functions
+ */
+
+/**
+ * Generate FonePay QR code for payment
+ * @param {number} amount - Payment amount
+ * @param {string} remarks1 - First remark (travel date)
+ * @param {string} remarks2 - Second remark (seat numbers)
+ * @param {string} prn - Payment reference number
+ * @returns {Promise} - Promise resolving to FonePay QR data
+ */
+const generateFonePayQR = async (amount, remarks1, remarks2, prn) => {
+  try {
+    console.log('🎯 FonePay: Generating QR code...');
+    
+    // Generate data validation hash (you may need to implement the actual hash logic)
+    const dataValidation = generateFonePayHash(amount, remarks1, remarks2, prn);
+    
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/fonepay/qr-generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amount,
+        remarks1: remarks1,
+        remarks2: remarks2,
+        prn: prn,
+        merchantCode: "0012345076",
+        dataValidation: dataValidation,
+        username: "SONATRAVELANDTOURSPVTLTD",
+        password: "Sona@2024"
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FonePay QR API failed: HTTP ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('📥 FonePay QR generation response:', result);
+
+    if (!result.qrCode && !result.qrMessage) {
+      throw new Error('FonePay API did not return a valid QR code');
+    }
+
+    return {
+      success: true,
+      data: {
+        qrMessage: result.qrCode || result.qrMessage,
+        prn: prn,
+        amount: amount
+      }
+    };
+  } catch (error) {
+    console.error('❌ FonePay QR generation error:', error);
+    return {
+      success: false,
+      message: `FonePay QR generation failed: ${error.message}`
+    };
+  }
+};
+
+/**
+ * Check FonePay payment status
+ * @param {string} prn - Payment reference number
+ * @returns {Promise} - Promise resolving to payment status
+ */
+const checkFonePayStatus = async (prn) => {
+  try {
+    console.log('🔍 FonePay: Checking payment status for PRN:', prn);
+    
+    // Generate data validation hash for status check
+    const dataValidation = generateFonePayStatusHash(prn);
+    
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/fonepay/check-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prn: prn,
+        merchantCode: "0012345076",
+        dataValidation: dataValidation,
+        username: "SONATRAVELANDTOURSPVTLTD",
+        password: "Sona@2024"
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FonePay status API failed: HTTP ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('📥 FonePay status response:', result);
+
+    return {
+      success: true,
+      paymentStatus: result.status || result.paymentStatus,
+      data: result
+    };
+  } catch (error) {
+    console.error('❌ FonePay status check error:', error);
+    return {
+      success: false,
+      message: `FonePay status check failed: ${error.message}`
+    };
+  }
+};
+
+/**
+ * Generate data validation hash for FonePay QR
+ * Note: This is a placeholder - implement actual hash logic based on FonePay documentation
+ */
+const generateFonePayHash = (amount, remarks1, remarks2, prn) => {
+  // This should implement the actual hash generation logic as per FonePay documentation
+  // For now, returning a placeholder hash
+  return "a66a0088c21d87c43aed67bed19aeccc8f32673399976adb1c64007c999f8acc19a052c3a8c0b815c96b8827831c6800eae69686d8857885faa42685d7fab1ff";
+};
+
+/**
+ * Generate data validation hash for FonePay status check
+ */
+const generateFonePayStatusHash = (prn) => {
+  // This should implement the actual hash generation logic as per FonePay documentation
+  // For now, returning a placeholder hash
+  return "cc3ec18d77af04adafead9c7822d72a1cf35367a2e2390c27a402c27ab87bd874665019b551adcef486e71b817cfd95d11b62a4e027dd246551b7ca6afc0afe0";
+};
+
+/**
+ * Diagnostic function to test API endpoints
+ */
+const testAPIEndpoints = async () => {
+  console.log('🔧 Testing API endpoints...');
+  
+  const endpoints = [
+    {
+      name: 'Payment API Base URL',
+      url: import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV,
+    },
+    {
+      name: 'Payment Initiate',
+      url: `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`,
+      method: 'POST',
+      body: { amount: 100 }
+    },
+    {
+      name: 'Payment Instruments',
+      url: `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/get-all-payment-instruments`,
+      method: 'GET'
+    }
+  ];
+  
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`🔍 Testing ${endpoint.name}: ${endpoint.url}`);
+      
+      if (endpoint.method) {
+        const response = await fetch(endpoint.url, {
+          method: endpoint.method,
+          headers: { 'Content-Type': 'application/json' },
+          body: endpoint.body ? JSON.stringify(endpoint.body) : undefined
+        });
+        
+        console.log(`📊 ${endpoint.name} - Status: ${response.status} ${response.statusText}`);
+        
+        if (response.ok) {
+          console.log(`✅ ${endpoint.name} - Working`);
+        } else {
+          console.log(`❌ ${endpoint.name} - Failed: ${response.status}`);
+        }
+      } else {
+        console.log(`🌐 ${endpoint.name} - URL: ${endpoint.url}`);
+      }
+    } catch (error) {
+      console.log(`❌ ${endpoint.name} - Error: ${error.message}`);
+    }
+  }
+};
+
 export default {
   searchBuses,
   getRoutes,
@@ -418,5 +890,19 @@ export default {
   getDroppingPoints,
   getBusDetails,
   bookSeats,
-  getAvailableSeats
+  getAvailableSeats,
+
+  // Payment gateway functions
+  initiatePayment,
+  getPaymentInstruments,
+  getServiceCharge,
+  generateQRCode,
+  checkPaymentStatus,
+
+  // FonePay functions
+  generateFonePayQR,
+  checkFonePayStatus,
+
+  // Diagnostic function
+  testAPIEndpoints
 };
