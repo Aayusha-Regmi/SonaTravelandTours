@@ -38,12 +38,12 @@ const Testimonials = () => {  const testimonials = [    {
     },
     {
       id: 4,
-      name: "Mr. ......",
-      position: "Travel Driver",
-      image: "/images/img_group.png",
-      testimonial: "As a driver for our company, I take great pride in providing safe, reliable, and comfortable transportation for our clients. With a keen focus on professionalism and courtesy, I strive to ensure that every journey is not only punctual but also enjoyable. Whether it's a short trip across town or a long-distance journey, I maintain the comfort and satisfaction of every passenger.",
+      name: "Ms. Sandhya Subedi",
+      position: "Product Manager",
+      image: "/images/Sandhya.jpeg",
+      testimonial: "As a product manager for our company, I take great pride in ensuring that our offerings meet the highest standards of quality and innovation. With a keen focus on user needs and market trends, I strive to create products that not only delight our customers but also drive business success. Whether it's through meticulous planning, cross-functional collaboration, or a commitment to continuous improvement, I am dedicated to delivering exceptional value at every stage of the product lifecycle.",
       social: {
-        linkedin: "#",
+        linkedin: "https://www.linkedin.com/in/sandhya-subedi-6b35142a7/",
         twitter: "#",
         instagram: "#"
       }

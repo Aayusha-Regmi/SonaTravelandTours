@@ -263,7 +263,9 @@ const SearchForm = () => {
               <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
             One Way
-          </button>          <button            className={`px-6 py-3 flex items-center justify-center font-medium text-sm transition-all duration-300 ${
+          </button>          
+          <button            
+          className={`px-6 py-3 flex items-center justify-center font-medium text-sm transition-all duration-300 ${
               tripType === 'twoWay' 
                 ? 'bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-[0_8px_25px_rgba(251,146,60,0.4)]' 
                 : 'bg-white/30 text-gray-800 hover:bg-white/50 hover:shadow-[0_4px_15px_rgba(0,0,0,0.2)]'
