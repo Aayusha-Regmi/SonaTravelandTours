@@ -22,7 +22,7 @@ const Header = () => {
 
     // Get weather information based on user's current location
     const getWeatherByLocation = async () => {
-      const apiKey = 'AIzaSyASvLhW9AUNMx90pTe4bx-Ljzq73HMiFfs';
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
       
       try {
         // Get user's current position
@@ -182,7 +182,7 @@ const Header = () => {
               />
             </div>
             <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100">
-              <Link to="/about-us" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
+              <Link to="/about" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
                 About Us
               </Link>
               <Link to="/testimonials" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
