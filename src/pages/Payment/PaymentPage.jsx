@@ -7,6 +7,7 @@ import Footer from '../../components/common/Footer';
 import ProgressBar from '../../components/common/BookingStepComponents/ProgressBar';
 import BusDetail from '../../components/common/BookingStepComponents/BusDetail';
 import PaymentModal from '../../components/ui/PaymentModal';
+import api from '../../services/api';
 
 const PaymentPage = () => {
   const location = useLocation();
@@ -42,7 +43,6 @@ const PaymentPage = () => {
   }
   
   const [promoCode, setPromoCode] = useState('');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
@@ -59,13 +59,17 @@ const PaymentPage = () => {
       toast.error('Please enter a valid promo code');
     }
   };
-
-  const handlePaymentMethodSelect = (method) => {
-    setSelectedPaymentMethod(method);
-  };
   const handleGoToPayment = async () => {
-    if (!selectedPaymentMethod) {
-      toast.error('Please select a payment method');
+    // Migrate tokens to ensure compatibility
+    api.migrateAuthTokens();
+    
+    // Check authentication first
+    const authCheck = api.checkAuthentication();
+    if (!authCheck.isAuthenticated) {
+      toast.error('🔐 Please log in to continue with payment');
+      console.log('❌ Authentication required for payment');
+      // You might want to redirect to login page here
+      // navigate('/login');
       return;
     }
 
@@ -84,7 +88,7 @@ const PaymentPage = () => {
       totalPrice,
       passengers: passengers.length,
       selectedSeats,
-      paymentMethod: selectedPaymentMethod
+      authenticated: authCheck.isAuthenticated
     });
 
     // Open the payment gateway modal
@@ -109,7 +113,6 @@ const PaymentPage = () => {
       travelDate,
       bookingDate: new Date().toISOString(),
       totalAmount: paymentDetails.amount,
-      paymentMethod: selectedPaymentMethod,
       origin: bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu',
       destination: bookingDetails?.destination || searchParams?.toCity || 'Birgunj'
     };
@@ -144,8 +147,7 @@ const PaymentPage = () => {
         dateOfTravel: travelDate || new Date().toISOString().split('T')[0],
         paymentAmount: totalPrice,
         payment_status: "Completed",
-        paymentMode: selectedPaymentMethod === 'esewa' ? 'esewa' : 
-                    selectedPaymentMethod === 'connect-ips' ? 'connect-ips' : 'cash',
+        paymentMode: "gateway", // Generic payment mode since we're using the gateway
         busId: parseInt(busData?.originalData?.busId || busData?.id || bookingDetails.busId || 102),
         passengersList: passengers.map(passenger => ({
           passengerName: passenger.fullName,
@@ -208,34 +210,6 @@ const PaymentPage = () => {
     }
   };
 
-  const paymentMethods = [
-    {
-      id: 'connect-ips',
-      name: 'Connect IPS',
-      icon: '/images/img_imagesremovebgpreview_1.png'
-    },
-    {
-      id: 'esewa',
-      name: 'eSewa',
-      icon: '/images/img_esewazoneofficebayalbasgoogleplayiphoneiphoneremovebgpreview_1.png'
-    },
-    {
-      id: 'fonepay',
-      name: 'FonePay',
-      icon: '/images/img_fonepay_logo.png',
-      fallbackIcon: '/images/img_848280_1.png' // Use mobile banking icon as fallback
-    },
-    {
-      id: 'mobile-banking',
-      name: 'Mobile Banking',
-      icon: '/images/img_848280_1.png'
-    },
-    {
-      id: 'sct-card',
-      name: 'SCT Card',
-      icon: '/images/img_image16removebgpreview_1.png'
-    }
-  ];
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50/30 relative">
       {/* Enhanced subtle background elements */}
@@ -509,38 +483,34 @@ const PaymentPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-            {paymentMethods.map((method) => (
-              <button
-                key={method.id}
-                onClick={() => handlePaymentMethodSelect(method.name)}
-                className={`h-18 border-2 rounded-2xl flex flex-col items-center justify-center px-4 py-3 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 ${
-                  selectedPaymentMethod === method.name
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-50/90 to-indigo-50/80 shadow-xl shadow-blue-200/50 scale-105'
-                    : 'border-gray-200/60 backdrop-blur-sm bg-white/80 hover:border-blue-300/60 hover:shadow-lg hover:bg-white/90'
-                }`}
-              >
-                <img 
-                  src={method.icon} 
-                  alt={method.name} 
-                  className="w-8 h-8 mb-2 transform hover:scale-110 transition-transform duration-200"
-                  onError={(e) => {
-                    if (method.fallbackIcon) {
-                      e.target.src = method.fallbackIcon;
-                    }
-                  }}
-                />
-                <span className="text-xs font-semibold text-slate-700 font-opensans text-center">
-                  {method.name}
-                </span>
-              </button>
-            ))}
+          <div className="text-center mb-8">
+            <div className="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/10 rounded-xl p-6 border border-blue-200/30 backdrop-blur-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
+                Real-Time Payment Options
+              </h3>
+              <p className="text-sm text-slate-600 font-opensans mb-4">
+                We'll load all available payment methods including digital wallets, banks, and cards when you proceed
+              </p>
+              <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                </div>
+                <span>Digital Wallets • Banks • Cards</span>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-center">
             <button 
               onClick={handleGoToPayment}
-              disabled={!selectedPaymentMethod || isProcessingPayment}
+              disabled={isProcessingPayment}
               className="min-w-[320px] h-14 font-semibold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400/50 flex items-center justify-center font-opensans bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed px-8 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 disabled:transform-none disabled:shadow-md"
             >
               {isProcessingPayment ? (
@@ -550,7 +520,7 @@ const PaymentPage = () => {
                 </>
               ) : (
                 <>
-                  <span className="mr-3">Proceed to Payment</span>
+                  <span className="mr-3">Proceed to Payment Gateway</span>
                   <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                   </svg>

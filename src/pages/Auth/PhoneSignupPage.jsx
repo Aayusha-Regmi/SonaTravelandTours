@@ -243,12 +243,12 @@ const PhoneSignupPage = () => {
       <div className="hidden lg:flex flex-1 mr-24 items-center justify-center">
         <div className="max-w-2xl">
           <img
-            src="/images/img_beautifullandscapetouristbustraveltransportbackground87582536524.png"
+            src="/images/login_img.png"
             alt="Travel signup illustration"
             className="w-full h-auto"
             onError={(e) => {
               // Fallback to another travel image if the main one doesn't load
-              e.target.src = "/images/img_coupletakingselfiewhiletravelingbytrain232149304471.png";
+              e.target.src = "/images/login_img.png";
             }}
           />
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 
@@ -37,7 +38,23 @@ const PaymentModal = ({
   const initializePayment = async () => {
     setIsLoading(true);
     try {
-      console.log(' Initializing payment for amount:', totalPrice);
+      console.log('🎯 Initializing payment for amount:', totalPrice);
+      
+      // Check authentication first
+      const authCheck = api.checkAuthentication();
+      if (!authCheck.isAuthenticated) {
+        const errorMsg = authCheck.error || 'Please log in to continue with payment';
+        toast.error(`🔐 ${errorMsg}`);
+        console.error('❌ Not authenticated - cannot proceed with payment');
+        console.error('🔍 Auth check details:', authCheck);
+        onClose();
+        return;
+      }
+      
+      console.log('✅ Authentication verified:', authCheck.source);
+      
+      // Migrate tokens for compatibility
+      api.migrateAuthTokens();
       
       // Step 1: Initiate Payment
       const paymentInitiated = await api.initiatePayment(totalPrice);
@@ -51,20 +68,39 @@ const PaymentModal = ({
         
         if (instruments.success) {
           setPaymentInstruments(instruments.data);
-          toast.success('Payment initialized successfully. Please select a payment method.');
-        } else {
-          console.error(' Failed to load payment instruments:', instruments.message);
-          toast.error(`Failed to load payment methods: ${instruments.message}`);
+          
+          if (instruments.fallback) {
+            toast.info('Using offline payment methods. Some options may be limited.');
+          } else {
+            toast.success('Payment initialized successfully. Please select a payment method.');
+          }
+        } else if (instruments.requiresAuth) {
+          console.error('❌ Authentication required for payment instruments:', instruments.message);
+          toast.error('🔐 Please log in again to view payment options');
           onClose();
+        } else {
+          console.error('❌ Failed to load payment instruments:', instruments.message);
+          
+          // Try to use fallback instruments
+          const fallbackInstruments = api.getFallbackPaymentInstruments();
+          setPaymentInstruments(fallbackInstruments);
+          toast.warn('Payment service temporarily unavailable. Using offline payment methods.');
         }
       } else {
-        console.error(' Payment initiation failed:', paymentInitiated);
+        console.error('💳 Payment initiation failed:', paymentInitiated);
         
-        // Show detailed error message for debugging
-        const errorMsg = paymentInitiated.message || 'Unknown error';
-        const statusCode = paymentInitiated.statusCode || 'Unknown';
-        
-        toast.error(`Payment API Error (${statusCode}): ${errorMsg}`);
+        // Handle authentication errors specifically
+        if (paymentInitiated.requiresAuth || paymentInitiated.statusCode === 401) {
+          toast.error('🔐 Authentication required. Please log in again.');
+          // Optionally redirect to login
+          // window.location.href = '/login';
+        } else {
+          // Show detailed error message for debugging
+          const errorMsg = paymentInitiated.message || 'Unknown error';
+          const statusCode = paymentInitiated.statusCode || 'Unknown';
+          
+          toast.error(`Payment API Error (${statusCode}): ${errorMsg}`);
+        }
         
         // Show additional details in console for debugging
         if (paymentInitiated.details) {
@@ -275,11 +311,11 @@ const PaymentModal = ({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-blue-50/30 to-indigo-50/20 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl z-10">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-800">
               {step === 1 && 'Select Payment Method'}
@@ -308,34 +344,186 @@ const PaymentModal = ({
           {step === 1 && !isLoading && (
             <div>
               <p className="text-gray-600 mb-6 text-center">
-                Choose your preferred digital wallet or bank
+                Choose your preferred payment method
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {paymentInstruments.map((instrument) => (
+              {/* Organize payment instruments by type */}
+              {paymentInstruments && paymentInstruments.length > 0 ? (
+                <div className="space-y-6">
+                  {/* Digital Wallets */}
+                  {paymentInstruments.filter(i => i.bankType === 'CheckoutGateway').length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Digital Wallets
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {paymentInstruments
+                          .filter(instrument => instrument.bankType === 'CheckoutGateway')
+                          .map((instrument, index) => (
+                            <button
+                              key={instrument.instrumentCode || `wallet-${index}`}
+                              onClick={() => handleInstrumentSelect(instrument)}
+                              className={`p-4 border-2 rounded-lg flex items-center transition-all duration-200 ${
+                                selectedInstrument?.instrumentCode === instrument.instrumentCode
+                                  ? 'border-blue-600 bg-blue-50 shadow-md'
+                                  : 'border-gray-300 hover:border-blue-600 hover:shadow-sm'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-3 w-full">
+                                {instrument.logoUrl ? (
+                                  <img 
+                                    src={instrument.logoUrl} 
+                                    alt={instrument.name} 
+                                    className="h-10 w-10 object-contain flex-shrink-0"
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                  />
+                                ) : null}
+                                <div 
+                                  className={`w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 ${instrument.logoUrl ? 'hidden' : ''}`}
+                                >
+                                  <span className="text-white font-bold text-sm">
+                                    {instrument.name.charAt(0)}
+                                  </span>
+                                </div>
+                                <div className="text-left flex-1">
+                                  <p className="font-medium text-gray-800 text-sm">{instrument.name}</p>
+                                  <p className="text-xs text-gray-500">Digital Wallet</p>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Internet Banking */}
+                  {paymentInstruments.filter(i => i.bankType === 'EBanking').length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        Internet Banking
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {paymentInstruments
+                          .filter(instrument => instrument.bankType === 'EBanking')
+                          .slice(0, 6) // Show only first 6 banks to avoid clutter
+                          .map((instrument, index) => (
+                            <button
+                              key={instrument.instrumentCode || `bank-${index}`}
+                              onClick={() => handleInstrumentSelect(instrument)}
+                              className={`p-4 border-2 rounded-lg flex items-center transition-all duration-200 ${
+                                selectedInstrument?.instrumentCode === instrument.instrumentCode
+                                  ? 'border-blue-600 bg-blue-50 shadow-md'
+                                  : 'border-gray-300 hover:border-blue-600 hover:shadow-sm'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-3 w-full">
+                                {instrument.logoUrl ? (
+                                  <img 
+                                    src={instrument.logoUrl} 
+                                    alt={instrument.name} 
+                                    className="h-10 w-10 object-contain flex-shrink-0"
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                  />
+                                ) : null}
+                                <div 
+                                  className={`w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center flex-shrink-0 ${instrument.logoUrl ? 'hidden' : ''}`}
+                                >
+                                  <span className="text-white font-bold text-sm">
+                                    {instrument.name.charAt(0)}
+                                  </span>
+                                </div>
+                                <div className="text-left flex-1">
+                                  <p className="font-medium text-gray-800 text-sm">{instrument.name}</p>
+                                  <p className="text-xs text-gray-500">Internet Banking</p>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mobile Banking */}
+                  {paymentInstruments.filter(i => i.bankType === 'MBanking').length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Mobile Banking
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {paymentInstruments
+                          .filter(instrument => instrument.bankType === 'MBanking')
+                          .slice(0, 4) // Show only first 4 mobile banking options
+                          .map((instrument, index) => (
+                            <button
+                              key={instrument.instrumentCode || `mobile-${index}`}
+                              onClick={() => handleInstrumentSelect(instrument)}
+                              className={`p-4 border-2 rounded-lg flex items-center transition-all duration-200 ${
+                                selectedInstrument?.instrumentCode === instrument.instrumentCode
+                                  ? 'border-blue-600 bg-blue-50 shadow-md'
+                                  : 'border-gray-300 hover:border-blue-600 hover:shadow-sm'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-3 w-full">
+                                {instrument.logoUrl ? (
+                                  <img 
+                                    src={instrument.logoUrl} 
+                                    alt={instrument.name} 
+                                    className="h-10 w-10 object-contain flex-shrink-0"
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                  />
+                                ) : null}
+                                <div 
+                                  className={`w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0 ${instrument.logoUrl ? 'hidden' : ''}`}
+                                >
+                                  <span className="text-white font-bold text-sm">
+                                    {instrument.name.charAt(0)}
+                                  </span>
+                                </div>
+                                <div className="text-left flex-1">
+                                  <p className="font-medium text-gray-800 text-sm">{instrument.name}</p>
+                                  <p className="text-xs text-gray-500">Mobile Banking</p>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <div className="text-gray-400 mb-4">
+                    <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 mb-4">No payment methods available</p>
                   <button
-                    key={instrument.instrumentCode}
-                    onClick={() => handleInstrumentSelect(instrument)}
-                    className={`p-4 border-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                      selectedInstrument?.instrumentCode === instrument.instrumentCode
-                        ? 'border-blue-600 bg-blue-50 shadow-md'
-                        : 'border-gray-300 hover:border-blue-600 hover:shadow-sm'
-                    }`}
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
-                    {instrument.logoUrl ? (
-                      <img 
-                        src={instrument.logoUrl} 
-                        alt={instrument.name} 
-                        className="h-12 w-auto max-w-full object-contain"
-                      />
-                    ) : (
-                      <span className="text-lg font-semibold text-gray-800">
-                        {instrument.name}
-                      </span>
-                    )}
+                    Refresh Page
                   </button>
-                ))}
-              </div>
+                </div>
+              )}
 
               {serviceCharge > 0 && (
                 <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -472,7 +660,8 @@ const PaymentModal = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

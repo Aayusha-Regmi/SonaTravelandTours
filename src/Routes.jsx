@@ -23,6 +23,7 @@ import FAQs from './pages/FAQs/FAQs';
 import Testimonials from './pages/Testimonials/Testimonials';
 import UserProfile from './pages/UserProfile/UserProfile';
 import TrendingOffers from './pages/TrendingOffers/TrendingOffers';
+import AuthTestPage from './pages/AuthTestPage';
 
 const AppRoutes = () => {
   return (
@@ -41,7 +42,11 @@ const AppRoutes = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<PhoneSignupPage />} />
       <Route path="/signup/complete" element={<SignupPage />} />
-      <Route path="/otp-verification" element={<OTPVerificationPage />} />      
+      <Route path="/otp-verification" element={<OTPVerificationPage />} />
+      
+      {/* Debug/Test Routes */}
+      <Route path="/auth-test" element={<AuthTestPage />} />
+
       {/* Protected Routes - Require Authentication */}
       <Route 
         path="/search-results" 
