@@ -41,7 +41,7 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         } else {
           currentTravelDate = new Date().toISOString().split('T')[0];
         }
-        console.log('📅 Current travel date:', currentTravelDate);
+        console.log('Current travel date:', currentTravelDate);
         let destination = searchParams.toCity || searchParams.to || busData.route?.to || busData.destination || busData.arrivalLocation || 'kathmandu';
         destination = destination.toLowerCase().trim();
         
@@ -78,18 +78,18 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         if (userToken) {
           headers.Authorization = `Bearer ${userToken}`;
         }
-  console.log('🌐 COMPLETE REQUEST DETAILS:', {
-  method: 'POST',
-  url: apiUrl,
-  headers: headers,
-  body: JSON.stringify(requestBody),
-  timestamp: new Date().toISOString()
-});
+  console.log('COMPLETE REQUEST DETAILS:', {
+    busId,
+    travelDate: currentTravelDate,
+    selectedSeats,
+    boardingPlace,
+    droppingPlace
+  });
         // 🔥 MINIMAL LOG: API REQUEST
-        console.log('🚀 SEAT API REQUEST:', {
+        console.log('SEAT API REQUEST:', {
           url: apiUrl,
-          body: requestBody,
-          hasAuth: !!userToken
+          method: 'POST',
+          requestData: requestData
         });
         
         const response = await fetch(apiUrl, {
@@ -105,10 +105,11 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         const data = await response.json();
         
         // 🔥 MINIMAL LOG: API RESPONSE
-        console.log('📥 SEAT API RESPONSE:', {
-          success: data.success,
-          dataLength: data.data?.length || 0,
-          bookedSeats: data.data ? data.data.map(booking => booking.seatNumber) : []
+        console.log('SEAT API RESPONSE:', {
+          status: response.status,
+          success: result.success,
+          bookedSeats: bookedSeatNumbers,
+          message: result.message
         });
         
         // Extract seat numbers
@@ -120,7 +121,7 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         }
         
         // 🔥 MINIMAL LOG: FINAL RESULT
-        console.log('✅ SETTING BOOKED SEATS:', bookedSeatNumbers);
+        console.log('SETTING BOOKED SEATS:', bookedSeatNumbers);
         
         setBookedSeats(bookedSeatNumbers);
         
@@ -139,11 +140,11 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
   
   // Generate seat configuration based on bus data
   useEffect(() => {
-    console.log('🎨 ========== UPDATING SEAT CONFIGURATION ==========');
-    console.log('🚌 Bus data received:', busData);
-    console.log('🆔 Bus ID from params:', busId);
-    console.log('🚫 Booked seats from API:', bookedSeats);
-    console.log('🔍 Checking specific seats:');
+    console.log('UPDATING SEAT CONFIGURATION');
+    console.log('Bus data received:', busData);
+    console.log('Bus ID from params:', busId);
+    console.log('Booked seats from API:', bookedSeats);
+    console.log('Checking specific seats:');
     console.log('   A5 booked?', bookedSeats.includes('A5'));
     console.log('   A7 booked?', bookedSeats.includes('A7'));
     console.log('   S1 booked?', bookedSeats.includes('S1'));
@@ -206,8 +207,8 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
       ],
     };
     
-    console.log('🎨 Generated seat config for A5:', config.row5.find(seat => seat.id === 'A5'));
-    console.log('🎨 Generated seat config for A7:', config.row5.find(seat => seat.id === 'A7'));
+    console.log('Generated seat config for A5:', config.row5.find(seat => seat.id === 'A5'));
+    console.log('Generated seat config for A7:', config.row5.find(seat => seat.id === 'A7'));
     
     setSeatConfig(config);
     
@@ -218,12 +219,12 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
     
     setAvailableSeatsCount(availableCount);
     
-    console.log(' Seat Statistics:');
+    console.log('Seat Statistics:');
     console.log('   Total seats:', totalSeats);
     console.log('   Booked seats count:', bookedSeatsCount);
     console.log('   Available seats count:', availableCount);
     console.log('   Bus data available seats:', busData.availableSeats);
-    console.log(' ========== SEAT CONFIGURATION COMPLETED ==========');
+    console.log('SEAT CONFIGURATION COMPLETED');
   }, [busId, busData, bookedSeats]);
 
   // Calculate available seats and update price when selectedSeats change

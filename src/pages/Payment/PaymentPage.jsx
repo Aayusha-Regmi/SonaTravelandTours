@@ -84,7 +84,7 @@ const PaymentPage = () => {
       return;
     }
 
-    console.log('🚀 Opening payment gateway with data:', {
+    console.log('Opening payment gateway with data:', {
       totalPrice,
       passengers: passengers.length,
       selectedSeats,
@@ -96,7 +96,7 @@ const PaymentPage = () => {
   };
 
   const handlePaymentSuccess = (paymentDetails) => {
-    console.log('✅ PAYMENT COMPLETED SUCCESSFULLY:', paymentDetails);
+    console.log('PAYMENT COMPLETED SUCCESSFULLY:', paymentDetails);
     
     // Show success message
     toast.success(`🎉 Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);
@@ -140,7 +140,7 @@ const PaymentPage = () => {
 
   const bookSeatsAPI = async () => {
     try {
-      console.log('🎯 Starting seat booking API call...');
+      console.log('Starting seat booking API call...');
       
       // Prepare booking data structure exactly as required by the API
       const requestData = {
@@ -163,7 +163,7 @@ const PaymentPage = () => {
         }))
       };
 
-      console.log('📤 SEAT BOOKING REQUEST:', {
+      console.log('SEAT BOOKING REQUEST:', {
         url: `${import.meta.env.VITE_API_BASE_URL}/seat`,
         method: 'POST',
         requestData: requestData
@@ -189,7 +189,7 @@ const PaymentPage = () => {
 
       const result = await response.json();
       
-      console.log('📥 SEAT BOOKING RESPONSE:', {
+      console.log('SEAT BOOKING RESPONSE:', {
         status: response.status,
         success: result.success,
         bookingId: result.bookingId || result.data?.bookingId,
@@ -205,7 +205,7 @@ const PaymentPage = () => {
         throw new Error(result.message || `HTTP ${response.status}: Booking failed`);
       }
     } catch (error) {
-      console.error(' SEAT BOOKING ERROR:', error.message);
+      console.error('SEAT BOOKING ERROR:', error.message);
       throw error;
     }
   };

@@ -38,7 +38,7 @@ const PaymentModal = ({
   const initializePayment = async () => {
     setIsLoading(true);
     try {
-      console.log('🎯 Initializing payment for amount:', totalPrice);
+      console.log('Initializing payment for amount:', totalPrice);
       
       // Check authentication first
       const authCheck = api.checkAuthentication();
@@ -51,7 +51,7 @@ const PaymentModal = ({
         return;
       }
       
-      console.log('✅ Authentication verified:', authCheck.source);
+      console.log('Authentication verified:', authCheck.source);
       
       // Migrate tokens for compatibility
       api.migrateAuthTokens();
@@ -61,7 +61,7 @@ const PaymentModal = ({
       
       if (paymentInitiated.success) {
         setPaymentTransaction(paymentInitiated.data);
-        console.log(' Payment initiated successfully:', paymentInitiated.data);
+        console.log('Payment initiated successfully:', paymentInitiated.data);
         
         // Step 2: Get Payment Instruments
         const instruments = await api.getPaymentInstruments();
@@ -110,7 +110,7 @@ const PaymentModal = ({
         onClose();
       }
     } catch (error) {
-      console.error(' Payment initialization error:', error);
+      console.error('Payment initialization error:', error);
       toast.error(`Payment system unavailable: ${error.message || 'Please try again later'}`);
       onClose();
     } finally {
@@ -225,11 +225,11 @@ const PaymentModal = ({
       const ws = new WebSocket(wsUrl);
       
       ws.onopen = () => {
-        console.log('🔌 WebSocket connected');
+        console.log('WebSocket connected');
       };
       
       ws.onmessage = (event) => {
-        console.log('📨 WebSocket message:', event.data);
+        console.log('WebSocket message:', event.data);
         try {
           const data = JSON.parse(event.data);
           if (data.status === 'success' || data.paymentStatus === 'success') {
@@ -241,16 +241,16 @@ const PaymentModal = ({
       };
       
       ws.onerror = (error) => {
-        console.error('❌ WebSocket error:', error);
+        console.error('WebSocket error:', error);
       };
       
       ws.onclose = () => {
-        console.log('🔌 WebSocket disconnected');
+        console.log('WebSocket disconnected');
       };
       
       setWebSocket(ws);
     } catch (error) {
-      console.error('❌ WebSocket setup error:', error);
+      console.error('WebSocket setup error:', error);
     }
   };
 
@@ -304,7 +304,7 @@ const PaymentModal = ({
         toast.error(result.message || 'Payment verification failed');
       }
     } catch (error) {
-      console.error(' Payment status check error:', error);
+      console.error('Payment status check error:', error);
       toast.error('Failed to verify payment. Please try again.');
     }
   };

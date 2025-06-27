@@ -11,7 +11,7 @@ window.fetch = function(...args) {
   
   // Only log payment API requests
   if (url.includes('/payment/')) {
-    console.log('🌐 Payment API Request:', {
+    console.log('Payment API Request:', {
       url,
       method: options?.method || 'GET',
       headers: options?.headers || {},
@@ -190,16 +190,16 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
   // Check if the response has the expected structure
   if (result.success && result.data && Array.isArray(result.data)) {
     if (result.data.length === 0) {
-      console.log('📭 API returned empty data - no buses found');
+      console.log('API returned empty data - no buses found');
       return [];
     }
 
     // Transform API response to match our component's expected format
     const transformedBuses = result.data.map((bus, index) => {
       // DEBUG: Log raw API data
-      console.log('🔍 Raw bus data from API:', bus);
-      console.log('📊 Original availableSeats:', bus.availableSeats);
-      console.log('📊 Original bookedSeats:', bus.bookedSeats);
+      console.log('Raw bus data from API:', bus);
+      console.log('Original availableSeats:', bus.availableSeats);
+      console.log('Original bookedSeats:', bus.bookedSeats);
       
       // Parse comma-separated strings into arrays
       const facilitiesArray = bus.facilities ? bus.facilities.split(',').map(f => f.trim()) : [];
@@ -244,16 +244,16 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
       return transformedBus;  // ← RETURN THE TRANSFORMED OBJECT
     });
 
-    console.log('🔄 Transformed bus data:', transformedBuses);
+    console.log('Transformed bus data:', transformedBuses);
     return transformedBuses;
     
   } else if (result.success && (!result.data || result.data.length === 0)) {
     // API returned success but no data
-    console.log('📭 API returned empty data array');
+    console.log('API returned empty data array');
     return [];
   } else {
     // API returned unexpected structure
-    console.error('🚨 API response has unexpected structure:', result);
+    console.error('API response has unexpected structure:', result);
     throw new Error(`Invalid API response structure. Expected success=true and data array, got: ${JSON.stringify(result)}`);
   }
 };
@@ -285,7 +285,7 @@ const searchBuses = async (searchParams) => {
     }
     
     // Add debug log to verify date conversion
-    console.log('🗓️ Date conversion check:');
+    console.log('Date conversion check:');
     console.log('   Original date:', date);
     console.log('   Formatted for API:', apiDate);
     
@@ -295,9 +295,9 @@ const searchBuses = async (searchParams) => {
       date: apiDate  // Now correctly formatted
     };
     
-    console.log('🚌 Bus Search API Request:', requestBody);
-    console.log('🌐 API URL:', API_URLS.BUS.SEARCH);
-    console.log('� Environment variables:', {
+    console.log('Bus Search API Request:', requestBody);
+    console.log('API URL:', API_URLS.BUS.SEARCH);
+    console.log('Environment variables:', {
       baseUrl: import.meta.env.VITE_API_BASE_URL,
       endpoint: import.meta.env.VITE_BUS_SEARCH_ENDPOINT,
       fullUrl: API_URLS.BUS.SEARCH
@@ -437,14 +437,14 @@ const getRoutes = async () => {
  */
 const initiatePayment = async (amount) => {
   try {
-    console.log('🎯 Step 1: Initiating payment for amount:', amount);
-    console.log('🌐 Using API URL:', `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`);
+    console.log('Step 1: Initiating payment for amount:', amount);
+    console.log('Using API URL:', `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`);
     
     // Check for authentication token using the enhanced utility function
     const authCheck = checkAuthentication();
     
     if (!authCheck.isAuthenticated) {
-      console.error('❌ Authentication failed:', authCheck.error || 'No valid token found');
+      console.error('Authentication failed:', authCheck.error || 'No valid token found');
       return {
         success: false,
         message: authCheck.error || 'Authentication required. Please log in.',
@@ -453,11 +453,11 @@ const initiatePayment = async (amount) => {
       };
     }
     
-    console.log(`🔐 Authentication successful - using token from ${authCheck.source}`);
+    console.log(`Authentication successful - using token from ${authCheck.source}`);
     
     // Log token validation details
     if (authCheck.validation) {
-      console.log('🔍 Token validation details:', {
+      console.log('Token validation details:', {
         valid: authCheck.validation.isValid,
         expiresAt: authCheck.validation.expiresAt,
         payload: authCheck.validation.payload
@@ -470,7 +470,7 @@ const initiatePayment = async (amount) => {
       'Authorization': `Bearer ${authCheck.token}`
     };
     
-    console.log('� Request headers (token preview):', {
+    console.log('Request headers (token preview):', {
       'Content-Type': headers['Content-Type'],
       'Accept': headers['Accept'],
       'Authorization': `Bearer ${authCheck.token.substring(0, 20)}...`
@@ -482,12 +482,12 @@ const initiatePayment = async (amount) => {
       body: JSON.stringify({ amount })
     });
 
-    console.log('📊 Response status:', response.status, response.statusText);
-    console.log('📊 Response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('Response status:', response.status, response.statusText);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
     
     // Get response text first to see what the server is actually returning
     const responseText = await response.text();
-    console.log('📥 Raw response text:', responseText);
+    console.log('Raw response text:', responseText);
     
     let result;
     try {
@@ -497,14 +497,14 @@ const initiatePayment = async (amount) => {
         result = { message: 'Empty response from server' };
       }
     } catch (parseError) {
-      console.error('❌ Failed to parse JSON response:', parseError);
+      console.error('Failed to parse JSON response:', parseError);
       result = { 
         message: 'Invalid JSON response from server',
         rawResponse: responseText 
       };
     }
     
-    console.log('📥 Parsed payment initiation response:', result);
+    console.log('Parsed payment initiation response:', result);
 
     if (response.ok) {
       return {
@@ -519,7 +519,7 @@ const initiatePayment = async (amount) => {
       };
     } else if (response.status === 401) {
       // Handle authentication error specifically
-      console.error('🚫 Authentication failed - 401 Unauthorized');
+      console.error('Authentication failed - 401 Unauthorized');
       return {
         success: false,
         message: 'Authentication required. Please log in to continue with payment.',
@@ -536,7 +536,7 @@ const initiatePayment = async (amount) => {
       };
     }
   } catch (error) {
-    console.error('❌ Payment initiation error:', error);
+    console.error('Payment initiation error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred',
@@ -551,13 +551,13 @@ const initiatePayment = async (amount) => {
  */
 const getPaymentInstruments = async () => {
   try {
-    console.log('🎯 Step 2: Getting payment instruments...');
+    console.log('Step 2: Getting payment instruments...');
     
     // Check for authentication token using the enhanced utility function
     const authCheck = checkAuthentication();
     
     if (!authCheck.isAuthenticated) {
-      console.error('❌ Authentication required for payment instruments');
+      console.error('Authentication required for payment instruments');
       return {
         success: false,
         message: authCheck.error || 'Authentication required to load payment options.',
@@ -566,7 +566,7 @@ const getPaymentInstruments = async () => {
       };
     }
     
-    console.log(`🔐 Using authentication from ${authCheck.source}`);
+    console.log(`Using authentication from ${authCheck.source}`);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -579,11 +579,11 @@ const getPaymentInstruments = async () => {
       headers: headers
     });
 
-    console.log('📊 Payment instruments response status:', response.status);
-    console.log('📊 Payment instruments response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('Payment instruments response status:', response.status);
+    console.log('Payment instruments response headers:', Object.fromEntries(response.headers.entries()));
 
     const responseText = await response.text();
-    console.log('📥 Payment instruments raw response:', responseText);
+    console.log('Payment instruments raw response:', responseText);
 
     let result;
     try {
@@ -593,11 +593,11 @@ const getPaymentInstruments = async () => {
         result = { message: 'Empty response from payment instruments API' };
       }
     } catch (parseError) {
-      console.error('❌ Failed to parse payment instruments JSON:', parseError);
+      console.error('Failed to parse payment instruments JSON:', parseError);
       result = { message: 'Invalid JSON response', rawResponse: responseText };
     }
     
-    console.log('📥 Payment instruments parsed response:', result);
+    console.log('Payment instruments parsed response:', result);
 
     if (response.ok) {
       // Try different response formats
@@ -613,7 +613,7 @@ const getPaymentInstruments = async () => {
         rawInstruments = result.data;
       }
       
-      console.log('📋 Raw payment instruments from API:', rawInstruments);
+      console.log('Raw payment instruments from API:', rawInstruments);
       
       // Map API response to our expected format
       const instruments = rawInstruments.map((instrument, index) => ({
@@ -628,11 +628,11 @@ const getPaymentInstruments = async () => {
         description: `Pay with ${instrument.InstrumentName || instrument.InstitutionName}`
       }));
       
-      console.log('📋 Mapped payment instruments:', instruments);
+      console.log('Mapped payment instruments:', instruments);
       
       // If no instruments found, use fallback
       if (!instruments || instruments.length === 0) {
-        console.log('⚠️ No payment instruments from API, using fallback');
+        console.log('No payment instruments from API, using fallback');
         const fallbackInstruments = getFallbackPaymentInstruments();
         return {
           success: true,
@@ -647,7 +647,7 @@ const getPaymentInstruments = async () => {
       };
     } else if (response.status === 401) {
       // Handle authentication error specifically
-      console.error('🚫 Authentication failed - 401 Unauthorized for payment instruments');
+      console.error('Authentication failed - 401 Unauthorized for payment instruments');
       return {
         success: false,
         message: 'Authentication required. Please log in to view payment options.',
@@ -656,10 +656,10 @@ const getPaymentInstruments = async () => {
         requiresAuth: true
       };
     } else {
-      console.error('❌ Payment instruments API failed:', response.status, result);
+      console.error('Payment instruments API failed:', response.status, result);
       
       // Return fallback instruments on API failure
-      console.log('🔄 Using fallback payment instruments due to API failure');
+      console.log('Using fallback payment instruments due to API failure');
       return {
         success: true,
         data: getFallbackPaymentInstruments(),
@@ -667,10 +667,10 @@ const getPaymentInstruments = async () => {
       };
     }
   } catch (error) {
-    console.error('❌ Get payment instruments error:', error);
+    console.error('Get payment instruments error:', error);
     
     // Return fallback instruments on network error
-    console.log('🔄 Using fallback payment instruments due to network error');
+    console.log('Using fallback payment instruments due to network error');
     return {
       success: true,
       data: getFallbackPaymentInstruments(),
@@ -744,14 +744,14 @@ const getFallbackPaymentInstruments = () => {
  */
 const getServiceCharge = async (amount, instrumentCode) => {
   try {
-    console.log('🎯 Step 3: Getting service charge for:', instrumentCode);
-    console.log('🔍 Service charge parameters:', { amount, instrumentCode });
+    console.log('Step 3: Getting service charge for:', instrumentCode);
+    console.log('Service charge parameters:', { amount, instrumentCode });
     
     // Check for authentication token using the enhanced utility function
     const authCheck = checkAuthentication();
     
     if (!authCheck.isAuthenticated) {
-      console.warn('⚠️ No authentication found for service charge, using default');
+      console.warn('No authentication found for service charge, using default');
       // Return default service charge instead of failing
       const defaultServiceCharge = Math.round(amount * 0.02); // 2% default
       return {
@@ -761,7 +761,7 @@ const getServiceCharge = async (amount, instrumentCode) => {
       };
     }
     
-    console.log(`🔐 Using authentication from ${authCheck.source}`);
+    console.log(`Using authentication from ${authCheck.source}`);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -774,7 +774,7 @@ const getServiceCharge = async (amount, instrumentCode) => {
       instrumentCode: instrumentCode
     };
     
-    console.log('📡 Service charge request:', requestBody);
+    console.log('Service charge request:', requestBody);
     
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/get-service-charge`, {
       method: 'POST',
@@ -782,11 +782,11 @@ const getServiceCharge = async (amount, instrumentCode) => {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('📊 Service charge response status:', response.status, response.statusText);
-    console.log('📊 Service charge response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('Service charge response status:', response.status, response.statusText);
+    console.log('Service charge response headers:', Object.fromEntries(response.headers.entries()));
 
     const responseText = await response.text();
-    console.log('� Service charge raw response:', responseText);
+    console.log('Service charge raw response:', responseText);
 
     let result;
     try {
@@ -796,14 +796,14 @@ const getServiceCharge = async (amount, instrumentCode) => {
         result = { message: 'Empty response from service charge API' };
       }
     } catch (parseError) {
-      console.error('❌ Failed to parse service charge JSON:', parseError);
+      console.error('Failed to parse service charge JSON:', parseError);
       result = { 
         message: 'Invalid JSON response from service charge API',
         rawResponse: responseText 
       };
     }
     
-    console.log('📥 Service charge parsed response:', result);
+    console.log('Service charge parsed response:', result);
 
     if (response.ok) {
       let serviceCharge = 0;
@@ -818,7 +818,7 @@ const getServiceCharge = async (amount, instrumentCode) => {
       } else if (result.data && typeof result.data.serviceCharge === 'number') {
         serviceCharge = result.data.serviceCharge;
       } else {
-        console.warn('⚠️ Service charge not found in response, using default');
+        console.warn('Service charge not found in response, using default');
         serviceCharge = Math.round(amount * 0.02); // 2% default
       }
       
@@ -828,7 +828,7 @@ const getServiceCharge = async (amount, instrumentCode) => {
         data: result.data || result
       };
     } else if (response.status === 401) {
-      console.error('🚫 Authentication failed - 401 Unauthorized for service charge');
+      console.error('Authentication failed - 401 Unauthorized for service charge');
       // Return default service charge instead of failing
       const defaultServiceCharge = Math.round(amount * 0.02); // 2% default
       return {
@@ -838,7 +838,7 @@ const getServiceCharge = async (amount, instrumentCode) => {
         message: 'Using default service charge due to authentication issue'
       };
     } else {
-      console.error('❌ Service charge API failed:', response.status, result);
+      console.error('Service charge API failed:', response.status, result);
       // Return default service charge instead of failing
       const defaultServiceCharge = Math.round(amount * 0.02); // 2% default
       return {
@@ -849,7 +849,7 @@ const getServiceCharge = async (amount, instrumentCode) => {
       };
     }
   } catch (error) {
-    console.error('❌ Get service charge error:', error);
+    console.error('Get service charge error:', error);
     // Return default service charge instead of failing
     const defaultServiceCharge = Math.round(amount * 0.02); // 2% default
     return {
@@ -877,14 +877,14 @@ const getServiceCharge = async (amount, instrumentCode) => {
  */
 const generateQRCode = async (amount, travelDate, seatNumbers) => {
   try {
-    console.log('🎯 Step 4: Generating QR code...');
-    console.log('🔍 QR Code parameters:', { amount, travelDate, seatNumbers });
+    console.log('Step 4: Generating QR code...');
+    console.log('QR Code parameters:', { amount, travelDate, seatNumbers });
     
     // Check for authentication token first
     const authCheck = checkAuthentication();
     
     if (!authCheck.isAuthenticated) {
-      console.error('❌ Authentication required for QR generation');
+      console.error('Authentication required for QR generation');
       return {
         success: false,
         message: authCheck.error || 'Authentication required to generate QR code.',
@@ -893,8 +893,8 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
       };
     }
     
-    console.log(`🔐 Using authentication from ${authCheck.source}`);
-    console.log(`🔍 Token preview: ${authCheck.token.substring(0, 30)}...`);
+    console.log(`Using authentication from ${authCheck.source}`);
+    console.log(`Token preview: ${authCheck.token.substring(0, 30)}...`);
     
     // Prepare request body
     const requestBody = {
@@ -903,10 +903,10 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
       remarks2: seatNumbers
     };
     
-    console.log('📡 QR Generation request:', requestBody);
+    console.log('QR Generation request:', requestBody);
     
     // Strategy 1: Try with Bearer token (current approach)
-    console.log('🧪 Attempting QR generation with Bearer token...');
+    console.log('Attempting QR generation with Bearer token...');
     
     const bearerHeaders = {
       'Content-Type': 'application/json',
@@ -920,17 +920,17 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('📊 QR generation (Bearer) response status:', response.status, response.statusText);
+    console.log('QR generation (Bearer) response status:', response.status, response.statusText);
 
     let responseText = await response.text();
-    console.log('📥 QR generation (Bearer) raw response:', responseText);
+    console.log('QR generation (Bearer) raw response:', responseText);
 
     // If Bearer token fails with authentication error, try alternative strategies
     if (response.status === 401 || response.status === 500) {
-      console.log('⚠️ Bearer token failed, trying alternative authentication...');
+      console.log('Bearer token failed, trying alternative authentication...');
       
       // Strategy 2: Try without authentication (some QR APIs might be public)
-      console.log('🧪 Attempting QR generation without authentication...');
+      console.log('Attempting QR generation without authentication...');
       
       const publicHeaders = {
         'Content-Type': 'application/json',
@@ -943,13 +943,13 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
         body: JSON.stringify(requestBody)
       });
 
-      console.log('📊 QR generation (Public) response status:', response.status, response.statusText);
+      console.log('QR generation (Public) response status:', response.status, response.statusText);
       responseText = await response.text();
-      console.log('� QR generation (Public) raw response:', responseText);
+      console.log('QR generation (Public) raw response:', responseText);
       
       // Strategy 3: Try with API key if public also fails
       if (response.status === 401 || response.status === 500) {
-        console.log('🧪 Attempting QR generation with API key pattern...');
+        console.log('Attempting QR generation with API key pattern...');
         
         // Try with token as API key in different header formats
         const apiKeyHeaders = {
@@ -966,9 +966,9 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
           body: JSON.stringify(requestBody)
         });
 
-        console.log('📊 QR generation (API-Key) response status:', response.status, response.statusText);
+        console.log('QR generation (API-Key) response status:', response.status, response.statusText);
         responseText = await response.text();
-        console.log('📥 QR generation (API-Key) raw response:', responseText);
+        console.log('QR generation (API-Key) raw response:', responseText);
       }
     }
 
@@ -980,14 +980,14 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
         result = { message: 'Empty response from QR generation API' };
       }
     } catch (parseError) {
-      console.error('❌ Failed to parse QR generation JSON:', parseError);
+      console.error('Failed to parse QR generation JSON:', parseError);
       result = { 
         message: 'Invalid JSON response from QR generation API',
         rawResponse: responseText 
       };
     }
     
-    console.log('📥 QR generation final parsed response:', result);
+    console.log('QR generation final parsed response:', result);
 
     if (response.ok) {
       // Check for different response formats
@@ -1010,7 +1010,7 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
           }
         };
       } else {
-        console.error('❌ QR generation successful but missing qrMessage/qrCode in response');
+        console.error('QR generation successful but missing qrMessage/qrCode in response');
         return {
           success: false,
           message: 'QR code generation failed - missing QR data in response',
@@ -1018,7 +1018,7 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
         };
       }
     } else {
-      console.error('❌ QR generation API failed with all strategies:', response.status, result);
+      console.error('QR generation API failed with all strategies:', response.status, result);
       
       // Provide specific error messages based on the error
       let errorMessage = 'Failed to generate QR code';
@@ -1039,7 +1039,7 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
       };
     }
   } catch (error) {
-    console.error('❌ QR generation error:', error);
+    console.error('QR generation error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred during QR generation',
@@ -1056,14 +1056,14 @@ const generateQRCode = async (amount, travelDate, seatNumbers) => {
  */
 const checkPaymentStatus = async (seatInfo, paymentInfo) => {
   try {
-    console.log('🎯 Step 5: Checking payment status...');
-    console.log('🔍 Payment check parameters:', { seatInfo, paymentInfo });
+    console.log('Step 5: Checking payment status...');
+    console.log('Payment check parameters:', { seatInfo, paymentInfo });
     
     // Check for authentication token
     const authCheck = checkAuthentication();
     
     if (!authCheck.isAuthenticated) {
-      console.error('❌ Authentication required for payment status check');
+      console.error('Authentication required for payment status check');
       return {
         success: false,
         message: authCheck.error || 'Authentication required to check payment status.',
@@ -1072,7 +1072,7 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
       };
     }
     
-    console.log(`🔐 Using authentication from ${authCheck.source}`);
+    console.log(`Using authentication from ${authCheck.source}`);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -1085,7 +1085,7 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
       paymentInfo: paymentInfo
     };
     
-    console.log('📡 Payment status check request:', requestBody);
+    console.log('Payment status check request:', requestBody);
     
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/qr/check-payment`, {
       method: 'POST',
@@ -1093,11 +1093,11 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('📊 Payment status response status:', response.status, response.statusText);
-    console.log('📊 Payment status response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('Payment status response status:', response.status, response.statusText);
+    console.log('Payment status response headers:', Object.fromEntries(response.headers.entries()));
 
     const responseText = await response.text();
-    console.log('📥 Payment status raw response:', responseText);
+    console.log('Payment status raw response:', responseText);
 
     let result;
     try {
@@ -1107,14 +1107,14 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
         result = { message: 'Empty response from payment status API' };
       }
     } catch (parseError) {
-      console.error('❌ Failed to parse payment status JSON:', parseError);
+      console.error('Failed to parse payment status JSON:', parseError);
       result = { 
         message: 'Invalid JSON response from payment status API',
         rawResponse: responseText 
       };
     }
     
-    console.log('📥 Payment status parsed response:', result);
+    console.log('Payment status parsed response:', result);
 
     if (response.ok) {
       // Check for different response formats
@@ -1135,7 +1135,7 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
         };
       }
     } else if (response.status === 401) {
-      console.error('🚫 Authentication failed - 401 Unauthorized for payment status check');
+      console.error('Authentication failed - 401 Unauthorized for payment status check');
       return {
         success: false,
         message: 'Authentication required. Please log in to check payment status.',
@@ -1144,7 +1144,7 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
         requiresAuth: true
       };
     } else {
-      console.error('❌ Payment status check API failed:', response.status, result);
+      console.error('Payment status check API failed:', response.status, result);
       return {
         success: false,
         message: result.message || result.error || `HTTP ${response.status}: Failed to check payment status`,
@@ -1153,7 +1153,7 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
       };
     }
   } catch (error) {
-    console.error('❌ Payment status check error:', error);
+    console.error('Payment status check error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred during payment status check',
@@ -1176,7 +1176,7 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
  */
 const generateFonePayQR = async (amount, remarks1, remarks2, prn) => {
   try {
-    console.log('🎯 FonePay: Generating QR code...');
+    console.log('FonePay: Generating QR code...');
     
     // Generate data validation hash (you may need to implement the actual hash logic)
     const dataValidation = generateFonePayHash(amount, remarks1, remarks2, prn);
@@ -1204,7 +1204,7 @@ const generateFonePayQR = async (amount, remarks1, remarks2, prn) => {
     }
 
     const result = await response.json();
-    console.log('📥 FonePay QR generation response:', result);
+    console.log('FonePay QR generation response:', result);
 
     if (!result.qrCode && !result.qrMessage) {
       throw new Error('FonePay API did not return a valid QR code');
@@ -1219,7 +1219,7 @@ const generateFonePayQR = async (amount, remarks1, remarks2, prn) => {
       }
     };
   } catch (error) {
-    console.error('❌ FonePay QR generation error:', error);
+    console.error('FonePay QR generation error:', error);
     return {
       success: false,
       message: `FonePay QR generation failed: ${error.message}`
@@ -1234,7 +1234,7 @@ const generateFonePayQR = async (amount, remarks1, remarks2, prn) => {
  */
 const checkFonePayStatus = async (prn) => {
   try {
-    console.log('🔍 FonePay: Checking payment status for PRN:', prn);
+    console.log('FonePay: Checking payment status for PRN:', prn);
     
     // Generate data validation hash for status check
     const dataValidation = generateFonePayStatusHash(prn);
@@ -1259,7 +1259,7 @@ const checkFonePayStatus = async (prn) => {
     }
 
     const result = await response.json();
-    console.log('📥 FonePay status response:', result);
+    console.log('FonePay status response:', result);
 
     return {
       success: true,
@@ -1267,7 +1267,7 @@ const checkFonePayStatus = async (prn) => {
       data: result
     };
   } catch (error) {
-    console.error('❌ FonePay status check error:', error);
+    console.error('FonePay status check error:', error);
     return {
       success: false,
       message: `FonePay status check failed: ${error.message}`
@@ -1305,7 +1305,7 @@ const generateFonePayStatusHash = (prn) => {
  */
 const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumentCode, successUrl, failureUrl) => {
   try {
-    console.log('🎯 Getting payment redirect URL...');
+    console.log('Getting payment redirect URL...');
     
     // Check for authentication token using the utility function
     const authCheck = checkAuthentication();
@@ -1316,9 +1316,9 @@ const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumen
     
     if (authCheck.isAuthenticated) {
       headers.Authorization = `Bearer ${authCheck.token}`;
-      console.log(`🔐 Adding authorization header from ${authCheck.source}`);
+      console.log(`Adding authorization header from ${authCheck.source}`);
     } else {
-      console.log('⚠️ No authentication token found for payment redirect URL');
+      console.log('No authentication token found for payment redirect URL');
     }
     
     // Construct URL with query parameters for GET request as shown in your attachment
@@ -1329,7 +1329,7 @@ const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumen
     
     const url = `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/onepg?${params.toString()}`;
     
-    console.log('🌐 Redirect URL:', url);
+    console.log('Redirect URL:', url);
     
     // For redirect payments, we typically just return the constructed URL
     // The user will be redirected to this URL which handles the payment flow
@@ -1344,7 +1344,7 @@ const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumen
     };
     
   } catch (error) {
-    console.error('❌ Get payment redirect URL error:', error);
+    console.error('Get payment redirect URL error:', error);
     return {
       success: false,
       message: error.message || 'Failed to generate payment redirect URL'
@@ -1360,7 +1360,7 @@ const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumen
  */
 const confirmSeatBooking = async (seatInfo, paymentInfo) => {
   try {
-    console.log('🎯 Confirming seat booking...');
+    console.log('Confirming seat booking...');
     
     // Check for authentication token using the utility function
     const authCheck = checkAuthentication();
@@ -1371,9 +1371,9 @@ const confirmSeatBooking = async (seatInfo, paymentInfo) => {
     
     if (authCheck.isAuthenticated) {
       headers.Authorization = `Bearer ${authCheck.token}`;
-      console.log(`🔐 Adding authorization header from ${authCheck.source}`);
+      console.log(`Adding authorization header from ${authCheck.source}`);
     } else {
-      console.log('⚠️ No authentication token found for seat booking confirmation');
+      console.log('No authentication token found for seat booking confirmation');
       throw new Error('Authentication required. Please login first.');
     }
     
@@ -1382,7 +1382,7 @@ const confirmSeatBooking = async (seatInfo, paymentInfo) => {
       paymentInfo
     };
     
-    console.log('📤 Seat booking confirmation request:', requestBody);
+    console.log('Seat booking confirmation request:', requestBody);
     
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/seat/payment`, {
       method: 'POST',
@@ -1390,17 +1390,17 @@ const confirmSeatBooking = async (seatInfo, paymentInfo) => {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('📊 Seat booking response status:', response.status);
+    console.log('Seat booking response status:', response.status);
 
     let result;
     try {
       result = await response.json();
     } catch (parseError) {
-      console.error('❌ Failed to parse seat booking JSON:', parseError);
+      console.error('Failed to parse seat booking JSON:', parseError);
       result = { message: 'Invalid response from server' };
     }
     
-    console.log('📥 Seat booking response:', result);
+    console.log('Seat booking response:', result);
 
     if (response.ok && result.success) {
       return {
@@ -1416,7 +1416,7 @@ const confirmSeatBooking = async (seatInfo, paymentInfo) => {
       };
     }
   } catch (error) {
-    console.error('❌ Confirm seat booking error:', error);
+    console.error('Confirm seat booking error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred'
@@ -1438,14 +1438,14 @@ const migrateAuthTokens = () => {
     // If we have authToken and loginSuccess, ensure token exists too for compatibility
     if (authToken && loginSuccess === 'true' && !token) {
       localStorage.setItem('token', authToken);
-      console.log('🔄 Migrated authToken to token in localStorage');
+      console.log('Migrated authToken to token in localStorage');
     }
     
     // If we have token but no authToken, migrate it back (edge case)
     if (token && !authToken) {
       localStorage.setItem('authToken', token);
       localStorage.setItem('loginSuccess', 'true'); // Ensure login success flag exists
-      console.log('🔄 Migrated token to authToken in localStorage');
+      console.log('Migrated token to authToken in localStorage');
     }
     
     // Check sessionStorage as well
@@ -1454,17 +1454,17 @@ const migrateAuthTokens = () => {
     
     if (sessionAuthToken && !sessionToken) {
       sessionStorage.setItem('token', sessionAuthToken);
-      console.log('🔄 Migrated authToken to token in sessionStorage');
+      console.log('Migrated authToken to token in sessionStorage');
     }
     
     if (sessionToken && !sessionAuthToken) {
       sessionStorage.setItem('authToken', sessionToken);
-      console.log('🔄 Migrated token to authToken in sessionStorage');
+      console.log('Migrated token to authToken in sessionStorage');
     }
     
     return true;
   } catch (error) {
-    console.error('❌ Token migration failed:', error);
+    console.error('Token migration failed:', error);
     return false;
   }
 };
@@ -1517,12 +1517,12 @@ const checkAuthentication = () => {
   const loginSuccess = localStorage.getItem('loginSuccess');
   
   if (authToken && loginSuccess === 'true') {
-    console.log('✅ Found authToken in localStorage');
+    console.log('Found authToken in localStorage');
     
     // Validate the token
     const validation = validateJWTToken(authToken);
     if (!validation.isValid) {
-      console.log('❌ Token validation failed:', validation.reason);
+      console.log('Token validation failed:', validation.reason);
       
       // Clear invalid token
       localStorage.removeItem('authToken');
@@ -1536,7 +1536,7 @@ const checkAuthentication = () => {
       };
     }
     
-    console.log('✅ Token validation passed');
+    console.log('Token validation passed');
     return { 
       isAuthenticated: true, 
       token: authToken, 
@@ -1548,11 +1548,11 @@ const checkAuthentication = () => {
   // Fallback: check for 'token' in localStorage (for compatibility)
   const token = localStorage.getItem('token');
   if (token) {
-    console.log('✅ Found token in localStorage');
+    console.log('Found token in localStorage');
     
     const validation = validateJWTToken(token);
     if (!validation.isValid) {
-      console.log('❌ Fallback token validation failed:', validation.reason);
+      console.log('Fallback token validation failed:', validation.reason);
       localStorage.removeItem('token');
       return { 
         isAuthenticated: false, 
@@ -1573,11 +1573,11 @@ const checkAuthentication = () => {
   // Check sessionStorage as fallback
   const sessionAuthToken = sessionStorage.getItem('authToken');
   if (sessionAuthToken) {
-    console.log('✅ Found authToken in sessionStorage');
+    console.log('Found authToken in sessionStorage');
     
     const validation = validateJWTToken(sessionAuthToken);
     if (!validation.isValid) {
-      console.log('❌ Session token validation failed:', validation.reason);
+      console.log('Session token validation failed:', validation.reason);
       sessionStorage.removeItem('authToken');
       return { 
         isAuthenticated: false, 
@@ -1597,11 +1597,11 @@ const checkAuthentication = () => {
   
   const sessionToken = sessionStorage.getItem('token');
   if (sessionToken) {
-    console.log('✅ Found token in sessionStorage');
+    console.log('Found token in sessionStorage');
     
     const validation = validateJWTToken(sessionToken);
     if (!validation.isValid) {
-      console.log('❌ Session fallback token validation failed:', validation.reason);
+      console.log('Session fallback token validation failed:', validation.reason);
       sessionStorage.removeItem('token');
       return { 
         isAuthenticated: false, 
@@ -1619,7 +1619,7 @@ const checkAuthentication = () => {
     };
   }
   
-  console.log('❌ No authentication token found');
+  console.log('No authentication token found');
   return { isAuthenticated: false, token: null, source: null };
 };
 
@@ -1628,7 +1628,7 @@ if (typeof window !== 'undefined') {
   window.checkAuth = checkAuthentication;
   window.migrateTokens = migrateAuthTokens;
   window.debugAuth = () => {
-    console.log('🔍 Authentication Debug Information:');
+    console.log('Authentication Debug Information:');
     console.log('localStorage.authToken:', localStorage.getItem('authToken'));
     console.log('localStorage.token:', localStorage.getItem('token'));
     console.log('localStorage.loginSuccess:', localStorage.getItem('loginSuccess'));
@@ -1637,7 +1637,7 @@ if (typeof window !== 'undefined') {
     console.log('sessionStorage.token:', sessionStorage.getItem('token'));
     
     const authCheck = checkAuthentication();
-    console.log('✅ Authentication Check Result:', authCheck);
+    console.log('Authentication Check Result:', authCheck);
     
     // Try to decode JWT token if present
     if (authCheck.token) {
@@ -1645,13 +1645,13 @@ if (typeof window !== 'undefined') {
         const tokenParts = authCheck.token.split('.');
         if (tokenParts.length === 3) {
           const payload = JSON.parse(atob(tokenParts[1]));
-          console.log('🔓 JWT Token Payload:', payload);
-          console.log('🕐 Token Expiry:', new Date(payload.exp * 1000));
-          console.log('🕐 Current Time:', new Date());
-          console.log('⏰ Token Valid:', payload.exp * 1000 > Date.now());
+          console.log('JWT Token Payload:', payload);
+          console.log('Token Expiry:', new Date(payload.exp * 1000));
+          console.log('Current Time:', new Date());
+          console.log('Token Valid:', payload.exp * 1000 > Date.now());
         }
       } catch (e) {
-        console.log('⚠️ Failed to decode JWT token:', e.message);
+        console.log('Failed to decode JWT token:', e.message);
       }
     }
     
@@ -1660,16 +1660,16 @@ if (typeof window !== 'undefined') {
 
   // Test payment API authentication
   window.testPaymentAuth = async () => {
-    console.log('🧪 Testing Payment API Authentication');
+    console.log('Testing Payment API Authentication');
     
     const authCheck = checkAuthentication();
     if (!authCheck.isAuthenticated) {
-      console.log('❌ Not authenticated');
+      console.log('Not authenticated');
       return false;
     }
     
-    console.log('🔐 Using token from:', authCheck.source);
-    console.log('🔑 Token preview:', authCheck.token.substring(0, 20) + '...');
+    console.log('Using token from:', authCheck.source);
+    console.log('Token preview:', authCheck.token.substring(0, 20) + '...');
     
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`, {
@@ -1682,14 +1682,14 @@ if (typeof window !== 'undefined') {
         body: JSON.stringify({ amount: 1000 })
       });
       
-      console.log('📊 Payment API Status:', response.status, response.statusText);
-      console.log('📊 Response Headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Payment API Status:', response.status, response.statusText);
+      console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
       
       const text = await response.text();
-      console.log('📥 Raw Response:', text);
+      console.log('Raw Response:', text);
       
       if (response.status === 401) {
-        console.log('❌ 401 Unauthorized - Token rejected by payment API');
+        console.log('401 Unauthorized - Token rejected by payment API');
         
         // Check if token is expired
         try {
@@ -1697,34 +1697,34 @@ if (typeof window !== 'undefined') {
           if (tokenParts.length === 3) {
             const payload = JSON.parse(atob(tokenParts[1]));
             const isExpired = payload.exp * 1000 <= Date.now();
-            console.log('🕐 Token expired:', isExpired);
+            console.log('Token expired:', isExpired);
             if (isExpired) {
-              console.log('💡 Token has expired - need to re-authenticate');
+              console.log('Token has expired - need to re-authenticate');
             } else {
-              console.log('💡 Token is valid but rejected - check API endpoint or token format');
+              console.log('Token is valid but rejected - check API endpoint or token format');
             }
           }
         } catch (e) {
-          console.log('⚠️ Could not analyze token expiration');
+          console.log('Could not analyze token expiration');
         }
       } else if (response.ok) {
-        console.log('✅ Payment API authentication successful');
+        console.log('Payment API authentication successful');
         try {
           const data = JSON.parse(text);
-          console.log('📥 Response data:', data);
+          console.log('Response data:', data);
         } catch (e) {
-          console.log('⚠️ Response not JSON');
+          console.log('Response not JSON');
         }
       }
       
       return { status: response.status, ok: response.ok, text };
     } catch (error) {
-      console.error('❌ Payment API test failed:', error);
+      console.error('Payment API test failed:', error);
       return false;
     }
   };
   
-  console.log('🛠️ Debug helpers loaded:');
+  console.log('Debug helpers loaded:');
   console.log('- window.checkAuth() - Check authentication status');
   console.log('- window.debugAuth() - Full authentication debug info');
   console.log('- window.migrateTokens() - Migrate authToken to token');
@@ -1735,7 +1735,7 @@ if (typeof window !== 'undefined') {
  * Diagnostic function to test API endpoints
  */
 const testAPIEndpoints = async () => {
-  console.log('🔧 Testing API endpoints...');
+  console.log('Testing API endpoints...');
   
   const endpoints = [
     {
@@ -1757,7 +1757,7 @@ const testAPIEndpoints = async () => {
   
   for (const endpoint of endpoints) {
     try {
-      console.log(`🔍 Testing ${endpoint.name}: ${endpoint.url}`);
+      console.log(`Testing ${endpoint.name}: ${endpoint.url}`);
       
       if (endpoint.method) {
         // Get authentication for API calls
@@ -1774,18 +1774,18 @@ const testAPIEndpoints = async () => {
           body: endpoint.body ? JSON.stringify(endpoint.body) : undefined
         });
         
-        console.log(`📊 ${endpoint.name} - Status: ${response.status} ${response.statusText}`);
+        console.log(`${endpoint.name} - Status: ${response.status} ${response.statusText}`);
         
         if (response.ok) {
-          console.log(`✅ ${endpoint.name} - Working`);
+          console.log(`${endpoint.name} - Working`);
         } else {
-          console.log(`❌ ${endpoint.name} - Failed: ${response.status}`);
+          console.log(`${endpoint.name} - Failed: ${response.status}`);
         }
       } else {
-        console.log(`🌐 ${endpoint.name} - URL: ${endpoint.url}`);
+        console.log(`${endpoint.name} - URL: ${endpoint.url}`);
       }
     } catch (error) {
-      console.log(`❌ ${endpoint.name} - Error: ${error.message}`);
+      console.log(`${endpoint.name} - Error: ${error.message}`);
     }
   }
 };

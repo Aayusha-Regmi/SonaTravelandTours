@@ -1,5 +1,5 @@
 // Test the updated payment instruments mapping
-console.log('🧪 Testing Updated Payment Instruments Mapping');
+console.log('Testing Updated Payment Instruments Mapping');
 
 // Mock API response based on your provided data
 const mockAPIResponse = {
@@ -41,8 +41,8 @@ const mockAPIResponse = {
 
 // Test the mapping function
 const testMapping = (rawInstruments) => {
-  console.log('🔍 Testing instrument mapping...');
-  console.log('📥 Raw instruments:', rawInstruments);
+  console.log('Testing instrument mapping...');
+  console.log('Raw instruments:', rawInstruments);
   
   const mapped = rawInstruments.map((instrument, index) => ({
     instrumentCode: instrument.InstrumentCode || `UNKNOWN_${index}`,
@@ -56,14 +56,14 @@ const testMapping = (rawInstruments) => {
     description: `Pay with ${instrument.InstrumentName || instrument.InstitutionName}`
   }));
   
-  console.log('📤 Mapped instruments:', mapped);
+  console.log('Mapped instruments:', mapped);
   return mapped;
 };
 
 // Test with mock data
 const testResults = testMapping(mockAPIResponse.data.paymentInstruments);
 
-console.log('✅ Test Results:');
+console.log('Test Results:');
 testResults.forEach((instrument, index) => {
   console.log(`${index + 1}. ${instrument.name} (${instrument.instrumentCode})`);
   if (instrument.logoUrl) {
@@ -74,25 +74,25 @@ testResults.forEach((instrument, index) => {
 
 // Test the API function
 const testAPIFunction = async () => {
-  console.log('\n🧪 Testing api.getPaymentInstruments()...');
+  console.log('\nTesting api.getPaymentInstruments()...');
   
   try {
     const result = await api.getPaymentInstruments();
-    console.log('✅ API Result:', result);
+    console.log('API Result:', result);
     
     if (result.success && result.data) {
-      console.log('📊 Payment instruments count:', result.data.length);
-      console.log('📋 First few instruments:');
+      console.log('Payment instruments count:', result.data.length);
+      console.log('First few instruments:');
       result.data.slice(0, 5).forEach((instrument, index) => {
         console.log(`${index + 1}. ${instrument.name} (${instrument.instrumentCode})`);
       });
     }
   } catch (error) {
-    console.error('❌ API test failed:', error);
+    console.error('API test failed:', error);
   }
 };
 
 // Run the test
 testAPIFunction();
 
-console.log('\n💡 Now try opening the payment modal to see if instruments display correctly!');
+console.log('Now try opening the payment modal to see if instruments display correctly!');

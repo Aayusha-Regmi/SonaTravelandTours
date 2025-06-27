@@ -6,21 +6,21 @@
 import { API_URLS } from '../config/api';
 
 export const runAPIDiagnostic = async () => {
-  console.log('🔍 Starting API Diagnostic...');
+  console.log('Starting API Diagnostic...');
   
   // Check environment variables
-  console.log('📋 Environment Variables Check:');
+  console.log('Environment Variables Check:');
   console.log('- VITE_AUTH_API_BASE_URL:', import.meta.env.VITE_AUTH_API_BASE_URL);
   console.log('- VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
   console.log('- VITE_BUS_SEARCH_ENDPOINT:', import.meta.env.VITE_BUS_SEARCH_ENDPOINT);
   
   // Check constructed URLs
-  console.log('🌐 Constructed URLs:');
+  console.log('Constructed URLs:');
   console.log('- Bus Search URL:', API_URLS.BUS.SEARCH);
   console.log('- Auth Login URL:', API_URLS.AUTH.LOGIN);
   
   // Test 1: Simple GET request to check if server is reachable
-  console.log('🧪 Test 1: Testing server reachability...');
+  console.log('Test 1: Testing server reachability...');
   try {
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
     console.log('Trying to reach base URL:', baseUrl);
@@ -35,7 +35,7 @@ export const runAPIDiagnostic = async () => {
   }
   
   // Test 2: Check CORS with OPTIONS request
-  console.log('🧪 Test 2: Testing CORS with OPTIONS request...');
+  console.log('Test 2: Testing CORS with OPTIONS request...');
   try {
     const response = await fetch(API_URLS.BUS.SEARCH, {
       method: 'OPTIONS',
@@ -48,7 +48,7 @@ export const runAPIDiagnostic = async () => {
   }
   
   // Test 3: Test with different request configurations
-  console.log('🧪 Test 3: Testing different request configurations...');
+  console.log('Test 3: Testing different request configurations...');
   
   const testConfigs = [
     { name: 'Basic POST', mode: 'cors' },
@@ -78,7 +78,7 @@ export const runAPIDiagnostic = async () => {
   }
   
   // Test 4: Check if it's a DNS/network issue
-  console.log('🧪 Test 4: Testing external API connectivity...');
+  console.log('Test 4: Testing external API connectivity...');
   try {
     const response = await fetch('https://httpbin.org/get', {
       method: 'GET',
@@ -91,7 +91,7 @@ export const runAPIDiagnostic = async () => {
     console.log('This might indicate a network connectivity issue.');
   }
   
-  console.log('🔍 Diagnostic complete. Check results above.');
+  console.log('Diagnostic complete. Check results above.');
 };
 
 export const quickCORSTest = async (url) => {

@@ -24,7 +24,7 @@ const PassengerDetail = () => {
   // Initialize passengers based on selected seats
   useEffect(() => {
     if (selectedSeats && selectedSeats.length > 0) {
-      console.log('🎯 Initializing passengers for selected seats:', selectedSeats);
+      console.log('Initializing passengers for selected seats:', selectedSeats);
       
       const initialPassengers = selectedSeats.map(seatId => ({
         id: seatId,                    // Use actual seat ID (A5, B7, etc.)
@@ -39,7 +39,7 @@ const PassengerDetail = () => {
       }));
       
       setPassengers(initialPassengers);
-      console.log('✅ Passengers initialized:', initialPassengers);
+      console.log('Passengers initialized:', initialPassengers);
     } else {
       // Fallback if no seats selected (redirect back)
       console.error('❌ No selected seats found, redirecting back');
@@ -166,7 +166,7 @@ const PassengerDetail = () => {
       const sourcePassenger = updatedPassengers[sourceIndex];
       const newErrors = { ...errors };
       
-      console.log(`🔄 Applying passenger ${sourceIndex + 1} (Seat ${sourcePassenger.id}) data to all others`);
+      console.log(`Applying passenger ${sourceIndex + 1} (Seat ${sourcePassenger.id}) data to all others`);
       
       for (let i = 0; i < updatedPassengers.length; i++) {
         if (i !== sourceIndex) {
@@ -205,12 +205,12 @@ const PassengerDetail = () => {
       }
       
       setErrors(newErrors);
-      console.log('✅ Applied data to all other passengers');
+      console.log('Applied data to all other passengers');
     } else {
       // Uncheck and restore previous data
       updatedPassengers[sourceIndex].applyToAll = checked;
       
-      console.log(`🔙 Restoring previous data for other passengers (unchecked from Seat ${updatedPassengers[sourceIndex].id})`);
+      console.log(`Restoring previous data for other passengers (unchecked from Seat ${updatedPassengers[sourceIndex].id})`);
       
       for (let i = 0; i < updatedPassengers.length; i++) {
         if (i !== sourceIndex && updatedPassengers[i].previousData) {
@@ -229,7 +229,7 @@ const PassengerDetail = () => {
         }
       }
       
-      console.log('✅ Restored previous data for all passengers');
+      console.log('Restored previous data for all passengers');
     }
     
     setPassengers(updatedPassengers);
@@ -237,13 +237,11 @@ const PassengerDetail = () => {
 
   const handleGoToPayment = () => {
     if (validateForm()) {
-      console.log('🎯 Proceeding to payment with complete data:', {
+      console.log('Proceeding to payment with complete data:', {
         passengers,
         selectedSeats,
-        busData,
-        totalPrice,
         travelDate,
-        bookingDetails
+        totalPrice
       });
       
       // 🔥 FIX: Pass all booking data to payment page
