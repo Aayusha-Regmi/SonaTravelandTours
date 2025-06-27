@@ -353,10 +353,10 @@ const SearchForm = () => {
           </div>
         )}        {/* From Field */}        
         <div className="lg:col-span-1 relative">
-          <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border-2 border-orange-400/60 h-[85px] flex flex-col justify-center shadow-[0_12px_35px_rgba(251,146,60,0.3)] hover:bg-white/60 hover:shadow-[0_18px_45px_rgba(251,146,60,0.4)] transition-all duration-300">
-            <label className="text-orange-600 text-xs font-bold mb-2 uppercase tracking-wider">FROM</label>
+          <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
+            <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">FROM</label>
             <div className="flex items-center justify-between">              <div className="flex items-center flex-1">
-                <svg className="w-5 h-5 text-orange-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
