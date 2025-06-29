@@ -82,12 +82,15 @@ const profileApiService = {
       }
       
       const response = await fetch(API_URLS.PROFILE.UPDATE_PASSWORD, {
-        method: 'PATCH',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(passwordData)
+        body: JSON.stringify({
+          newPassword: passwordData.newPassword,
+          currentPassword: passwordData.currentPassword
+        })
       });
       
       if (!response.ok) {
@@ -102,6 +105,29 @@ const profileApiService = {
     } catch (error) {
       console.error('Password update error:', error);
       throw error;
+    }
+  },
+
+  async checkEmailExists(email) {
+    try {
+      const response = await fetch(API_URLS.PROFILE.CHECK_EMAIL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      return result.exists || false;
+    } catch (error) {
+      console.error('Email check error:', error);
+      // If API fails, assume email doesn't exist to avoid blocking user
+      return false;
     }
   },
 
@@ -208,6 +234,10 @@ const MyAccount = () => {
         if (!isValidEmail(value)) {
           return 'Please enter a valid email address';
         }
+        // Skip uniqueness check if email hasn't changed
+        if (value === profile?.email) {
+          return '';
+        }
         return '';
       case 'contactNumber':
         if (!value || value.trim() === '') {
@@ -276,6 +306,23 @@ const MyAccount = () => {
         setProfileErrors(errors);
         toast.error('Please fix the validation errors before saving');
         return;
+      }
+
+      // Check email uniqueness if email has changed
+      if (profileForm.email !== profile?.email) {
+        try {
+          setLoading(true);
+          const emailExists = await profileApiService.checkEmailExists(profileForm.email);
+          if (emailExists) {
+            setProfileErrors({ email: 'This email is already registered with another account' });
+            toast.error('Email already exists. Please use a different email.');
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.warn('Email uniqueness check failed:', err);
+          // Continue with profile update if check fails
+        }
       }
 
       // Save profile changes
@@ -678,33 +725,24 @@ const MyAccount = () => {
             )}
           </div>
 
-          <div className="flex flex-col space-y-1.5">
-            <label className="text-sm font-medium text-gray-700 font-opensans">
-              Phone Number
-            </label>
-            <div className={`bg-gray-50 rounded-lg h-10 flex items-center px-3 border transition-all ${
-              !isEditingProfile 
-                ? 'border-transparent bg-gray-50' 
-                : profileErrors.contactNumber
-                ? 'border-red-300 hover:border-red-400 focus-within:border-red-500 focus-within:bg-white focus-within:shadow-sm'
-                : 'border-gray-200 hover:border-blue-400 focus-within:border-blue-500 focus-within:bg-white focus-within:shadow-sm'
-            }`}>
-              <input
-                type="text"
-                value={profileForm.contactNumber || ''}
-                onChange={(e) => handleInputChange('contactNumber', e.target.value)}
-                onBlur={() => handleFieldBlur('contactNumber')}
-                disabled={!isEditingProfile}
-                placeholder="Enter your phone number"
-                className={`flex-1 bg-transparent text-sm font-medium placeholder-gray-400 focus:outline-none font-opensans ${
-                  !isEditingProfile ? 'text-gray-600 cursor-not-allowed' : 'text-gray-900 cursor-text'
-                }`}
-              />
+          {/* Phone Number Field - Hidden when editing */}
+          {!isEditingProfile && (
+            <div className="flex flex-col space-y-1.5">
+              <label className="text-sm font-medium text-gray-700 font-opensans">
+                Phone Number
+              </label>
+              <div className="bg-gray-50 rounded-lg h-10 flex items-center px-3 border border-transparent">
+                <input
+                  type="text"
+                  value={profileForm.contactNumber || ''}
+                  disabled={true}
+                  placeholder="Phone number"
+                  className="flex-1 bg-transparent text-sm font-medium text-gray-600 cursor-not-allowed focus:outline-none font-opensans"
+                />
+              </div>
+              <p className="text-xs text-gray-500 font-opensans">Phone number cannot be edited for security reasons</p>
             </div>
-            {profileErrors.contactNumber && (
-              <p className="text-xs text-red-500 font-opensans">{profileErrors.contactNumber}</p>
-            )}
-          </div>
+          )}
 
           <div className="flex flex-col space-y-1.5">
             <label className="text-sm font-medium text-gray-700 font-opensans">

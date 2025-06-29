@@ -18,8 +18,9 @@ export const API_URLS = {
   PROFILE: {
     GET: `${BUS_API_BASE_URL}/profile`,
     UPDATE: `${BUS_API_BASE_URL}/profile`,
-    UPDATE_PASSWORD: `${BUS_API_BASE_URL}/profile/password`,
+    UPDATE_PASSWORD: `${BUS_API_BASE_URL}/update-password`,
     UPLOAD_AVATAR: `${BUS_API_BASE_URL}/profile/avatar`,
+    CHECK_EMAIL: `${BUS_API_BASE_URL}/check-email`,
   },
   BOOKINGS: {
     USER_BOOKINGS: `${BUS_API_BASE_URL}/bookings/user`,
