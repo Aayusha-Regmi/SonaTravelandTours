@@ -14,6 +14,15 @@ export const API_URLS = {
   BUS: {
     SEARCH: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEARCH_ENDPOINT}`,
     DETAILS: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`,
+  },
+  PROFILE: {
+    GET: `${BUS_API_BASE_URL}/profile`,
+    UPDATE: `${BUS_API_BASE_URL}/profile`,
+    UPDATE_PASSWORD: `${BUS_API_BASE_URL}/profile/password`,
+    UPLOAD_AVATAR: `${BUS_API_BASE_URL}/profile/avatar`,
+  },
+  BOOKINGS: {
+    USER_BOOKINGS: `${BUS_API_BASE_URL}/bookings/user`,
   }
 };
 

@@ -89,7 +89,7 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         console.log('SEAT API REQUEST:', {
           url: apiUrl,
           method: 'POST',
-          requestData: requestData
+          requestData: requestBody
         });
         
         const response = await fetch(apiUrl, {
@@ -104,14 +104,6 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
 
         const data = await response.json();
         
-        // 🔥 MINIMAL LOG: API RESPONSE
-        console.log('SEAT API RESPONSE:', {
-          status: response.status,
-          success: result.success,
-          bookedSeats: bookedSeatNumbers,
-          message: result.message
-        });
-        
         // Extract seat numbers
         let bookedSeatNumbers = [];
         if (data.success && data.data && Array.isArray(data.data)) {
@@ -119,6 +111,14 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
             .map(booking => booking.seatNumber)
             .filter(seat => seat && /^[A-Z]\d+$/.test(seat));
         }
+        
+        // 🔥 MINIMAL LOG: API RESPONSE
+        console.log('SEAT API RESPONSE:', {
+          status: response.status,
+          success: data.success,
+          bookedSeats: bookedSeatNumbers,
+          message: data.message
+        });
         
         // 🔥 MINIMAL LOG: FINAL RESULT
         console.log('SETTING BOOKED SEATS:', bookedSeatNumbers);
@@ -128,7 +128,12 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
       } catch (error) {
         // 🔥 MINIMAL LOG: ERROR
         console.error('❌ SEAT API ERROR:', error.message);
+        console.log('No fallback data - showing empty seats');
+        
+        // No mock data - just empty seats
         setBookedSeats([]);
+        
+        // Show error for all failures
         toast.error('Failed to load seat availability. Please try again.');
       } finally {
         setIsLoadingSeats(false);
