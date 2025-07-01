@@ -24,7 +24,7 @@ import Testimonials from './pages/Testimonials/Testimonials';
 import UserProfile from './pages/UserProfile/UserProfile';
 import TrendingOffers from './pages/TrendingOffers/TrendingOffers';
 import AuthTestPage from './pages/AuthTestPage';
-import MyBookingsPage from './pages/UserProfile/ComponentUserProfile/MyBookingsPage';
+import MyBookings from './pages/UserProfile/ComponentUserProfile/MyBookings';
 
 const AppRoutes = () => {
   return (
@@ -79,7 +79,7 @@ const AppRoutes = () => {
         path="/bookings" 
         element={
           <ProtectedRoute>
-            <MyBookingsPage />
+            <MyBookings />
           </ProtectedRoute>
         } 
       />
