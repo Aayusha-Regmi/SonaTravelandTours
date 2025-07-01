@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import Button from '../../../components/ui/Button';
 import { toast } from 'react-toastify';
@@ -112,38 +112,6 @@ const profileApiService = {
       // If API fails, assume email doesn't exist to avoid blocking user
       return false;
     }
-  },
-
-  async uploadProfileImage(imageFile) {
-    try {
-      if (!isAuthenticated()) {
-        throw new Error('No authentication token found. Please log in to continue.');
-      }
-      
-      const formData = new FormData();
-      formData.append('image', imageFile);
-      
-      const response = await fetch(API_URLS.PROFILE.UPLOAD_AVATAR, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      if (result.success) {
-        return result.data;
-      }
-      throw new Error(result.message || 'Failed to upload image');
-    } catch (error) {
-      console.error('Image upload error:', error);
-      throw error;
-    }
   }
 };
 
@@ -153,7 +121,6 @@ const MyAccount = () => {
   const [error, setError] = useState(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingSecurity, setIsEditingSecurity] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [profileForm, setProfileForm] = useState({});
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -166,8 +133,6 @@ const MyAccount = () => {
   const [profileErrors, setProfileErrors] = useState({});
   const [passwordErrors, setPasswordErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
-  
-  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchProfileData();
@@ -472,44 +437,6 @@ const MyAccount = () => {
     }
   };
 
-  const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
-      return;
-    }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size should be less than 5MB');
-      return;
-    }
-
-    try {
-      setIsUploadingImage(true);
-      const result = await profileApiService.uploadProfileImage(file);
-      
-      // Update profile with new image URL
-      setProfile(prev => ({
-        ...prev,
-        avatarUrl: result.imageUrl || result.url
-      }));
-      
-      toast.success('Profile image updated successfully!');
-    } catch (err) {
-      toast.error('Failed to upload image: ' + err.message);
-    } finally {
-      setIsUploadingImage(false);
-    }
-  };
-
-  const triggerImageUpload = () => {
-    fileInputRef.current?.click();
-  };
-
   if (loading && !profile) {
     return (
       <div className="space-y-4">
@@ -534,92 +461,23 @@ const MyAccount = () => {
   }
 
   if (error && !profile) {
+    // Don't show error, just show loading state
     return (
-      <div className="bg-white rounded-lg border border-gray-100 p-8 text-center">
-        <div className="text-red-500 mb-4">
-          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg border border-gray-100 p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-48"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-48"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-48"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Failed to load profile</h3>
-        <p className="text-gray-500 text-sm mb-4">{error}</p>
-        <Button variant="primary" onClick={fetchProfileData}>
-          Try Again
-        </Button>
       </div>
     );
   }  return (
     <div className="space-y-6">
-      {/* Profile Image Section */}
-      <div className="bg-white rounded-lg border border-gray-100 p-6">
-        <div className="flex flex-col items-center">
-          <div className="relative mb-4">
-            {profile?.avatarUrl ? (
-              <img
-                src={profile.avatarUrl}
-                alt={`${profile?.firstName || ''} ${profile?.lastName || ''}`}
-                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover bg-gray-100"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            
-            {!profile?.avatarUrl && (
-              <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-            )}
-            
-            {/* Hidden fallback div for image error */}
-            <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center" style={{display: 'none'}}>
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            
-            {isUploadingImage && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-              </div>
-            )}
-            <button 
-              onClick={triggerImageUpload}
-              disabled={isUploadingImage}
-              className="absolute bottom-2 right-2 bg-blue-600 text-white rounded-full p-2 shadow hover:bg-blue-700 transition disabled:bg-gray-400" 
-              title="Upload new photo"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-1">
-            {profile?.firstName && profile?.lastName 
-              ? `${profile.firstName} ${profile.lastName}` 
-              : 'Name not available'
-            }
-          </h3>
-          <p className="text-gray-500 text-sm mb-4">
-            {profile?.email || 'Email not available'}
-          </p>
-          <p className="text-xs text-gray-400">Click the camera icon to update your photo</p>
-        </div>
-        
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="hidden"
-        />
-      </div>
-
       {/* Account Information Section */}
       <div className="bg-white rounded-lg border border-gray-100 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">

@@ -23,7 +23,7 @@ export const API_URLS = {
     CHECK_EMAIL: `${BUS_API_BASE_URL}/check-email`,
   },
   BOOKINGS: {
-    USER_BOOKINGS: `${BUS_API_BASE_URL}/bookings/user`,
+    USER_BOOKINGS: `${BUS_API_BASE_URL}/bookings`,
   }
 };
 

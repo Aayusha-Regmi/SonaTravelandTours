@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import Tabs from '../../components/ui/Tabs';
-import ProfileHeader from './ComponentUserProfile/ProfileHeader';
+import ProfileImageHeader from './ComponentUserProfile/ProfileImageHeader';
 import MyAccount from './ComponentUserProfile/MyAccount.jsx';
 import MyBookings from './ComponentUserProfile/MyBookings.jsx';
 import Cancellations from './ComponentUserProfile/Cancellations.jsx';
@@ -42,14 +42,14 @@ const UserProfile = () => {
       <Header />
       
       <main className="max-w-6xl mt-10 mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
-        {/* Profile Header - Always visible above tabs */}
-        <ProfileHeader onProfileImageEdit={() => console.log('Edit profile image')} />
+        {/* Profile Image Header - Always visible above tabs */}
+        <ProfileImageHeader />
         
         {/* Tabs Section */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <Tabs 
             tabs={tabsData}
-            defaultActiveTab={1}
+            defaultActiveTab={0}
             className="w-full"
           />
         </div>
