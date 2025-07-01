@@ -1,71 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../../../components/ui/Button';
 import { API_URLS } from '../../../config/api';
+import { getAuthToken, getAuthHeaders, isAuthenticated } from '../../../utils/authToken';
 
 // API service for profile operations
 const profileApiService = {
   async fetchProfile() {
-    try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token') || 
-                    localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      
-      if (!token) {
-        throw new Error('No authentication token found. Please log in to continue.');
-      }
-      
-      const response = await fetch(API_URLS.PROFILE.GET, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      if (result.success) {
-        return result.data;
-      }
-      throw new Error(result.message || 'Failed to fetch profile');
-    } catch (error) {
-      console.error('Profile fetch error:', error);
-      throw error;
+    if (!isAuthenticated()) {
+      throw new Error('User not authenticated');
     }
+    
+    const response = await fetch(API_URLS.PROFILE.GET, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    if (result.success && result.data) {
+      return result.data;
+    }
+    
+    throw new Error(result.message || 'Failed to fetch profile');
   },
 
   async fetchBookings() {
-    try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token') || 
-                    localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      
-      if (!token) {
-        throw new Error('No authentication token found. Please log in to continue.');
-      }
-      
-      const response = await fetch(API_URLS.BOOKINGS.USER_BOOKINGS, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      if (result.success) {
-        return result.data || [];
-      }
-      throw new Error(result.message || 'Failed to fetch bookings');
-    } catch (error) {
-      console.error('Bookings fetch error:', error);
-      throw error;
+    if (!isAuthenticated()) {
+      throw new Error('User not authenticated');
     }
+    
+    const response = await fetch(API_URLS.BOOKINGS.USER_BOOKINGS, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    if (result.success) {
+      return result.data || [];
+    }
+    
+    throw new Error(result.message || 'Failed to fetch bookings');
   }
 };
 
@@ -93,6 +74,7 @@ const ProfileHeader = ({
       setProfile(profileData);
       setBookings(bookingsData);
     } catch (err) {
+      console.error('Error fetching profile data:', err);
       setError(err.message);
     } finally {
       setLoading(false);

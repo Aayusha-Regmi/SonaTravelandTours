@@ -8,6 +8,7 @@ import ProgressBar from '../../components/common/BookingStepComponents/ProgressB
 import BusDetail from '../../components/common/BookingStepComponents/BusDetail';
 import PaymentModal from '../../components/ui/PaymentModal';
 import api from '../../services/api';
+import { getAuthToken, getAuthHeaders, isAuthenticated } from '../../utils/authToken';
 
 const PaymentPage = () => {
   const location = useLocation();
@@ -169,17 +170,8 @@ const PaymentPage = () => {
         requestData: requestData
       });
 
-      // Get authentication token
-      let userToken = localStorage.getItem('token') || sessionStorage.getItem('token') || 
-                      localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (userToken) {
-        headers.Authorization = `Bearer ${userToken}`;
-      }
+      // Get authentication token using centralized utility
+      const headers = getAuthHeaders();
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/seat`, {
         method: 'POST',

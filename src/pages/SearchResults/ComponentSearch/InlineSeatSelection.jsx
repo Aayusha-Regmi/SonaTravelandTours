@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Button from '../../../components/ui/Button';
+import { API_URLS } from '../../../config/api';
+import { getAuthToken, getAuthHeaders, isAuthenticated } from '../../../utils/authToken';
+
 // Add the missing Card component import
 const Card = ({ children, className = '' }) => (
   <div className={`${className}`}>
@@ -45,25 +48,13 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         let destination = searchParams.toCity || searchParams.to || busData.route?.to || busData.destination || busData.arrivalLocation || 'kathmandu';
         destination = destination.toLowerCase().trim();
         
-        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`;
+        const apiUrl = API_URLS.BUS.DETAILS;
         
-        // Get token
-        let userToken = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-        if (userToken) {
-          userToken = userToken.trim();
-          const tokenParts = userToken.split('.');
-          if (tokenParts.length !== 3) {
-            userToken = null;
-          } else {
-            try {
-              const payload = JSON.parse(atob(tokenParts[1]));
-              if (payload.exp && payload.exp < Date.now() / 1000) {
-                userToken = null;
-              }
-            } catch (error) {
-              userToken = null;
-            }
-          }
+        // Only make API request if user is authenticated
+        if (!isAuthenticated()) {
+          console.warn('User not authenticated, cannot fetch seat details');
+          setBookedSeats([]);
+          return;
         }
         
         const requestBody = {
@@ -71,21 +62,6 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
           destination: destination
         };
         
-        const headers = {
-          'Content-Type': 'application/json',
-        };
-        
-        if (userToken) {
-          headers.Authorization = `Bearer ${userToken}`;
-        }
-  console.log('COMPLETE REQUEST DETAILS:', {
-    busId,
-    travelDate: currentTravelDate,
-    selectedSeats,
-    boardingPlace,
-    droppingPlace
-  });
-        // 🔥 MINIMAL LOG: API REQUEST
         console.log('SEAT API REQUEST:', {
           url: apiUrl,
           method: 'POST',
@@ -94,7 +70,7 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         
         const response = await fetch(apiUrl, {
           method: 'POST',
-          headers: headers,
+          headers: getAuthHeaders(),
           body: JSON.stringify(requestBody)
         });
 
@@ -104,7 +80,7 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
 
         const data = await response.json();
         
-        // Extract seat numbers
+        // Extract seat numbers from real API response
         let bookedSeatNumbers = [];
         if (data.success && data.data && Array.isArray(data.data)) {
           bookedSeatNumbers = data.data
@@ -112,7 +88,6 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
             .filter(seat => seat && /^[A-Z]\d+$/.test(seat));
         }
         
-        // 🔥 MINIMAL LOG: API RESPONSE
         console.log('SEAT API RESPONSE:', {
           status: response.status,
           success: data.success,
@@ -120,20 +95,17 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
           message: data.message
         });
         
-        // 🔥 MINIMAL LOG: FINAL RESULT
         console.log('SETTING BOOKED SEATS:', bookedSeatNumbers);
-        
         setBookedSeats(bookedSeatNumbers);
         
       } catch (error) {
-        // 🔥 MINIMAL LOG: ERROR
         console.error('❌ SEAT API ERROR:', error.message);
-        console.log('No fallback data - showing empty seats');
+        console.log('Error loading seat data - showing all seats as available');
         
-        // No mock data - just empty seats
+        // On error, show all seats as available instead of mock data
         setBookedSeats([]);
         
-        // Show error for all failures
+        // Show error message to user
         toast.error('Failed to load seat availability. Please try again.');
       } finally {
         setIsLoadingSeats(false);
@@ -307,8 +279,8 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
       // Simulate API call with dummy data
       console.log('Booking seats:', selectedSeats, 'for bus:', busId);
       
-      // Simulate a successful response
-      const mockResponse = {
+      // Simulate a successful response - replace with real API call
+      const response = {
         success: true,
         bookedSeats: selectedSeats,
         busId: busId,
@@ -316,8 +288,8 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         bookingId: `BK${Date.now()}`
       };
       
-      console.log('Booking successful:', mockResponse);
-      return mockResponse;
+      console.log('Booking successful:', response);
+      return response;
     } catch (error) {
       console.error('Error booking seats:', error);
       return { success: false, error: error.message };

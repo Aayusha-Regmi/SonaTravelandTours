@@ -2,11 +2,11 @@
  * Authentication Guard Utilities
  */
 
-// Check if user is authenticated
+import { getAuthToken, isAuthenticated as checkAuth } from './authToken';
+
+// Check if user is authenticated - using centralized auth logic
 export const isAuthenticated = () => {
-  const token = localStorage.getItem('authToken');
-  const loginSuccess = localStorage.getItem('loginSuccess');
-  return !!(token && loginSuccess === 'true');
+  return checkAuth();
 };
 
 // Get current user info
@@ -14,7 +14,7 @@ export const getCurrentUser = () => {
   if (!isAuthenticated()) return null;
   
   try {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     const userRole = localStorage.getItem('userRole');
     const userMessage = localStorage.getItem('userMessage');
     
@@ -56,7 +56,11 @@ export const getAndClearSearchData = () => {
 
 // Clear authentication data
 export const clearAuthData = () => {
+  // Clear all possible token storage locations
+  localStorage.removeItem('token');
   localStorage.removeItem('authToken');
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('authToken');
   localStorage.removeItem('loginSuccess');
   localStorage.removeItem('userRole');
   localStorage.removeItem('userMessage');

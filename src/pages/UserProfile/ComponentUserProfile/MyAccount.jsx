@@ -4,24 +4,19 @@ import Button from '../../../components/ui/Button';
 import { toast } from 'react-toastify';
 import { isValidEmail, isValidPhoneNumber, validateField } from '../../../utils/authUtils';
 import { API_URLS } from '../../../config/api';
+import { getAuthToken, getAuthHeaders, isAuthenticated } from '../../../utils/authToken';
 
 // API service for profile operations
 const profileApiService = {
   async fetchProfile() {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token') || 
-                    localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      
-      if (!token) {
+      if (!isAuthenticated()) {
         throw new Error('No authentication token found. Please log in to continue.');
       }
       
       const response = await fetch(API_URLS.PROFILE.GET, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getAuthHeaders()
       });
       
       if (!response.ok) {
@@ -41,19 +36,13 @@ const profileApiService = {
 
   async updateProfile(profileData) {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token') || 
-                    localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      
-      if (!token) {
+      if (!isAuthenticated()) {
         throw new Error('No authentication token found. Please log in to continue.');
       }
       
       const response = await fetch(API_URLS.PROFILE.UPDATE, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(profileData)
       });
       
@@ -74,19 +63,13 @@ const profileApiService = {
 
   async updatePassword(passwordData) {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token') || 
-                    localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      
-      if (!token) {
+      if (!isAuthenticated()) {
         throw new Error('No authentication token found. Please log in to continue.');
       }
       
       const response = await fetch(API_URLS.PROFILE.UPDATE_PASSWORD, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           newPassword: passwordData.newPassword,
           currentPassword: passwordData.currentPassword
@@ -133,10 +116,7 @@ const profileApiService = {
 
   async uploadProfileImage(imageFile) {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token') || 
-                    localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      
-      if (!token) {
+      if (!isAuthenticated()) {
         throw new Error('No authentication token found. Please log in to continue.');
       }
       
@@ -146,7 +126,7 @@ const profileApiService = {
       const response = await fetch(API_URLS.PROFILE.UPLOAD_AVATAR, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${getAuthToken()}`
         },
         body: formData
       });

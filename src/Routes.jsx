@@ -24,6 +24,7 @@ import Testimonials from './pages/Testimonials/Testimonials';
 import UserProfile from './pages/UserProfile/UserProfile';
 import TrendingOffers from './pages/TrendingOffers/TrendingOffers';
 import AuthTestPage from './pages/AuthTestPage';
+import MyBookings from './pages/UserProfile/ComponentUserProfile/MyBookings';
 
 const AppRoutes = () => {
   return (
@@ -44,8 +45,10 @@ const AppRoutes = () => {
       <Route path="/signup/complete" element={<SignupPage />} />
       <Route path="/otp-verification" element={<OTPVerificationPage />} />
       
-      {/* Debug/Test Routes */}
-      <Route path="/auth-test" element={<AuthTestPage />} />
+      {/* Auth Testing Route - Available in Development Only */}
+      {process.env.NODE_ENV === 'development' && (
+        <Route path="/auth-test" element={<AuthTestPage />} />
+      )}
 
       {/* Protected Routes - Require Authentication */}
       <Route 
@@ -76,10 +79,7 @@ const AppRoutes = () => {
         path="/bookings" 
         element={
           <ProtectedRoute>
-            <PlaceholderPage 
-              title="My Bookings" 
-              description="View and manage your bus bookings here. This page is under development."
-            />
+            <MyBookings />
           </ProtectedRoute>
         } 
       />

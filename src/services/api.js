@@ -3,6 +3,7 @@
  */
 
 import { API_URLS } from '../config/api';
+import { getAuthToken, getAuthHeaders, isAuthenticated } from '../utils/authToken';
 
 // Debug interceptor to log all fetch requests
 const originalFetch = window.fetch;
@@ -1426,40 +1427,20 @@ const confirmSeatBooking = async (seatInfo, paymentInfo) => {
 
 /**
  * Migrate tokens to ensure compatibility with legacy code
- * Copies authToken to token if token doesn't exist, and vice versa
+ * Uses centralized auth utility for token management
  */
 const migrateAuthTokens = () => {
   try {
-    // Check if we have authToken but no token in localStorage
-    const authToken = localStorage.getItem('authToken');
-    const token = localStorage.getItem('token');
-    const loginSuccess = localStorage.getItem('loginSuccess');
-    
-    // If we have authToken and loginSuccess, ensure token exists too for compatibility
-    if (authToken && loginSuccess === 'true' && !token) {
-      localStorage.setItem('token', authToken);
-      console.log('Migrated authToken to token in localStorage');
-    }
-    
-    // If we have token but no authToken, migrate it back (edge case)
-    if (token && !authToken) {
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('loginSuccess', 'true'); // Ensure login success flag exists
-      console.log('Migrated token to authToken in localStorage');
-    }
-    
-    // Check sessionStorage as well
-    const sessionAuthToken = sessionStorage.getItem('authToken');
-    const sessionToken = sessionStorage.getItem('token');
-    
-    if (sessionAuthToken && !sessionToken) {
-      sessionStorage.setItem('token', sessionAuthToken);
-      console.log('Migrated authToken to token in sessionStorage');
-    }
-    
-    if (sessionToken && !sessionAuthToken) {
-      sessionStorage.setItem('authToken', sessionToken);
-      console.log('Migrated token to authToken in sessionStorage');
+    // Use centralized token checking
+    const currentToken = getAuthToken();
+    if (currentToken) {
+      // Ensure token exists in both storage locations for compatibility
+      localStorage.setItem('token', currentToken);
+      localStorage.setItem('authToken', currentToken);
+      localStorage.setItem('loginSuccess', 'true');
+      console.log('Token migration completed using centralized auth');
+    } else {
+      console.log('No token found during migration');
     }
     
     return true;
@@ -1512,20 +1493,25 @@ const validateJWTToken = (token) => {
  * @returns {Object} - Object with authentication status and token details
  */
 const checkAuthentication = () => {
-  // Primary token storage used by login/signup (authToken)
-  const authToken = localStorage.getItem('authToken');
-  const loginSuccess = localStorage.getItem('loginSuccess');
+  // Migrate tokens before checking to ensure we have consistency
+  migrateAuthTokens();
   
-  if (authToken && loginSuccess === 'true') {
-    console.log('Found authToken in localStorage');
+  // Use our centralized auth utility to get the token
+  const token = getAuthToken();
+  
+  if (token) {
+    console.log('Found authentication token');
     
     // Validate the token
-    const validation = validateJWTToken(authToken);
+    const validation = validateJWTToken(token);
     if (!validation.isValid) {
       console.log('Token validation failed:', validation.reason);
       
-      // Clear invalid token
+      // Clear invalid tokens
       localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('token');
       localStorage.removeItem('loginSuccess');
       
       return { 
@@ -1539,85 +1525,13 @@ const checkAuthentication = () => {
     console.log('Token validation passed');
     return { 
       isAuthenticated: true, 
-      token: authToken, 
-      source: 'localStorage.authToken',
-      validation
-    };
-  }
-  
-  // Fallback: check for 'token' in localStorage (for compatibility)
-  const token = localStorage.getItem('token');
-  if (token) {
-    console.log('Found token in localStorage');
-    
-    const validation = validateJWTToken(token);
-    if (!validation.isValid) {
-      console.log('Fallback token validation failed:', validation.reason);
-      localStorage.removeItem('token');
-      return { 
-        isAuthenticated: false, 
-        token: null, 
-        source: null,
-        error: `Fallback token invalid: ${validation.reason}`
-      };
-    }
-    
-    return { 
-      isAuthenticated: true, 
       token: token, 
-      source: 'localStorage.token',
+      source: 'authToken utility',
       validation
     };
   }
   
-  // Check sessionStorage as fallback
-  const sessionAuthToken = sessionStorage.getItem('authToken');
-  if (sessionAuthToken) {
-    console.log('Found authToken in sessionStorage');
-    
-    const validation = validateJWTToken(sessionAuthToken);
-    if (!validation.isValid) {
-      console.log('Session token validation failed:', validation.reason);
-      sessionStorage.removeItem('authToken');
-      return { 
-        isAuthenticated: false, 
-        token: null, 
-        source: null,
-        error: `Session token invalid: ${validation.reason}`
-      };
-    }
-    
-    return { 
-      isAuthenticated: true, 
-      token: sessionAuthToken, 
-      source: 'sessionStorage.authToken',
-      validation
-    };
-  }
-  
-  const sessionToken = sessionStorage.getItem('token');
-  if (sessionToken) {
-    console.log('Found token in sessionStorage');
-    
-    const validation = validateJWTToken(sessionToken);
-    if (!validation.isValid) {
-      console.log('Session fallback token validation failed:', validation.reason);
-      sessionStorage.removeItem('token');
-      return { 
-        isAuthenticated: false, 
-        token: null, 
-        source: null,
-        error: `Session fallback token invalid: ${validation.reason}`
-      };
-    }
-    
-    return { 
-      isAuthenticated: true, 
-      token: sessionToken, 
-      source: 'sessionStorage.token',
-      validation
-    };
-  }
+  // No token found in any storage
   
   console.log('No authentication token found');
   return { isAuthenticated: false, token: null, source: null };
@@ -1629,6 +1543,9 @@ if (typeof window !== 'undefined') {
   window.migrateTokens = migrateAuthTokens;
   window.debugAuth = () => {
     console.log('Authentication Debug Information:');
+    console.log('Using centralized auth utility:');
+    console.log('getAuthToken():', getAuthToken());
+    console.log('isAuthenticated():', isAuthenticated());
     console.log('localStorage.authToken:', localStorage.getItem('authToken'));
     console.log('localStorage.token:', localStorage.getItem('token'));
     console.log('localStorage.loginSuccess:', localStorage.getItem('loginSuccess'));
@@ -1640,9 +1557,10 @@ if (typeof window !== 'undefined') {
     console.log('Authentication Check Result:', authCheck);
     
     // Try to decode JWT token if present
-    if (authCheck.token) {
+    const currentToken = getAuthToken();
+    if (currentToken) {
       try {
-        const tokenParts = authCheck.token.split('.');
+        const tokenParts = currentToken.split('.');
         if (tokenParts.length === 3) {
           const payload = JSON.parse(atob(tokenParts[1]));
           console.log('JWT Token Payload:', payload);
