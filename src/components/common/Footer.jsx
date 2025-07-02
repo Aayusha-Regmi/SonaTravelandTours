@@ -439,6 +439,7 @@ const Footer = () => {
                   <li><Link to="/terms-conditions">Terms & Conditions</Link></li>
                   <li><Link to="/privacy-policy">Privacy Policy</Link></li>
                   <li><Link to="/contact">Contact Us</Link></li>
+                  <li><Link to="/visit-counters">Visit Our Counters</Link></li>
                   <li><Link to="/about">About Us</Link></li>
                   <li><Link to="/testimonials">Testimonials</Link></li>
                   <li><Link to="/faqs">FAQs</Link></li>

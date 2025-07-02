@@ -23,6 +23,7 @@ import FAQs from './pages/FAQs/FAQs';
 import Testimonials from './pages/Testimonials/Testimonials';
 import UserProfile from './pages/UserProfile/UserProfile';
 import TrendingOffers from './pages/TrendingOffers/TrendingOffers';
+import VisitCounters from './pages/VisitCounters/VisitCounters';
 import AuthTestPage from './pages/AuthTestPage';
 import MyBookings from './pages/UserProfile/ComponentUserProfile/MyBookings';
 
@@ -38,6 +39,7 @@ const AppRoutes = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/faqs" element={<FAQs />} />
       <Route path="/testimonials" element={<Testimonials />} />
+      <Route path="/visit-counters" element={<VisitCounters />} />
 
       {/* Auth Routes */}
       <Route path="/login" element={<LoginPage />} />
