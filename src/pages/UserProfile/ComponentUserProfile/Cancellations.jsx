@@ -117,6 +117,128 @@ const Cancellations = ({ cancellations = [] }) => {
     }
   };
 
+  // Download history as PDF using client-side generation
+  const downloadHistoryAsPDF = () => {
+    // Create HTML content for PDF
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Cancellation History</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .header h1 { color: #1f2937; margin-bottom: 5px; }
+          .header p { color: #6b7280; }
+          .cancellation { border: 1px solid #e5e7eb; margin-bottom: 20px; padding: 15px; border-radius: 8px; }
+          .cancellation-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+          .booking-id { font-weight: bold; color: #1f2937; }
+          .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+          .completed { background-color: #d1fae5; color: #065f46; }
+          .processing { background-color: #fed7aa; color: #9a3412; }
+          .pending { background-color: #fef3c7; color: #92400e; }
+          .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+          .detail-item { margin-bottom: 8px; }
+          .detail-label { font-weight: bold; color: #374151; }
+          .detail-value { color: #6b7280; }
+          .amounts { background-color: #f9fafb; padding: 10px; border-radius: 4px; margin-top: 10px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Cancellation History</h1>
+          <p>Generated on ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        ${displayCancellations.map(cancellation => `
+          <div class="cancellation">
+            <div class="cancellation-header">
+              <span class="booking-id">Booking ID: ${cancellation.id}</span>
+              <span class="status ${cancellation.refundStatus}">${cancellation.refundStatus.toUpperCase()}</span>
+            </div>
+            
+            <div class="details">
+              <div>
+                <div class="detail-item">
+                  <span class="detail-label">Route:</span>
+                  <span class="detail-value">${cancellation.destination}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Bus Operator:</span>
+                  <span class="detail-value">${cancellation.busOperator}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Travel Dates:</span>
+                  <span class="detail-value">${cancellation.originalDates}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Cancelled On:</span>
+                  <span class="detail-value">${cancellation.cancelledDate}</span>
+                </div>
+              </div>
+              
+              <div>
+                <div class="detail-item">
+                  <span class="detail-label">Seats:</span>
+                  <span class="detail-value">${cancellation.seats.join(', ')}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Reason:</span>
+                  <span class="detail-value">${cancellation.reason}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Refund Method:</span>
+                  <span class="detail-value">${cancellation.refundMethod}</span>
+                </div>
+                ${cancellation.refundDate ? `
+                <div class="detail-item">
+                  <span class="detail-label">Refund Date:</span>
+                  <span class="detail-value">${cancellation.refundDate}</span>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+            
+            <div class="amounts">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div>
+                  <span class="detail-label">Original Amount:</span><br>
+                  <span class="detail-value">Rs. ${cancellation.originalAmount.toLocaleString()}</span>
+                </div>
+                <div>
+                  <span class="detail-label">Processing Fee:</span><br>
+                  <span class="detail-value">Rs. ${cancellation.processingFee.toLocaleString()}</span>
+                </div>
+                <div>
+                  <span class="detail-label">Refund Amount:</span><br>
+                  <span class="detail-value">Rs. ${cancellation.refundAmount.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </body>
+      </html>
+    `;
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    
+    // Wait for content to load, then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      
+      // Close the window after printing (with a small delay)
+      setTimeout(() => {
+        printWindow.close();
+      }, 1000);
+    };
+  };
+
   if (displayCancellations.length === 0) {
     return (
       <div className="p-6">
@@ -147,7 +269,7 @@ const Cancellations = ({ cancellations = [] }) => {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Cancellations & Refunds</h2>
           <p className="text-gray-600">Track your cancelled bookings and refund status</p>
         </div>
-        <Button variant="outline" className="px-6 py-3 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-300 transform hover:scale-105 shadow-lg">
+        <Button variant="outline" className="px-6 py-3 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-300 transform hover:scale-105 shadow-lg" onClick={downloadHistoryAsPDF}>
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
