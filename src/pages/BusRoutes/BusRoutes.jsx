@@ -192,7 +192,7 @@ const BusRoutes = () => {
                             src="https://www.youtube.com/embed/3HtnJHP0sRI?si=jLIEqPtu0Co3k_rP&autoplay=1&loop=1&mute=1&playlist=3HtnJHP0sRI&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&quality=hd1080&cc_load_policy=1&hl=en&cc_lang_pref=en"
                             title="Sona Travel & Tours - Premium Bus Routes Network Journey Across Nepal | Ultra HD Experience"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
+                            allowFullScreen="true"
                           ></iframe>
                           
                           {/* Premium video overlay with enhanced gradient */}

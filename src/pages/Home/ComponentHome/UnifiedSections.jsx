@@ -23,7 +23,14 @@ const UnifiedSections = () => {
     }, 1000);    // Get current weather for all cities with retry logic
     const getCurrentWeather = async (cityName, cityKey, retryCount = 0) => {
       const apiKey = "907961ecf95a2fcfe579e9f7edaf9652";
-      const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName},NP&appid=${apiKey}&units=metric`;
+      
+      // Use coordinates for Chitwan since city name isn't recognized
+      let weatherUrl;
+      if (cityKey === 'chitwan') {
+        weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=27.5291&lon=84.3542&appid=${apiKey}&units=metric`;
+      } else {
+        weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName},NP&appid=${apiKey}&units=metric`;
+      }
 
       try {
         const response = await fetch(weatherUrl);
@@ -91,7 +98,14 @@ const UnifiedSections = () => {
     // Get enhanced 3-day forecast for all cities with retry logic
     const getForecast = async (cityName, cityKey, retryCount = 0) => {
       const apiKey = "907961ecf95a2fcfe579e9f7edaf9652";
-      const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName},NP&appid=${apiKey}&units=metric`;
+      
+      // Use coordinates for Chitwan since city name isn't recognized
+      let forecastUrl;
+      if (cityKey === 'chitwan') {
+        forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=27.5291&lon=84.3542&appid=${apiKey}&units=metric`;
+      } else {
+        forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName},NP&appid=${apiKey}&units=metric`;
+      }
 
       try {
         const response = await fetch(forecastUrl);
@@ -280,34 +294,10 @@ const UnifiedSections = () => {
         animation: marquee 30s linear infinite;
       }
     `;
-    document.head.appendChild(style);    const script = document.createElement('script');
-    script.id = 'weatherwidget-io-js';
-    script.src = 'https://weatherwidget.io/js/widget.min.js';
-    script.async = true;
-    
-    if (!document.getElementById('weatherwidget-io-js')) {
-      document.head.appendChild(script);
-    }
+    document.head.appendChild(style);
 
-    // Load additional weather widget for header
-    const headerWeatherScript = document.createElement('script');
-    headerWeatherScript.src = 'https://app2.weatherwidget.org/js/?id=ww_935a2c7bc763b';
-    headerWeatherScript.async = true;
-    
-    if (!document.querySelector('script[src*="app2.weatherwidget.org"]')) {
-      document.head.appendChild(headerWeatherScript);
-    }
-    
+    // Clean up function to remove style when component unmounts
     return () => {
-      // Cleanup if needed
-      const existingScript = document.getElementById('weatherwidget-io-js');
-      if (existingScript) {
-        existingScript.remove();
-      }
-      const headerScript = document.querySelector('script[src*="app2.weatherwidget.org"]');
-      if (headerScript) {
-        headerScript.remove();
-      }
       const existingStyle = document.querySelector('style');
       if (existingStyle && existingStyle.textContent.includes('float')) {
         existingStyle.remove();
