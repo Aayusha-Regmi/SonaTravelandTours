@@ -26,6 +26,7 @@ import TrendingOffers from './pages/TrendingOffers/TrendingOffers';
 import VisitCounters from './pages/VisitCounters/VisitCounters';
 import AuthTestPage from './pages/AuthTestPage';
 import MyBookings from './pages/UserProfile/ComponentUserProfile/MyBookings';
+import LiveTrack from './pages/LiveTrack/LiveTrack';
 
 const AppRoutes = () => {
   return (
@@ -89,10 +90,7 @@ const AppRoutes = () => {
         path="/live-track" 
         element={
           <ProtectedRoute>
-            <PlaceholderPage 
-              title="Live Track" 
-              description="Track your bus in real-time. This page is under development."
-            />
+            <LiveTrack />
           </ProtectedRoute>
         } 
       />
