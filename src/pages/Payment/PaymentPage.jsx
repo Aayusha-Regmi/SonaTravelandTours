@@ -46,9 +46,75 @@ const PaymentPage = () => {
   const [promoCode, setPromoCode] = useState('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];
   const currentStep = 2;
+
+  // Payment categories with formal SVG icons
+  const paymentCategories = [
+    {
+      id: 'card',
+      name: 'Card',
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      ),
+      description: 'Credit/Debit Cards',
+      gradient: 'from-blue-500/90 to-indigo-600/90',
+      hoverGradient: 'hover:from-blue-600/95 hover:to-indigo-700/95',
+      bgColor: 'bg-gradient-to-br from-blue-50/80 to-indigo-50/60',
+      borderColor: 'border-blue-200/50',
+      shadowColor: 'shadow-blue-100/40',
+    },
+    {
+      id: 'wallet',
+      name: 'Wallet',
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      ),
+      description: 'Digital Wallets',
+      gradient: 'from-emerald-500/90 to-green-600/90',
+      hoverGradient: 'hover:from-emerald-600/95 hover:to-green-700/95',
+      bgColor: 'bg-gradient-to-br from-emerald-50/80 to-green-50/60',
+      borderColor: 'border-emerald-200/50',
+      shadowColor: 'shadow-emerald-100/40',
+    },
+    {
+      id: 'mobile',
+      name: 'Mobile',
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M7 4v16l10-8-10-8z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 2h8a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2z" />
+        </svg>
+      ),
+      description: 'Mobile Banking',
+      gradient: 'from-amber-500/90 to-orange-600/90',
+      hoverGradient: 'hover:from-amber-600/95 hover:to-orange-700/95',
+      bgColor: 'bg-gradient-to-br from-amber-50/80 to-orange-50/60',
+      borderColor: 'border-amber-200/50',
+      shadowColor: 'shadow-amber-100/40',
+    },
+    {
+      id: 'internet',
+      name: 'Internet',
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+      description: 'Internet Banking',
+      gradient: 'from-violet-500/90 to-purple-600/90',
+      hoverGradient: 'hover:from-violet-600/95 hover:to-purple-700/95',
+      bgColor: 'bg-gradient-to-br from-violet-50/80 to-purple-50/60',
+      borderColor: 'border-violet-200/50',
+      shadowColor: 'shadow-violet-100/40',
+    },
+  ];
 
   const handlePromoCodeChange = (e) => {
     setPromoCode(e.target.value);
@@ -60,17 +126,15 @@ const PaymentPage = () => {
       toast.error('Please enter a valid promo code');
     }
   };
-  const handleGoToPayment = async () => {
+  const handleCategorySelect = async (category) => {
     // Migrate tokens to ensure compatibility
     api.migrateAuthTokens();
     
     // Check authentication first
     const authCheck = api.checkAuthentication();
     if (!authCheck.isAuthenticated) {
-      toast.error('🔐 Please log in to continue with payment');
-      console.log('❌ Authentication required for payment');
-      // You might want to redirect to login page here
-      // navigate('/login');
+      toast.error('Please log in to continue with payment');
+      console.log('Authentication required for payment');
       return;
     }
 
@@ -85,14 +149,15 @@ const PaymentPage = () => {
       return;
     }
 
-    console.log('Opening payment gateway with data:', {
+    console.log('Opening payment modal for category:', category.name, {
       totalPrice,
       passengers: passengers.length,
       selectedSeats,
       authenticated: authCheck.isAuthenticated
     });
 
-    // Open the payment gateway modal
+    // Set the selected category and open modal
+    setSelectedCategory(category);
     setIsPaymentModalOpen(true);
   };
 
@@ -137,6 +202,7 @@ const PaymentPage = () => {
 
   const handlePaymentModalClose = () => {
     setIsPaymentModalOpen(false);
+    setSelectedCategory(null);
   };
 
   const bookSeatsAPI = async () => {
@@ -468,58 +534,58 @@ const PaymentPage = () => {
         <div className="mt-8 backdrop-blur-lg bg-gradient-to-br from-white/95 via-white/90 to-white/95 rounded-3xl border border-white/60 p-8 shadow-2xl shadow-indigo-100/60 hover:shadow-3xl hover:shadow-indigo-200/50 transition-all duration-500 transform hover:-translate-y-1">
           <div className="text-center mb-8">
             <h2 className="text-xl font-bold bg-gradient-to-r from-slate-700 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-3 font-opensans">
-              Select Payment Method
+              Choose Payment Method
             </h2>
             <p className="text-sm font-medium text-slate-600 font-opensans">
-              Choose your preferred payment option
+              Select a payment category to view available options
             </p>
           </div>
 
-          <div className="text-center mb-8">
-            <div className="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/10 rounded-xl p-6 border border-blue-200/30 backdrop-blur-sm">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
-                Real-Time Payment Options
-              </h3>
-              <p className="text-sm text-slate-600 font-opensans mb-4">
-                We'll load all available payment methods including digital wallets, banks, and cards when you proceed
-              </p>
-              <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                  <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
-                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+          {/* Payment Category Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {paymentCategories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategorySelect(category)}
+                disabled={isProcessingPayment}
+                className={`group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 focus:outline-none focus:ring-4 focus:ring-blue-300/30 backdrop-blur-sm ${category.bgColor} border-2 ${category.borderColor} shadow-xl ${category.shadowColor} hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
+              >
+                {/* Subtle background pattern */}
+                <div className="absolute inset-0 opacity-20">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-white/20"></div>
+                  <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.15)_1px,transparent_0)] bg-[length:20px_20px]"></div>
                 </div>
-                <span>Digital Wallets • Banks • Cards</span>
-              </div>
-            </div>
+                
+                {/* Hover gradient overlay */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-90 transition-all duration-300 rounded-2xl`}></div>
+                
+                {/* Content */}
+                <div className="relative z-10 text-center">
+                  {/* Icon container */}
+                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${category.gradient} text-white mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                    {category.icon}
+                  </div>
+                  
+                  {/* Text content */}
+                  <div className="space-y-1">
+                    <div className="text-lg font-bold text-slate-800 group-hover:text-white transition-colors duration-300">
+                      {category.name}
+                    </div>
+                    <div className="text-sm text-slate-600 group-hover:text-white/90 transition-colors duration-300 font-medium">
+                      {category.description}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Shimmer effect on hover */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              </button>
+            ))}
           </div>
 
-          <div className="flex justify-center">
-            <button 
-              onClick={handleGoToPayment}
-              disabled={isProcessingPayment}
-              className="min-w-[320px] h-14 font-semibold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400/50 flex items-center justify-center font-opensans bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed px-8 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 disabled:transform-none disabled:shadow-md"
-            >
-              {isProcessingPayment ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                  <span>Processing...</span>
-                </>
-              ) : (
-                <>
-                  <span className="mr-3">Proceed to Payment Gateway</span>
-                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </>
-              )}
-            </button>
-          </div>
+          <p className="text-center text-sm text-slate-600 mt-6">
+            Each category will show you specific payment methods available for that type
+          </p>
         </div>
       </main>
 
@@ -535,6 +601,7 @@ const PaymentPage = () => {
         travelDate={travelDate}
         bookingDetails={bookingDetails}
         searchParams={searchParams}
+        selectedCategory={selectedCategory}
         onPaymentSuccess={handlePaymentSuccess}
       />
     </div>

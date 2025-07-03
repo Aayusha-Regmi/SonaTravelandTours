@@ -94,7 +94,7 @@ const PassengerDetail = () => {
   "Gokarneshwor", "Gorkha", "Gulariya", "Gulariya", "Gulmi",];
 
 
-  const boardingOptions = ['Banepa', 'Sallaghari', 'Koteshwor','Airport','Gaushala','Chabahil'];
+  const boardingOptions = ['Banepa','Sanga','Palanse','Nalinchowk','Bhaktapur','Jagati','Sallaghari','Bhatbhateni,Thimi','SS Chowk','Sagbari','Kaushaltar','Lokanthali','Jadibuti','Tinkune','Airport','Gaushala','Chabahil','GopiKrishna','Sukedhara','Dhumbarahi','ChappalKarkhana','Chakrapath','Basundhara','Samakhusi','Gangabu','Buspark','Machapokhari','Balaju','Banasthali','Sitapaila','Kalanki (Narayani Petrol Pump)','Swyambhu','Naikap', 'Satungal','Gurjudhare','Chandrasiri','Sallaghari', 'Koteshwor','Airport','Gaushala','Chabahil'];
   const droppingOptions = ['Simara', 'Jeetpur', 'Parwanipur','Gandak','Pipra','Ghantaghar'];
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];

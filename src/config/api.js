@@ -13,7 +13,7 @@ export const API_URLS = {
   },
   BUS: {
     SEARCH: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEARCH_ENDPOINT}`,
-    DETAILS: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}`,
+    DETAILS: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}${`?all=true`}`,
   },
   PROFILE: {
     GET: `${BUS_API_BASE_URL}/profile`,

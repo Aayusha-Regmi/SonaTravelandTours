@@ -12,16 +12,19 @@ const PaymentModal = ({
   travelDate, 
   bookingDetails, 
   searchParams,
+  selectedCategory,
   onPaymentSuccess 
 }) => {
   const [step, setStep] = useState(1); // 1: instruments, 2: qr, 3: success
   const [isLoading, setIsLoading] = useState(false);
   const [paymentTransaction, setPaymentTransaction] = useState(null);
   const [paymentInstruments, setPaymentInstruments] = useState([]);
+  const [filteredInstruments, setFilteredInstruments] = useState([]);
   const [selectedInstrument, setSelectedInstrument] = useState(null);
   const [serviceCharge, setServiceCharge] = useState(0);
   const [qrData, setQrData] = useState(null);
   const [webSocket, setWebSocket] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Initialize payment when modal opens
   useEffect(() => {
@@ -34,6 +37,44 @@ const PaymentModal = ({
       }
     };
   }, [isOpen]);
+
+  // Filter instruments based on selected category and search query
+  useEffect(() => {
+    if (!paymentInstruments.length) {
+      setFilteredInstruments([]);
+      return;
+    }
+
+    let filtered = [...paymentInstruments];
+
+    // Filter by category
+    if (selectedCategory) {
+      const categoryMap = {
+        'card': ['Card'], // If API has specific card types
+        'wallet': ['CheckoutGateway'], // Digital wallets
+        'mobile': ['MBanking'], // Mobile banking
+        'internet': ['EBanking'] // Internet banking
+      };
+
+      const allowedBankTypes = categoryMap[selectedCategory.id] || [];
+      if (allowedBankTypes.length > 0) {
+        filtered = filtered.filter(instrument => 
+          allowedBankTypes.includes(instrument.bankType)
+        );
+      }
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(instrument =>
+        instrument.name.toLowerCase().includes(query) ||
+        instrument.bankType.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredInstruments(filtered);
+  }, [paymentInstruments, selectedCategory, searchQuery]);
 
   const initializePayment = async () => {
     setIsLoading(true);
@@ -72,7 +113,7 @@ const PaymentModal = ({
           if (instruments.fallback) {
             toast.info('Using offline payment methods. Some options may be limited.');
           } else {
-            toast.success('Payment initialized successfully. Please select a payment method.');
+            toast.success(`Payment methods loaded for ${selectedCategory?.name || 'selected category'}.`);
           }
         } else if (instruments.requiresAuth) {
           console.error('❌ Authentication required for payment instruments:', instruments.message);
@@ -313,12 +354,12 @@ const PaymentModal = ({
 
   return createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200">
+      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl z-10">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-gray-800">
-              {step === 1 && 'Select Payment Method'}
+              {step === 1 && `${selectedCategory?.name || 'Payment'} Methods`}
               {step === 2 && 'Scan QR Code'}
               {step === 3 && 'Payment Successful!'}
             </h2>
@@ -329,10 +370,31 @@ const PaymentModal = ({
               ×
             </button>
           </div>
+          
+          {/* Search bar - only show in step 1 */}
+          {step === 1 && (
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search payment methods..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <svg 
+                className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+          )}
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="px-8 py-5">
           {isLoading && (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -343,184 +405,78 @@ const PaymentModal = ({
           {/* Step 1: Payment Instruments */}
           {step === 1 && !isLoading && (
             <div>
-              <p className="text-gray-600 mb-6 text-center">
-                Choose your preferred payment method
+              <p className="text-gray-600 mb-4 text-center">
+                Select your preferred {selectedCategory?.name.toLowerCase()} payment method
               </p>
 
-              {/* Organize payment instruments by type */}
-              {paymentInstruments && paymentInstruments.length > 0 ? (
-                <div className="space-y-6">
-                  {/* Digital Wallets */}
-                  {paymentInstruments.filter(i => i.bankType === 'CheckoutGateway').length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                        </svg>
-                        Digital Wallets
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {paymentInstruments
-                          .filter(instrument => instrument.bankType === 'CheckoutGateway')
-                          .map((instrument, index) => (
-                            <button
-                              key={instrument.instrumentCode || `wallet-${index}`}
-                              onClick={() => handleInstrumentSelect(instrument)}
-                              className={`p-4 border-2 rounded-lg flex items-center transition-all duration-200 ${
-                                selectedInstrument?.instrumentCode === instrument.instrumentCode
-                                  ? 'border-blue-600 bg-blue-50 shadow-md'
-                                  : 'border-gray-300 hover:border-blue-600 hover:shadow-sm'
-                              }`}
-                            >
-                              <div className="flex items-center space-x-3 w-full">
-                                {instrument.logoUrl ? (
-                                  <img 
-                                    src={instrument.logoUrl} 
-                                    alt={instrument.name} 
-                                    className="h-10 w-10 object-contain flex-shrink-0"
-                                    onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextSibling.style.display = 'flex';
-                                    }}
-                                  />
-                                ) : null}
-                                <div 
-                                  className={`w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 ${instrument.logoUrl ? 'hidden' : ''}`}
-                                >
-                                  <span className="text-white font-bold text-sm">
-                                    {instrument.name.charAt(0)}
-                                  </span>
-                                </div>
-                                <div className="text-left flex-1">
-                                  <p className="font-medium text-gray-800 text-sm">{instrument.name}</p>
-                                  <p className="text-xs text-gray-500">Digital Wallet</p>
-                                </div>
-                              </div>
-                            </button>
-                          ))}
+              {/* Payment instruments grid - 3 columns */}
+              {filteredInstruments && filteredInstruments.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mb-6">
+                  {filteredInstruments.map((instrument, index) => (
+                    <button
+                      key={instrument.instrumentCode || `instrument-${index}`}
+                      onClick={() => handleInstrumentSelect(instrument)}
+                      className={`p-3 border-2 rounded-lg flex items-center transition-all duration-200 ${
+                        selectedInstrument?.instrumentCode === instrument.instrumentCode
+                          ? 'border-blue-600 bg-blue-50 shadow-md'
+                          : 'border-gray-300 hover:border-blue-600 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2 w-full">
+                        {instrument.logoUrl ? (
+                          <img 
+                            src={instrument.logoUrl} 
+                            alt={instrument.name} 
+                            className="h-9 w-9 object-contain flex-shrink-0"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className={`w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 ${instrument.logoUrl ? 'hidden' : ''}`}
+                        >
+                          <span className="text-white font-bold text-sm">
+                            {instrument.name.charAt(0)}
+                          </span>
+                        </div>
+                        <div className="text-left flex-1 overflow-hidden">
+                          <p className="font-medium text-gray-800 text-sm truncate">{instrument.name}</p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {instrument.bankType === 'CheckoutGateway' && 'Digital Wallet'}
+                            {instrument.bankType === 'EBanking' && 'Internet Banking'}
+                            {instrument.bankType === 'MBanking' && 'Mobile Banking'}
+                            {!['CheckoutGateway', 'EBanking', 'MBanking'].includes(instrument.bankType) && instrument.bankType}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Internet Banking */}
-                  {paymentInstruments.filter(i => i.bankType === 'EBanking').length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
-                        Internet Banking
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {paymentInstruments
-                          .filter(instrument => instrument.bankType === 'EBanking')
-                          .slice(0, 6) // Show only first 6 banks to avoid clutter
-                          .map((instrument, index) => (
-                            <button
-                              key={instrument.instrumentCode || `bank-${index}`}
-                              onClick={() => handleInstrumentSelect(instrument)}
-                              className={`p-4 border-2 rounded-lg flex items-center transition-all duration-200 ${
-                                selectedInstrument?.instrumentCode === instrument.instrumentCode
-                                  ? 'border-blue-600 bg-blue-50 shadow-md'
-                                  : 'border-gray-300 hover:border-blue-600 hover:shadow-sm'
-                              }`}
-                            >
-                              <div className="flex items-center space-x-3 w-full">
-                                {instrument.logoUrl ? (
-                                  <img 
-                                    src={instrument.logoUrl} 
-                                    alt={instrument.name} 
-                                    className="h-10 w-10 object-contain flex-shrink-0"
-                                    onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextSibling.style.display = 'flex';
-                                    }}
-                                  />
-                                ) : null}
-                                <div 
-                                  className={`w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center flex-shrink-0 ${instrument.logoUrl ? 'hidden' : ''}`}
-                                >
-                                  <span className="text-white font-bold text-sm">
-                                    {instrument.name.charAt(0)}
-                                  </span>
-                                </div>
-                                <div className="text-left flex-1">
-                                  <p className="font-medium text-gray-800 text-sm">{instrument.name}</p>
-                                  <p className="text-xs text-gray-500">Internet Banking</p>
-                                </div>
-                              </div>
-                            </button>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Mobile Banking */}
-                  {paymentInstruments.filter(i => i.bankType === 'MBanking').length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                        </svg>
-                        Mobile Banking
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {paymentInstruments
-                          .filter(instrument => instrument.bankType === 'MBanking')
-                          .slice(0, 4) // Show only first 4 mobile banking options
-                          .map((instrument, index) => (
-                            <button
-                              key={instrument.instrumentCode || `mobile-${index}`}
-                              onClick={() => handleInstrumentSelect(instrument)}
-                              className={`p-4 border-2 rounded-lg flex items-center transition-all duration-200 ${
-                                selectedInstrument?.instrumentCode === instrument.instrumentCode
-                                  ? 'border-blue-600 bg-blue-50 shadow-md'
-                                  : 'border-gray-300 hover:border-blue-600 hover:shadow-sm'
-                              }`}
-                            >
-                              <div className="flex items-center space-x-3 w-full">
-                                {instrument.logoUrl ? (
-                                  <img 
-                                    src={instrument.logoUrl} 
-                                    alt={instrument.name} 
-                                    className="h-10 w-10 object-contain flex-shrink-0"
-                                    onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextSibling.style.display = 'flex';
-                                    }}
-                                  />
-                                ) : null}
-                                <div 
-                                  className={`w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0 ${instrument.logoUrl ? 'hidden' : ''}`}
-                                >
-                                  <span className="text-white font-bold text-sm">
-                                    {instrument.name.charAt(0)}
-                                  </span>
-                                </div>
-                                <div className="text-left flex-1">
-                                  <p className="font-medium text-gray-800 text-sm">{instrument.name}</p>
-                                  <p className="text-xs text-gray-500">Mobile Banking</p>
-                                </div>
-                              </div>
-                            </button>
-                          ))}
-                      </div>
-                    </div>
-                  )}
+                    </button>
+                  ))}
                 </div>
               ) : (
-                <div className="col-span-full text-center py-8">
+                <div className="text-center py-8">
                   <div className="text-gray-400 mb-4">
                     <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                     </svg>
                   </div>
-                  <p className="text-gray-500 mb-4">No payment methods available</p>
+                  <p className="text-gray-500 mb-4">
+                    {searchQuery ? `No payment methods found for "${searchQuery}"` : `No ${selectedCategory?.name.toLowerCase()} payment methods available`}
+                  </p>
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mr-2"
+                    >
+                      Clear Search
+                    </button>
+                  )}
                   <button
                     onClick={() => window.location.reload()}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                   >
-                    Refresh Page
+                    Refresh
                   </button>
                 </div>
               )}

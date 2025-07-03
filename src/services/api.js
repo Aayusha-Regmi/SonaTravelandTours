@@ -439,6 +439,8 @@ const getRoutes = async () => {
 const initiatePayment = async (amount) => {
   try {
     console.log('Step 1: Initiating payment for amount:', amount);
+
+    //delete this line later (just for testing)
     console.log('Using API URL:', `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`);
     
     // Check for authentication token using the enhanced utility function
@@ -474,10 +476,11 @@ const initiatePayment = async (amount) => {
     console.log('Request headers (token preview):', {
       'Content-Type': headers['Content-Type'],
       'Accept': headers['Accept'],
-      'Authorization': `Bearer ${authCheck.token.substring(0, 20)}...`
+      'Authorization': `Bearer ${authCheck.token.substring(0, 20)}...`//shows first 20 characters of token just for testing purpose again
     });
     
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`, {
+      //request body
       method: 'POST',
       headers: headers,
       body: JSON.stringify({ amount })
@@ -487,12 +490,15 @@ const initiatePayment = async (amount) => {
     console.log('Response headers:', Object.fromEntries(response.headers.entries()));
     
     // Get response text first to see what the server is actually returning
+    //sometimes servers return HTML errors or malformed JSON, 
+    // and trying to response.json() directly would crash.
     const responseText = await response.text();
     console.log('Raw response text:', responseText);
     
     let result;
     try {
       if (responseText) {
+        //add response in json format to result
         result = JSON.parse(responseText);
       } else {
         result = { message: 'Empty response from server' };
@@ -504,12 +510,14 @@ const initiatePayment = async (amount) => {
         rawResponse: responseText 
       };
     }
-    
+    //show exact error provided from server
     console.log('Parsed payment initiation response:', result);
+     
 
     if (response.ok) {
       return {
         success: true,
+        //data provided from server for payment-initiation
         data: {
           merchantId: result.data?.merchantId || result.merchantId,
           merchantName: result.data?.merchantName || result.merchantName,
@@ -518,6 +526,7 @@ const initiatePayment = async (amount) => {
           processId: result.data?.processId || result.processId
         }
       };
+      //proper Error handling follows
     } else if (response.status === 401) {
       // Handle authentication error specifically
       console.error('Authentication failed - 401 Unauthorized');
