@@ -26,6 +26,35 @@ const PaymentPage = () => {
     bookingDetails = {}
   } = location.state || {};
 
+  // Check authentication immediately on component mount
+  React.useEffect(() => {
+    const authCheck = api.checkAuthentication();
+    if (!authCheck.isAuthenticated) {
+      // Store current location state in localStorage to redirect back after login
+      localStorage.setItem('redirectAfterLogin', JSON.stringify({
+        pathname: '/payment',
+        state: {
+          passengers,
+          selectedSeats,
+          busData,
+          searchParams,
+          travelDate,
+          totalPrice,
+          seatPrice,
+          bookingDetails
+        }
+      }));
+      
+      // Navigate to login page
+      navigate('/login', { 
+        state: { 
+          redirectMessage: 'Please log in to continue with your payment',
+          returnPath: '/payment'
+        } 
+      });
+    }
+  }, [navigate, passengers, selectedSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails]);  // Include all dependencies used in the effect
+  
   // Show error if no data
   if (!passengers.length || !selectedSeats.length) {
     return (
@@ -155,8 +184,31 @@ const PaymentPage = () => {
     // Check authentication first
     const authCheck = api.checkAuthentication();
     if (!authCheck.isAuthenticated) {
-      toast.error('Please log in to continue with payment');
-      console.log('Authentication required for payment');
+      // Instead of showing error, navigate directly to login page
+      console.log('Authentication required for payment - redirecting to login');
+      
+      // Store current location state in localStorage to redirect back after login
+      localStorage.setItem('redirectAfterLogin', JSON.stringify({
+        pathname: '/payment',
+        state: {
+          passengers,
+          selectedSeats,
+          busData,
+          searchParams,
+          travelDate,
+          totalPrice,
+          seatPrice,
+          bookingDetails
+        }
+      }));
+      
+      // Navigate to login page
+      navigate('/login', { 
+        state: { 
+          redirectMessage: 'Please log in to continue with your payment',
+          returnPath: '/payment'
+        } 
+      });
       return;
     }
 
@@ -229,6 +281,34 @@ const PaymentPage = () => {
 
   const bookSeatsAPI = async () => {
     try {
+      // First check if user is authenticated
+      const authCheck = api.checkAuthentication();
+      if (!authCheck.isAuthenticated) {
+        // Store current location state in localStorage to redirect back after login
+        localStorage.setItem('redirectAfterLogin', JSON.stringify({
+          pathname: '/payment',
+          state: {
+            passengers,
+            selectedSeats,
+            busData,
+            searchParams,
+            travelDate,
+            totalPrice,
+            seatPrice,
+            bookingDetails
+          }
+        }));
+        
+        // Navigate to login page
+        navigate('/login', { 
+          state: { 
+            redirectMessage: 'Please log in to complete your booking',
+            returnPath: '/payment'
+          } 
+        });
+        throw new Error('Authentication required');
+      }
+      
       console.log('Starting seat booking API call...');
       
       // Calculate the final payment amount with VAT and discount
@@ -272,6 +352,32 @@ const PaymentPage = () => {
         headers: headers,
         body: JSON.stringify(requestData)
       });
+
+      // Check for authentication errors
+      if (response.status === 401 || response.status === 403) {
+        // Navigate to login page
+        localStorage.setItem('redirectAfterLogin', JSON.stringify({
+          pathname: '/payment',
+          state: {
+            passengers,
+            selectedSeats,
+            busData,
+            searchParams,
+            travelDate,
+            totalPrice,
+            seatPrice,
+            bookingDetails
+          }
+        }));
+        
+        navigate('/login', { 
+          state: { 
+            redirectMessage: 'Your session has expired. Please log in again to complete your booking',
+            returnPath: '/payment'
+          } 
+        });
+        throw new Error('Authentication failed');
+      }
 
       const result = await response.json();
       
