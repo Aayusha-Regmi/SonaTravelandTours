@@ -95,7 +95,7 @@ const PassengerDetail = () => {
 
 
   const boardingOptions = ['Banepa','Sanga','Palanse','Nalinchowk','Bhaktapur','Jagati','Sallaghari','Bhatbhateni,Thimi','SS Chowk','Sagbari','Kaushaltar','Lokanthali','Jadibuti','Tinkune','Airport','Gaushala','Chabahil','GopiKrishna','Sukedhara','Dhumbarahi','ChappalKarkhana','Chakrapath','Basundhara','Samakhusi','Gangabu','Buspark','Machapokhari','Balaju','Banasthali','Sitapaila','Kalanki (Narayani Petrol Pump)','Swyambhu','Naikap', 'Satungal','Gurjudhare','Chandrasiri','Sallaghari', 'Koteshwor','Airport','Gaushala','Chabahil'];
-  const droppingOptions = ['Simara', 'Jeetpur', 'Parwanipur','Gandak','Pipra','Ghantaghar'];
+  const droppingOptions = ['Simara','Kalaiya', 'Jeetpur', 'Parwanipur','Gandak','Pipra','Ghantaghar'];
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];
 
@@ -123,9 +123,7 @@ const PassengerDetail = () => {
       if (!passenger.gender) {
         newErrors[`${index}-gender`] = 'Gender is required';
       }
-      if (!passenger.email.trim()) {
-        newErrors[`${index}-email`] = 'Email is required';
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(passenger.email)) {
+      if (passenger.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(passenger.email)) {
         newErrors[`${index}-email`] = 'Please enter a valid email address';
       }
       if (!passenger.phoneNumber.trim()) {
@@ -353,7 +351,7 @@ const PassengerDetail = () => {
                           value={passenger.email}
                           onChange={(e) => handlePassengerChange(index, 'email', e.target.value)}
                           placeholder="Enter email address"
-                          required
+                        
                           error={errors[`${index}-email`]}
                         />
                       </div>

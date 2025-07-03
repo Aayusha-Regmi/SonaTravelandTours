@@ -44,6 +44,7 @@ const PaymentPage = () => {
   }
   
   const [promoCode, setPromoCode] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -121,9 +122,30 @@ const PaymentPage = () => {
   };
   const handleApplyPromo = () => {
     if (promoCode.trim()) {
-      toast.success(`Promo code "${promoCode}" applied successfully!`);
+      // Mock discount calculation - in a real app, this would validate with backend
+      // Different promo codes can give different discount amounts
+      let newDiscountAmount = 0;
+      
+      if (promoCode.toLowerCase() === 'newyear25') {
+        // 25% discount
+        newDiscountAmount = Math.round(totalPrice * 0.25);
+      } else if (promoCode.toLowerCase() === 'travel10') {
+        // 10% discount
+        newDiscountAmount = Math.round(totalPrice * 0.10);
+      } else if (promoCode.toLowerCase() === 'welcome500') {
+        // Fixed Rs. 500 discount
+        newDiscountAmount = 500;
+      } else {
+        // Default 5% discount for any other code
+        newDiscountAmount = Math.round(totalPrice * 0.05);
+      }
+      
+      // Update discount state
+      setDiscountAmount(newDiscountAmount);
+      toast.success(`Promo code "${promoCode}" applied successfully! Rs. ${newDiscountAmount.toLocaleString()} discount`);
     } else {
       toast.error('Please enter a valid promo code');
+      setDiscountAmount(0); // Reset any previous discount
     }
   };
   const handleCategorySelect = async (category) => {
@@ -209,10 +231,16 @@ const PaymentPage = () => {
     try {
       console.log('Starting seat booking API call...');
       
+      // Calculate the final payment amount with VAT and discount
+      const baseFare = Math.round(seatPrice * selectedSeats.length || totalPrice / 1.13);
+      const vatAmount = Math.round(baseFare * 0.13);
+      const subtotal = baseFare + vatAmount;
+      const finalPaymentAmount = Math.max(0, subtotal - discountAmount);
+      
       // Prepare booking data structure exactly as required by the API
       const requestData = {
         dateOfTravel: travelDate || new Date().toISOString().split('T')[0],
-        paymentAmount: totalPrice,
+        paymentAmount: finalPaymentAmount,
         payment_status: "Completed",
         paymentMode: "gateway", // Generic payment mode since we're using the gateway
         busId: parseInt(busData?.originalData?.busId || busData?.id || bookingDetails.busId || 102),
@@ -415,81 +443,86 @@ const PaymentPage = () => {
                   <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300/50 to-transparent"></div>
                 </div>
 
-                {/* Enhanced Compact Fare Breakdown */}
+                {/* Enhanced Compact Fare Breakdown with mathematical calculations */}
                 <div className="space-y-3 mb-5">
-                  <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-xl border border-blue-100/50 hover:shadow-md transition-all duration-200">
-                    <span className="text-sm font-medium text-slate-700 font-opensans">
-                      Base Fare ({selectedSeats.length} seat{selectedSeats.length > 1 ? 's' : ''})
-                    </span>
-                    <span className="text-sm font-semibold text-slate-800 font-opensans">
-                      Rs. {(seatPrice * selectedSeats.length || totalPrice || 2400).toLocaleString()}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center p-2 backdrop-blur-sm bg-white/70 rounded-lg border border-gray-100/50">
-                    <span className="text-xs text-slate-600 font-opensans">Banking Charge</span>
-                    <span className="text-xs text-slate-600 font-opensans">
-                      Rs. {Math.round((totalPrice || 2400) * 0.012).toLocaleString()}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center p-2 backdrop-blur-sm bg-white/70 rounded-lg border border-gray-100/50">
-                    <span className="text-xs text-slate-600 font-opensans">Transaction Charge</span>
-                    <span className="text-xs text-slate-600 font-opensans">
-                      Rs. {Math.round((totalPrice || 2400) * 0.01).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
+                  {/* Calculate base fare as 88.5% of total (removing 13% VAT from original total) */}
+                  {(() => {
+                    // Calculate base fare mathematically
+                    const baseFare = Math.round(
+                      seatPrice * selectedSeats.length || 
+                      totalPrice / 1.13 || // Remove VAT from total
+                      2300
+                    );
+                    
+                    // Calculate VAT amount (13% of base fare)
+                    const vatAmount = Math.round(baseFare * 0.13);
+                    
+                    return (
+                      <>
+                        <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-xl border border-blue-100/50 hover:shadow-md transition-all duration-200">
+                          <span className="text-sm font-medium text-slate-700 font-opensans">
+                            Bus Fare ({selectedSeats.length} seat{selectedSeats.length > 1 ? 's' : ''})
+                          </span>
+                          <span className="text-sm font-semibold text-slate-800 font-opensans">
+                            Rs. {baseFare.toLocaleString()}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-indigo-50/80 to-purple-50/80 rounded-xl border border-indigo-100/50 hover:shadow-md transition-all duration-200">
+                          <span className="text-sm font-medium text-slate-700 font-opensans">
+                            VAT (13%)
+                          </span>
+                          <span className="text-sm font-semibold text-slate-800 font-opensans">
+                            Rs. {vatAmount.toLocaleString()}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
 
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300/50 to-transparent mb-5"></div>
-
-                {/* Enhanced Discount section */}
-                <div className="space-y-3 mb-5">
-                  <div className="flex justify-between items-center p-2 backdrop-blur-sm bg-white/70 rounded-lg border border-gray-100/50">
-                    <span className="text-sm text-slate-700 font-opensans">Gross Fare</span>
-                    <span className="text-sm text-slate-700 font-opensans">
-                      Rs. {Math.round((totalPrice || 2400) * 1.022).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-emerald-50/80 to-green-50/80 rounded-xl border border-emerald-100/50 hover:shadow-md transition-all duration-200">
-                    <span className="text-sm font-medium text-emerald-700 font-opensans">Special Discount</span>
-                    <span className="text-sm font-medium text-emerald-700 font-opensans">
-                      -Rs. {Math.round((totalPrice || 2400) * 0.176).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300/50 to-transparent mb-5"></div>
-
-                {/* Enhanced Final calculations */}
-                <div className="space-y-3 mb-5">
-                  <div className="flex justify-between items-center p-2 backdrop-blur-sm bg-white/70 rounded-lg border border-gray-100/50">
-                    <span className="text-sm text-slate-700 font-opensans">Bus Fare</span>
-                    <span className="text-sm text-slate-700 font-opensans">
-                      Rs. {Math.round((totalPrice || 2400) * 0.842).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 backdrop-blur-sm bg-white/70 rounded-lg border border-gray-100/50">
-                    <span className="text-xs text-slate-600 font-opensans">VAT (13%)</span>
-                    <span className="text-xs text-slate-600 font-opensans">
-                      Rs. {Math.round((totalPrice || 2400) * 0.159).toLocaleString()}
-                    </span>
-                  </div>
+                  {/* Show discount if a coupon is applied */}
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-red-50/80 to-orange-50/80 rounded-xl border border-red-100/50 hover:shadow-md transition-all duration-200">
+                      <span className="text-sm font-medium text-red-700 font-opensans">
+                        Discount ({promoCode})
+                      </span>
+                      <span className="text-sm font-semibold text-red-800 font-opensans">
+                        - Rs. {discountAmount.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300/50 to-transparent mb-5"></div>
 
                 {/* Enhanced Total fare with modern glassy effect */}
-                <div className="backdrop-blur-md bg-gradient-to-r from-emerald-50/90 via-green-50/80 to-emerald-50/90 rounded-2xl p-4 mb-6 border border-emerald-200/50 shadow-xl shadow-emerald-100/50 hover:shadow-2xl hover:shadow-emerald-200/40 transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="text-base font-bold text-emerald-700 font-opensans">
-                      Total Fare
-                    </span>
-                    <span className="text-lg font-bold text-emerald-700 font-opensans">
-                      Rs. {(totalPrice || 2600).toLocaleString()}.00
-                    </span>
-                  </div>
-                </div>
+                {(() => {
+                  // Calculate base fare (removing VAT from total)
+                  const baseFare = Math.round(
+                    seatPrice * selectedSeats.length || 
+                    totalPrice / 1.13 || 
+                    2300
+                  );
+                  
+                  // Calculate VAT amount (13% of base fare)
+                  const vatAmount = Math.round(baseFare * 0.13);
+                  
+                  // Calculate subtotal (base + VAT)
+                  const subtotal = baseFare + vatAmount;
+                  
+                  return (
+                    <div className="backdrop-blur-md bg-gradient-to-r from-emerald-50/90 via-green-50/80 to-emerald-50/90 rounded-2xl p-4 mb-6 border border-emerald-200/50 shadow-xl shadow-emerald-100/50 hover:shadow-2xl hover:shadow-emerald-200/40 transition-all duration-300 transform hover:-translate-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-base font-bold text-emerald-700 font-opensans">
+                          Total Fare <span className="text-xs font-normal">(Inc. VAT)</span>
+                        </span>
+                        <span className="text-lg font-bold text-emerald-700 font-opensans">
+                          Rs. {subtotal.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Enhanced Promo Code with modern styling */}
                 <div className="mb-6">
@@ -517,16 +550,41 @@ const PaymentPage = () => {
                 </div>
 
                 {/* Enhanced Final Total with premium glass effect */}
-                <div className="backdrop-blur-lg bg-gradient-to-br from-blue-50/90 via-indigo-50/80 to-blue-50/90 rounded-2xl p-5 border border-blue-200/50 shadow-2xl shadow-blue-100/60 hover:shadow-3xl hover:shadow-blue-200/50 transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent font-opensans">
-                      Total Amount
-                    </span>
-                    <span className="text-xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent font-opensans">
-                      Rs. {(totalPrice || 2600).toLocaleString()}.00
-                    </span>
-                  </div>
-                </div>
+                {(() => {
+                  // Calculate base fare (removing VAT from total)
+                  const baseFare = Math.round(
+                    seatPrice * selectedSeats.length || 
+                    totalPrice / 1.13 || 
+                    2300
+                  );
+                  
+                  // Calculate VAT amount (13% of base fare)
+                  const vatAmount = Math.round(baseFare * 0.13);
+                  
+                  // Calculate subtotal (base + VAT)
+                  const subtotal = baseFare + vatAmount;
+                  
+                  // Apply discount if any
+                  const finalAmount = Math.max(0, subtotal - discountAmount);
+                  
+                  return (
+                    <div className="backdrop-blur-lg bg-gradient-to-br from-blue-50/90 via-indigo-50/80 to-blue-50/90 rounded-2xl p-5 border border-blue-200/50 shadow-2xl shadow-blue-100/60 hover:shadow-3xl hover:shadow-blue-200/50 transition-all duration-300 transform hover:-translate-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent font-opensans">
+                          Total Amount
+                          {discountAmount > 0 && (
+                            <span className="text-xs font-normal text-indigo-600 ml-2">
+                              (After Discount)
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent font-opensans">
+                          Rs. {finalAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -592,18 +650,31 @@ const PaymentPage = () => {
       <Footer />
 
       {/* Payment Modal */}
-      <PaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={handlePaymentModalClose}
-        totalPrice={totalPrice}
-        passengers={passengers}
-        selectedSeats={selectedSeats}
-        travelDate={travelDate}
-        bookingDetails={bookingDetails}
-        searchParams={searchParams}
-        selectedCategory={selectedCategory}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
+      {(() => {
+        // Calculate the final payment amount with VAT and discount
+        const baseFare = Math.round(seatPrice * selectedSeats.length || totalPrice / 1.13);
+        const vatAmount = Math.round(baseFare * 0.13);
+        const subtotal = baseFare + vatAmount;
+        const finalPaymentAmount = Math.max(0, subtotal - discountAmount);
+        
+        return (
+          <PaymentModal
+            isOpen={isPaymentModalOpen}
+            onClose={handlePaymentModalClose}
+            totalPrice={finalPaymentAmount}
+            passengers={passengers}
+            selectedSeats={selectedSeats}
+            travelDate={travelDate}
+            bookingDetails={bookingDetails}
+            searchParams={searchParams}
+            selectedCategory={selectedCategory}
+            onPaymentSuccess={handlePaymentSuccess}
+            originalPrice={totalPrice}
+            discount={discountAmount}
+            promoCode={promoCode}
+          />
+        );
+      })()}
     </div>
   );
 };
