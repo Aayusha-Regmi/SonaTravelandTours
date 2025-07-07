@@ -27,6 +27,7 @@ import VisitCounters from './pages/VisitCounters/VisitCounters';
 import AuthTestPage from './pages/AuthTestPage';
 import MyBookings from './pages/UserProfile/ComponentUserProfile/MyBookings';
 import LiveTrack from './pages/LiveTrack/LiveTrack';
+import TravelInsurance from './pages/TravelInsurance/TravelInsurance';
 
 const AppRoutes = () => {
   return (
@@ -109,14 +110,7 @@ const AppRoutes = () => {
       />
       <Route 
         path="/insurance" 
-        element={
-          <ProtectedRoute>
-            <PlaceholderPage 
-              title="Travel Insurance" 
-              description="Protect your journey with travel insurance. This page is under development."
-            />
-          </ProtectedRoute>
-        } 
+        element={<TravelInsurance />} 
       /> 
       {/* User Profile Route */}
       <Route 
