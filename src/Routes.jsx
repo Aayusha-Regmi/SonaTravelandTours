@@ -28,6 +28,8 @@ import AuthTestPage from './pages/AuthTestPage';
 import MyBookings from './pages/UserProfile/ComponentUserProfile/MyBookings';
 import LiveTrack from './pages/LiveTrack/LiveTrack';
 import TravelInsurance from './pages/TravelInsurance/TravelInsurance';
+import HotelsPage from './pages/Hotels/HotelsPage';
+import ToursPage from './pages/Tours/ToursPage';
 
 const AppRoutes = () => {
   return (
@@ -35,6 +37,8 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/bus-routes" element={<BusRoutes />} />
+      <Route path="/hotels" element={<HotelsPage />} />
+      <Route path="/tours" element={<ToursPage />} />
       <Route path="/contact" element={<ContactUs />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/terms-conditions" element={<TermsConditions />} />

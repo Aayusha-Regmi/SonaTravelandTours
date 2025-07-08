@@ -165,6 +165,9 @@ const Header = () => {
           <Link to="/bus-routes" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Bus Routes
           </Link>
+          <Link to="/hotels" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
+            Hotels
+          </Link>
           <Link to="/bookings" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Bookings
           </Link>
@@ -344,6 +347,13 @@ const Header = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Bus Routes
+            </Link>
+            <Link 
+              to="/hotels" 
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Hotels
             </Link>
             <Link 
               to="/bookings" 
