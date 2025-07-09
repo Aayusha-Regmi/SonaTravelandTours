@@ -15,26 +15,56 @@ const Card = ({ children, className = '' }) => (
 
 const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) => {
   const navigate = useNavigate();
-  const [selectedSeats, setSelectedSeats] = useState([]);
-  const [bookedSeats, setBookedSeats] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(0);
-  const [availableSeatsCount, setAvailableSeatsCount] = useState(0);
+  
+  // Two-way booking state management
+  const [activeTab, setActiveTab] = useState('departure');
+  const [departureSeats, setDepartureSeats] = useState([]);
+  const [returnSeats, setReturnSeats] = useState([]);
+  const [departureBookedSeats, setDepartureBookedSeats] = useState([]);
+  const [returnBookedSeats, setReturnBookedSeats] = useState([]);
   const [seatConfig, setSeatConfig] = useState({});
   const [isLoadingSeats, setIsLoadingSeats] = useState(false);
+  
+  // Check if this is a round trip booking
+  const isRoundTrip = searchParams?.tripType === 'round-trip' || searchParams?.returnDate;
+  
+  // Get current active seat selections and booked seats
+  const selectedSeats = activeTab === 'departure' ? departureSeats : returnSeats;
+  const bookedSeats = activeTab === 'departure' ? departureBookedSeats : returnBookedSeats;
+  const setSelectedSeats = activeTab === 'departure' ? setDepartureSeats : setReturnSeats;
+  const setBookedSeats = activeTab === 'departure' ? setDepartureBookedSeats : setReturnBookedSeats;
+  
+  // Calculate available seats count
+  const totalSeats = 39;
+  const availableSeatsCount = totalSeats - bookedSeats.length;
   
   // Get dynamic seat price from bus data, fallback to 2000
   const seatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
   
+  // Calculate total price based on active tab and round trip
+  const currentTabPrice = selectedSeats.length * seatPrice;
+  const departurePrice = departureSeats.length * seatPrice;
+  const returnPrice = returnSeats.length * seatPrice;
+  const totalPrice = isRoundTrip ? (departurePrice + returnPrice) : currentTabPrice;
+  
   // This useEffect will refresh booked seats whenever:
   // - busData changes (different bus selected)
   // - searchParams change (date, route, or other search criteria changed)
-  // - travelDate changes (date picker updated)  // This ensures seat availability is always current
+  // - travelDate changes (date picker updated)
+  // - activeTab changes (departure/return switch)
   useEffect(() => {
     const fetchBookedSeats = async () => {
       setIsLoadingSeats(true);
       try {
-        // Format date and destination
-        let currentTravelDate = travelDate || busData.departureDate || busData.date;
+        // Determine current travel date based on active tab
+        let currentTravelDate;
+        if (activeTab === 'departure') {
+          currentTravelDate = travelDate || busData.departureDate || busData.date;
+        } else {
+          // For return journey, use return date from search params
+          currentTravelDate = searchParams?.returnDate || travelDate || busData.departureDate || busData.date;
+        }
+        
         if (currentTravelDate) {
           const dateObj = new Date(currentTravelDate);
           if (!isNaN(dateObj.getTime())) {
@@ -46,8 +76,17 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         } else {
           currentTravelDate = new Date().toISOString().split('T')[0];
         }
-        console.log('Current travel date:', currentTravelDate);
-        let destination = searchParams.toCity || searchParams.to || busData.route?.to || busData.destination || busData.arrivalLocation || 'kathmandu';
+        
+        console.log('Current travel date for', activeTab, ':', currentTravelDate);
+        
+        // Determine destination based on active tab (swap for return journey)
+        let destination;
+        if (activeTab === 'departure') {
+          destination = searchParams.toCity || searchParams.to || busData.route?.to || busData.destination || busData.arrivalLocation || 'kathmandu';
+        } else {
+          // For return journey, swap the destination (from becomes to)
+          destination = searchParams.fromCity || searchParams.from || busData.route?.from || busData.departureLocation || 'birgunj';
+        }
         destination = destination.toLowerCase().trim();
         
         const apiUrl = API_URLS.BUS.DETAILS;
@@ -64,7 +103,7 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
           destination: destination
         };
         
-        console.log('SEAT API REQUEST:', {
+        console.log('SEAT API REQUEST for', activeTab, ':', {
           url: apiUrl,
           method: 'POST',
           requestData: requestBody
@@ -90,36 +129,36 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
             .filter(seat => seat && /^[A-Z]\d+$/.test(seat));
         }
         
-        console.log('SEAT API RESPONSE:', {
+        console.log('SEAT API RESPONSE for', activeTab, ':', {
           status: response.status,
           success: data.success,
           bookedSeats: bookedSeatNumbers,
           message: data.message
         });
         
-        console.log('SETTING BOOKED SEATS:', bookedSeatNumbers);
+        console.log('SETTING BOOKED SEATS for', activeTab, ':', bookedSeatNumbers);
         setBookedSeats(bookedSeatNumbers);
         
       } catch (error) {
-        console.error('❌ SEAT API ERROR:', error.message);
+        console.error('❌ SEAT API ERROR for', activeTab, ':', error.message);
         console.log('Error loading seat data - showing all seats as available');
         
         // On error, show all seats as available instead of mock data
         setBookedSeats([]);
         
         // Show error message to user
-        toast.error('Failed to load seat availability. Please try again.');
+        toast.error(`Failed to load seat availability for ${activeTab}. Please try again.`);
       } finally {
         setIsLoadingSeats(false);
       }
     };
     
     fetchBookedSeats();
-  }, [busData, searchParams, travelDate]); // Add searchParams and travelDate as dependencies
+  }, [busData, searchParams, travelDate, activeTab]); // Add activeTab as dependency
   
   // Generate seat configuration based on bus data
   useEffect(() => {
-    console.log('UPDATING SEAT CONFIGURATION');
+    console.log('UPDATING SEAT CONFIGURATION for', activeTab);
     console.log('Bus data received:', busData);
     console.log('Bus ID from params:', busId);
     console.log('Booked seats from API:', bookedSeats);
@@ -195,33 +234,14 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
 
 
     
-    console.log('Generated seat config for A5:', config.row5.find(seat => seat.id === 'A5'));
-    console.log('Generated seat config for A7:', config.row5.find(seat => seat.id === 'A7'));
-    
     setSeatConfig(config);
     
-    // Calculate available seats count to match the bus listing format
-    const totalSeats = 39; // Total seats in the bus layout
-    const bookedSeatsCount = bookedSeats.length;
-    const availableCount = totalSeats - bookedSeatsCount;
-    
-    setAvailableSeatsCount(availableCount);
-    
-    console.log('Seat Statistics:');
-    console.log('   Total seats:', totalSeats);
-    console.log('   Booked seats count:', bookedSeatsCount);
-    console.log('   Available seats count:', availableCount);
-    console.log('   Bus data available seats:', busData.availableSeats);
-    console.log('SEAT CONFIGURATION COMPLETED');
-  }, [busId, busData, bookedSeats]);
+    console.log('Generated seat config for A5:', config.row5.find(seat => seat.id === 'A5'));
+    console.log('Generated seat config for A7:', config.row5.find(seat => seat.id === 'A7'));
+    console.log('SEAT CONFIGURATION COMPLETED for', activeTab);
+  }, [busId, busData, bookedSeats, activeTab]);
 
-  // Calculate available seats and update price when selectedSeats change
-  useEffect(() => {
-    if (Object.keys(seatConfig).length > 0) {
-      // Update total price based on selected seats
-      setTotalPrice(selectedSeats.length * seatPrice);
-    }
-  }, [selectedSeats, seatConfig]);
+  // Remove the separate price calculation useEffect since we calculate totalPrice directly
 
   useEffect(() => {
     console.log('Bus data is missing or incomplete:', busData);
@@ -244,45 +264,106 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
   };
 
   const handleProceedToPassengerDetails = async () => {
-    if (selectedSeats.length === 0) {
-      toast.error('Please select at least one seat to continue.');
-      return;
+    // Validation for round trip booking
+    if (isRoundTrip) {
+      if (departureSeats.length === 0) {
+        toast.error('Please select seats for departure journey.');
+        setActiveTab('departure');
+        return;
+      }
+      if (returnSeats.length === 0) {
+        toast.error('Please select seats for return journey.');
+        setActiveTab('return');
+        return;
+      }
+    } else {
+      // One-way validation
+      if (selectedSeats.length === 0) {
+        toast.error('Please select at least one seat to continue.');
+        return;
+      }
     }
 
     console.log('🎯 Proceeding to passenger details with data:', {
-      selectedSeats,
+      isRoundTrip,
+      departureSeats,
+      returnSeats,
+      selectedSeats: isRoundTrip ? { departure: departureSeats, return: returnSeats } : selectedSeats,
       busData,
       searchParams,
       travelDate,
       totalPrice
     });
 
-    // 🔥 FIX: Navigate with complete data structure
-    navigate('/passenger-detail', {
-      state: {
-        selectedSeats: selectedSeats,        // ["A5", "B7"] - actual selected seats
-        busData: busData,                    // Complete bus information
-        searchParams: searchParams,          // Search parameters (from/to cities, etc.)
-        travelDate: travelDate,              // Travel date
-        totalPrice: totalPrice,              // Total calculated price
-        seatPrice: seatPrice,                // Price per seat (2000)
+    // Navigate with round-trip or one-way data structure
+    const navigationState = {
+      isRoundTrip,
+      busData: busData,
+      searchParams: searchParams,
+      travelDate: travelDate,
+      totalPrice: totalPrice,
+      seatPrice: seatPrice,
+    };
+
+    if (isRoundTrip) {
+      // Round-trip booking data
+      navigationState.departure = {
+        selectedSeats: departureSeats,
+        totalPrice: departurePrice,
         bookingDetails: {
           busId: busData?.originalData?.busId || busData?.id || busId,
           busName: busData?.busName || busData?.name,
           route: `${searchParams?.fromCity || busData?.departureLocation} → ${searchParams?.toCity || busData?.arrivalLocation}`,
           departureTime: busData?.departureTime,
           arrivalTime: busData?.arrivalTime,
-          totalSeats: selectedSeats.length,
+          totalSeats: departureSeats.length,
           farePerSeat: seatPrice,
-          totalFare: totalPrice,
+          totalFare: departurePrice,
           origin: searchParams?.fromCity || busData?.departureLocation || 'Kathmandu',
           destination: searchParams?.toCity || busData?.arrivalLocation || 'Birgunj'
         }
-      }
-    });
+      };
+      
+      navigationState.return = {
+        selectedSeats: returnSeats,
+        totalPrice: returnPrice,
+        bookingDetails: {
+          busId: busData?.originalData?.busId || busData?.id || busId,
+          busName: busData?.busName || busData?.name,
+          route: `${searchParams?.toCity || busData?.arrivalLocation} → ${searchParams?.fromCity || busData?.departureLocation}`,
+          departureTime: busData?.arrivalTime, // Swapped for return
+          arrivalTime: busData?.departureTime, // Swapped for return
+          totalSeats: returnSeats.length,
+          farePerSeat: seatPrice,
+          totalFare: returnPrice,
+          origin: searchParams?.toCity || busData?.arrivalLocation || 'Birgunj',
+          destination: searchParams?.fromCity || busData?.departureLocation || 'Kathmandu'
+        }
+      };
+    } else {
+      // One-way booking data (existing structure)
+      navigationState.selectedSeats = selectedSeats;
+      navigationState.bookingDetails = {
+        busId: busData?.originalData?.busId || busData?.id || busId,
+        busName: busData?.busName || busData?.name,
+        route: `${searchParams?.fromCity || busData?.departureLocation} → ${searchParams?.toCity || busData?.arrivalLocation}`,
+        departureTime: busData?.departureTime,
+        arrivalTime: busData?.arrivalTime,
+        totalSeats: selectedSeats.length,
+        farePerSeat: seatPrice,
+        totalFare: totalPrice,
+        origin: searchParams?.fromCity || busData?.departureLocation || 'Kathmandu',
+        destination: searchParams?.toCity || busData?.arrivalLocation || 'Birgunj'
+      };
+    }
+
+    navigate('/passenger-detail', { state: navigationState });
 
     // Show success message
-    toast.success(`Seats ${selectedSeats.join(', ')} selected successfully!`);
+    const successMessage = isRoundTrip 
+      ? `Round-trip seats selected: Departure ${departureSeats.join(', ')} | Return ${returnSeats.join(', ')}`
+      : `Seats ${selectedSeats.join(', ')} selected successfully!`;
+    toast.success(successMessage);
   };
 
   const bookSeats = async (selectedSeats) => {
@@ -309,8 +390,83 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
 
   return (
     <div className="space-y-6 mt-6">
+      {/* Round Trip Navigation Tabs - Only show if round trip */}
+      {isRoundTrip && (
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab('departure')}
+              className={`flex-1 px-6 py-4 text-center font-semibold transition-all duration-200 ${
+                activeTab === 'departure'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+                <span>For Departure</span>
+                {departureSeats.length > 0 && (
+                  <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                    {departureSeats.length}
+                  </span>
+                )}
+              </div>
+              <div className="text-sm mt-1 opacity-80">
+                {searchParams?.fromCity || 'Kathmandu'} → {searchParams?.toCity || 'Birgunj'}
+              </div>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('return')}
+              className={`flex-1 px-6 py-4 text-center font-semibold transition-all duration-200 ${
+                activeTab === 'return'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <svg className="w-5 h-5 transform rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+                <span>For Return</span>
+                {returnSeats.length > 0 && (
+                  <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                    {returnSeats.length}
+                  </span>
+                )}
+              </div>
+              <div className="text-sm mt-1 opacity-80">
+                {searchParams?.toCity || 'Birgunj'} → {searchParams?.fromCity || 'Kathmandu'}
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Seat Selection Card - increased height for larger centered seats */}
       <Card className="mb-6 min-h-[550px] w-full relative shadow-lg border border-gray-200 rounded-xl bg-white overflow-hidden">
+        {/* Current Journey Header - Only show for round trip */}
+        {isRoundTrip && (
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-3 border-b border-blue-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className={`w-3 h-3 rounded-full ${activeTab === 'departure' ? 'bg-blue-600' : 'bg-green-600'}`}></div>
+                <h4 className="text-lg font-semibold text-gray-800 capitalize">
+                  {activeTab} Journey - Select Your Seats
+                </h4>
+              </div>
+              <div className="text-sm text-gray-600">
+                {activeTab === 'departure' 
+                  ? `${searchParams?.fromCity || 'Kathmandu'} → ${searchParams?.toCity || 'Birgunj'}`
+                  : `${searchParams?.toCity || 'Birgunj'} → ${searchParams?.fromCity || 'Kathmandu'}`
+                }
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Legend */}
         <div className="flex items-center justify-between mb-6 px-6 pt-6">
           <div className="flex items-center space-x-6">
@@ -411,49 +567,91 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         </div>
       </Card>
 
-      {/* Selected Seats and Proceed Card - Exact copy from SeatSelection.jsx */}
+      {/* Selected Seats and Proceed Card */}
       <Card className="h-auto w-full shadow-lg border border-gray-200 rounded-xl bg-white">
         <div className="flex items-center justify-between h-full px-6 py-6">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              Selected Seat(s)
-            </h3>
-            <div className="flex items-center space-x-4">
-              <p className="text-xl font-bold text-green-600">
-                {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None selected'}
-              </p>
-              {selectedSeats.length > 0 && (
-                <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
-                  {selectedSeats.length} seat{selectedSeats.length > 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
+            {isRoundTrip ? (
+              <>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  Round Trip Selection
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm font-medium text-gray-600 w-20">Departure:</span>
+                    <p className="text-lg font-bold text-green-600">
+                      {departureSeats.length > 0 ? departureSeats.join(', ') : 'None selected'}
+                    </p>
+                    {departureSeats.length > 0 && (
+                      <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                        {departureSeats.length} seat{departureSeats.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm font-medium text-gray-600 w-20">Return:</span>
+                    <p className="text-lg font-bold text-green-600">
+                      {returnSeats.length > 0 ? returnSeats.join(', ') : 'None selected'}
+                    </p>
+                    {returnSeats.length > 0 && (
+                      <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                        {returnSeats.length} seat{returnSeats.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  Selected Seat(s)
+                </h3>
+                <div className="flex items-center space-x-4">
+                  <p className="text-xl font-bold text-green-600">
+                    {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None selected'}
+                  </p>
+                  {selectedSeats.length > 0 && (
+                    <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                      {selectedSeats.length} seat{selectedSeats.length > 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
           </div>
           
           <div className="flex items-center space-x-6">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Amount</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">
+                {isRoundTrip ? 'Total Amount (Round Trip)' : 'Total Amount'}
+              </p>
               <span className="text-2xl font-bold text-gray-800">
                 Rs. {totalPrice.toLocaleString()}
               </span>
+              {isRoundTrip && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Departure: Rs. {departurePrice.toLocaleString()} | Return: Rs. {returnPrice.toLocaleString()}
+                </div>
+              )}
             </div>
             
             <Button
               onClick={handleProceedToPassengerDetails}
               className={`
                 px-8 py-3 text-base font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2
-                ${selectedSeats.length === 0 
+                ${(isRoundTrip ? (departureSeats.length === 0 || returnSeats.length === 0) : selectedSeats.length === 0)
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                 }
               `}
-              disabled={selectedSeats.length === 0}
+              disabled={isRoundTrip ? (departureSeats.length === 0 || returnSeats.length === 0) : selectedSeats.length === 0}
             >
               <span>Go to passenger details</span>
               <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
-            </Button>          </div>
+            </Button>
+          </div>
         </div>
       </Card>
     </div>

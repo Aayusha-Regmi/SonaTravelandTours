@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import BusListings from './ComponentSearch/BusListings';
@@ -17,11 +18,12 @@ const SearchResultsPage = () => {
   const { searchResults = [], searchParams = {}, fromLogin = false } = location.state || {};
   
   const [tripType, setTripType] = useState(searchParams.tripType || 'oneWay');
+  const [activeTab, setActiveTab] = useState('departure'); // New state for two-way tab navigation
   const [formData, setFormData] = useState({
     from: searchParams.from || '',
     to: searchParams.to || '',
     date: searchParams.date || '',
-    returnDate: searchParams.returnDate || ''
+    returnDate: '' // Always start with empty return date
   });
   
   // Set default values or values from search params
@@ -30,11 +32,19 @@ const SearchResultsPage = () => {
   const [travelDate, setTravelDate] = useState(searchParams.date || '06/06/2024');
   const [sortBy, setSortBy] = useState('Earliest');
   
-  // Initialize bus results state
+  // Initialize bus results state - separate for departure and return
   const [allBusResults, setAllBusResults] = useState(searchResults.length > 0 ? searchResults : []);
+  const [departureBusResults, setDepartureBusResults] = useState(searchResults.length > 0 ? searchResults : []);
+  const [returnBusResults, setReturnBusResults] = useState([]);
   const [busResults, setBusResults] = useState(searchResults.length > 0 ? searchResults : []);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingReturn, setIsLoadingReturn] = useState(false);
   const [error, setError] = useState(null);
+
+  // Get current active results based on tab
+  const currentBusResults = tripType === 'twoWay' 
+    ? (activeTab === 'departure' ? departureBusResults : returnBusResults)
+    : busResults;
 
   // Refs for debouncing and preventing multiple calls
   const searchTimeoutRef = useRef(null);
@@ -57,7 +67,7 @@ const SearchResultsPage = () => {
 
   const sortOptions = ['Earliest', 'Latest', 'Lowest price', 'Highest price','Top rating'];
 
-  // DEBOUNCED SEARCH FUNCTION - NEW APPROACH
+  // ENHANCED SEARCH FUNCTION FOR TWO-WAY BOOKING
   const performSearch = useCallback(async (searchParams, source = 'unknown') => {
     // Prevent multiple simultaneous searches
     if (isSearchingRef.current) {
@@ -67,7 +77,7 @@ const SearchResultsPage = () => {
 
     // Check if search params actually changed
     const searchKey = `${searchParams.fromCity}-${searchParams.toCity}-${searchParams.date}`;
-    if (lastSearchParamsRef.current === searchKey) {
+    if (lastSearchParamsRef.current === searchKey && tripType === 'oneWay') {
       console.log('🚫 Same search parameters, skipping duplicate search');
       return;
     }
@@ -77,65 +87,107 @@ const SearchResultsPage = () => {
 
     console.log(`🚀 ========== PERFORMING SEARCH (${source.toUpperCase()}) ==========`);
     console.log('📥 Search Parameters:', searchParams);
+    console.log('📥 Trip Type:', tripType);
     console.log('📥 Source:', source);
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // Convert date format before API call
-      let apiDate = searchParams.date;
-      if (searchParams.date) {
-        const dateObj = new Date(searchParams.date);
+      // Helper function to convert date format
+      const convertDate = (dateString) => {
+        if (!dateString) return null;
+        const dateObj = new Date(dateString);
         if (!isNaN(dateObj.getTime())) {
           const year = dateObj.getFullYear();
           const month = String(dateObj.getMonth() + 1).padStart(2, '0');
           const day = String(dateObj.getDate()).padStart(2, '0');
-          apiDate = `${year}-${month}-${day}`;
-          
-          console.log('🗓️ Date conversion for', source + ':');
-          console.log('   Original date:', searchParams.date);
-          console.log('   Converted date:', apiDate);
+          return `${year}-${month}-${day}`;
         }
-      }
-
-      const apiParams = {
-        fromCity: searchParams.fromCity,
-        toCity: searchParams.toCity,
-        date: apiDate
+        return null;
       };
 
-      console.log('📤 API Request from', source + ':', apiParams);
-      const startTime = performance.now();
-      
-      const busData = await api.searchBuses(apiParams);
-      
-      const endTime = performance.now();
-      console.log(`📥 API Response (${source}) in ${Math.round(endTime - startTime)}ms:`, busData);
-      console.log('   Available seats in first bus:', busData[0]?.availableSeats);
-      console.log('   Booked seats in first bus:', busData[0]?.bookedSeats);
-
-      if (!busData || !Array.isArray(busData)) {
-        throw new Error('Invalid API response format');
+      // Convert departure date
+      const departureApiDate = convertDate(searchParams.date);
+      if (!departureApiDate) {
+        throw new Error('Invalid departure date');
       }
 
-      if (busData.length === 0) {
-        console.log('📭 No buses found');
+      // Departure journey API call
+      const departureApiParams = {
+        fromCity: searchParams.fromCity,
+        toCity: searchParams.toCity,
+        date: departureApiDate
+      };
+
+      console.log('📤 Departure API Request:', departureApiParams);
+      const startTime = performance.now();
+      
+      const departureBusData = await api.searchBuses(departureApiParams);
+      
+      const endTime = performance.now();
+      console.log(`📥 Departure API Response in ${Math.round(endTime - startTime)}ms:`, departureBusData);
+
+      if (!departureBusData || !Array.isArray(departureBusData)) {
+        throw new Error('Invalid departure API response format');
+      }
+
+      // Update departure results
+      setDepartureBusResults(departureBusData);
+      setAllBusResults(departureBusData);
+      setBusResults(departureBusData);
+
+      // For two-way trips, also search for return journey
+      if (tripType === 'twoWay' && formData.returnDate) {
+        console.log('🔄 Searching for return journey...');
+        setIsLoadingReturn(true);
+
+        const returnApiDate = convertDate(formData.returnDate);
+        if (!returnApiDate) {
+          throw new Error('Invalid return date');
+        }
+
+        // Return journey API call (swap from/to)
+        const returnApiParams = {
+          fromCity: searchParams.toCity,    // Swap destinations
+          toCity: searchParams.fromCity,    // Swap destinations
+          date: returnApiDate
+        };
+
+        console.log('📤 Return API Request:', returnApiParams);
+        const returnStartTime = performance.now();
+        
+        const returnBusData = await api.searchBuses(returnApiParams);
+        
+        const returnEndTime = performance.now();
+        console.log(`📥 Return API Response in ${Math.round(returnEndTime - returnStartTime)}ms:`, returnBusData);
+
+        if (!returnBusData || !Array.isArray(returnBusData)) {
+          console.warn('Invalid return API response, setting empty array');
+          setReturnBusResults([]);
+        } else {
+          setReturnBusResults(returnBusData);
+        }
+        
+        setIsLoadingReturn(false);
+      } else {
+        // Clear return results for one-way trips
+        setReturnBusResults([]);
+      }
+
+      if (departureBusData.length === 0) {
+        console.log('📭 No departure buses found');
         setError('No buses found for this route and date.');
-        setBusResults([]);
-        setAllBusResults([]);
         return;
       }
 
-      console.log(`✅ ${source} search successful - updating UI with ${busData.length} buses`);
-      setAllBusResults(busData);
-      setBusResults(busData);
+      console.log(`✅ ${source} search successful - updating UI with ${departureBusData.length} departure buses`);
       setError(null);
 
       // Update URL state
       navigate('/search-results', { 
         state: { 
-          searchResults: busData,
+          searchResults: departureBusData,
           searchParams: { 
             tripType, 
             ...formData,
@@ -153,8 +205,11 @@ const SearchResultsPage = () => {
       setError(`Search failed: ${error.message}`);
       setAllBusResults([]);
       setBusResults([]);
+      setDepartureBusResults([]);
+      setReturnBusResults([]);
     } finally {
       setIsLoading(false);
+      setIsLoadingReturn(false);
       isSearchingRef.current = false;
     }
   }, [navigate, tripType, formData]);
@@ -209,11 +264,11 @@ const SearchResultsPage = () => {
 
   // Effect to sort bus results when sortBy changes
   useEffect(() => {
-    if (busResults.length === 0) return;
+    if (currentBusResults.length === 0) return;
     
     setIsLoading(true);
     
-    const sortedResults = [...busResults].sort((a, b) => {
+    const sortedResults = [...currentBusResults].sort((a, b) => {
       switch(sortBy) {
         case 'Earliest':
           return (a.departureTime || a.departure_time || '').localeCompare(b.departureTime || b.departure_time || '');
@@ -234,9 +289,20 @@ const SearchResultsPage = () => {
       }
     });
     
-    setBusResults(sortedResults);
+    // Update the appropriate bus results based on active tab
+    if (tripType === 'twoWay') {
+      if (activeTab === 'departure') {
+        setDepartureBusResults(sortedResults);
+        setBusResults(sortedResults);
+      } else {
+        setReturnBusResults(sortedResults);
+      }
+    } else {
+      setBusResults(sortedResults);
+    }
+    
     setTimeout(() => setIsLoading(false), 100);
-  }, [sortBy]);
+  }, [sortBy, activeTab, tripType]);
 
   // UPDATED handleInputChange - IMMEDIATE API CALLS
   const handleInputChange = (e) => {
@@ -295,6 +361,34 @@ const SearchResultsPage = () => {
         };
         triggerSearch(searchParams, 'date-change', 100);
       }
+      
+    } else if (name === 'returnDate') {
+      // Handle return date changes for two-way trips
+      if (tripType === 'twoWay') {
+        if (value) {
+          setError(null);
+          // Trigger search for both journeys if we have all required data
+          if (formData.from && formData.to && formData.date) {
+            const searchParams = {
+              fromCity: formData.from,
+              toCity: formData.to,
+              date: formData.date
+            };
+            triggerSearch(searchParams, 'return-date-change', 100);
+          }
+        } else {
+          const errorMessage = 'Enter Return date';
+          setError(errorMessage);
+          toast.error(errorMessage, {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+      }
     }
   };
   
@@ -337,6 +431,21 @@ const SearchResultsPage = () => {
       return;
     }
     
+    if (tripType === 'twoWay' && !formData.returnDate) {
+      console.log('❌ Validation failed: Missing return date for two-way trip');
+      const errorMessage = 'Enter Return date';
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+    
     if (formData.from === formData.to) {
       console.log('❌ Validation failed: Same departure and destination');
       setError('Departure and destination cannot be the same');
@@ -362,6 +471,49 @@ const SearchResultsPage = () => {
 
   const handleTripTypeChange = (type) => {
     setTripType(type);
+    
+    // Reset tab to departure when switching trip types
+    setActiveTab('departure');
+    
+    // If switching to two way, validate return date requirement and show toast notification
+    if (type === 'twoWay') {
+      if (!formData.returnDate) {
+        const errorMessage = 'Enter Return date';
+        setError(errorMessage);
+        // Show toast notification
+        toast.error(errorMessage, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        return; // Don't trigger search without return date
+      } else {
+        setError(null);
+        // Only trigger search if we have all required data
+        if (formData.from && formData.to && formData.date) {
+          const searchParams = {
+            fromCity: formData.from,
+            toCity: formData.to,
+            date: formData.date
+          };
+          triggerSearch(searchParams, 'trip-type-change', 100);
+        }
+      }
+    } else {
+      setError(null);
+      // Clear return results when switching to one-way
+      setReturnBusResults([]);
+      setIsLoadingReturn(false);
+    }
+  };
+
+  // New function to handle tab changes for two-way trips
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setError(null); // Clear any errors when switching tabs
   };
 
   const handleSortChange = (option) => {
@@ -378,7 +530,7 @@ const SearchResultsPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5]">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
       
       <main className="container mx-auto px-4 sm:px-8 py-6 md:py-8 lg:py-12 max-w-7xl">
@@ -391,13 +543,18 @@ const SearchResultsPage = () => {
 
         {/* Error message display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
+          <div className="backdrop-blur-md bg-red-50/80 border border-red-200/50 text-red-600 px-4 py-3 rounded-xl mb-4 shadow-lg">
             {error}
           </div>
         )}
 
-        {/* Search Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 mb-8">
+        {/* Search Section - Glass Morphism */}
+        <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-2xl shadow-xl p-6 mb-8 transform hover:scale-[1.01] transition-all duration-300"
+             style={{
+               boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+               backdropFilter: 'blur(20px)',
+               WebkitBackdropFilter: 'blur(20px)'
+             }}>
           <div className="flex flex-wrap items-end gap-4 lg:gap-3">
             {/* Trip Type Selector */}
             <div className="flex flex-col order-1 w-[150px]">
@@ -407,7 +564,7 @@ const SearchResultsPage = () => {
                   id="tripType"
                   value={tripType}
                   onChange={(e) => handleTripTypeChange(e.target.value)}
-                  className="w-full appearance-none bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm h-[42px]"
+                  className="w-full appearance-none backdrop-blur-sm bg-white/50 border border-white/30 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-lg h-[42px] transition-all duration-300"
                   aria-label="Select trip type"
                 >
                   <option value="oneWay">One Way</option>
@@ -438,7 +595,7 @@ const SearchResultsPage = () => {
             <div className="self-center order-3 mt-3">
               <button 
                 onClick={handleSwapLocations}
-                className="bg-white rounded-full p-2 mt-3 shadow-md hover:bg-gray-50 transition-colors duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-300 active:bg-gray-100"
+                className="backdrop-blur-sm bg-white/50 border border-white/30 rounded-full p-3 mt-3 shadow-lg hover:bg-white/70 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-300/50 active:scale-95 transform"
                 title="Swap locations"
                 aria-label="Swap departure and destination locations"
               >
@@ -505,7 +662,7 @@ const SearchResultsPage = () => {
               <Button
                 variant="primary"
                 onClick={handleSearchAgain}
-                className="w-full bg-blue-600 text-white rounded-lg px-4 py-2 h-[44px] hover:bg-blue-700 shadow-sm transition-all focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 cursor-pointer flex items-center justify-center"
+                className="w-full backdrop-blur-sm bg-gradient-to-r from-blue-600/90 to-purple-600/90 border border-white/20 text-white rounded-xl px-6 py-3 h-[44px] hover:from-blue-700/90 hover:to-purple-700/90 shadow-xl transition-all duration-300 focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 cursor-pointer flex items-center justify-center transform hover:scale-105 active:scale-95"
                 style={{ opacity: isLoading ? 0.8 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}
                 disabled={isLoading}
               >
@@ -559,25 +716,37 @@ const SearchResultsPage = () => {
           }}
         />
 
-        {/* Results Header */}
-        <div className="bg-white rounded-lg p-5 mb-4 flex items-center justify-between shadow-sm">
+        {/* Results Header - Glass Morphism */}
+        <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-2xl p-6 mb-6 flex items-center justify-between shadow-xl transform hover:scale-[1.01] transition-all duration-300"
+             style={{
+               boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+               backdropFilter: 'blur(20px)',
+               WebkitBackdropFilter: 'blur(20px)'
+             }}>
           <div className="flex items-center">
-            <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
-            </svg>
-            <span className="text-base font-semibold text-green-700">
-              {busResults.length} Bus{busResults.length !== 1 ? 'es' : ''} found
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center mr-3">
+              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
+              </svg>
+            </div>
+            <span className="text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              {currentBusResults.length} Bus{currentBusResults.length !== 1 ? 'es' : ''} found
+              {tripType === 'twoWay' && (
+                <span className="text-sm font-normal text-gray-600 ml-2">
+                  ({activeTab === 'departure' ? 'Departure' : 'Return'} Journey)
+                </span>
+              )}
             </span>
           </div>
 
-          <div className="h-8 w-px bg-gray-300 mx-4"></div>
+          <div className="h-8 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent mx-4"></div>
 
           <div className="flex items-center overflow-x-auto no-scrollbar">
-            <div className="bg-gray-100 rounded-lg px-3 py-1.5 flex items-center mr-4">
-              <svg className="w-4 h-4 text-gray-700 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <div className="backdrop-blur-sm bg-white/20 border border-white/30 rounded-xl px-4 py-2 flex items-center mr-4">
+              <svg className="w-4 h-4 text-gray-700 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
               </svg>
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
                 Sort By:
               </span>
             </div>
@@ -591,10 +760,10 @@ const SearchResultsPage = () => {
                   tabIndex="0"
                   role="radio"
                   aria-label={`Sort by ${option}`}
-                  className={`text-sm transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 rounded px-2 py-1 ${
+                  className={`text-sm transition-all duration-300 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 rounded-lg px-3 py-2 transform hover:scale-105 ${
                     sortBy === option 
-                      ? 'font-semibold text-blue-600 border-b-2 border-blue-600 pb-0.5' 
-                      : 'font-medium text-gray-600 hover:text-blue-600'
+                      ? 'font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent backdrop-blur-sm bg-white/30 border border-white/30 shadow-lg' 
+                      : 'font-medium text-gray-600 hover:text-blue-600 hover:bg-white/20'
                   }`}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -614,11 +783,43 @@ const SearchResultsPage = () => {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Bus Listings */}
           <div className="flex-grow" id="resultsSection">
+            {/* Two-Way Tab Navigation - Glass Morphism Style */}
+            {tripType === 'twoWay' && (
+              <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-2xl p-6 mb-6 shadow-lg">
+                <div className="flex backdrop-blur-sm bg-white/10 border border-white/20 rounded-xl p-1 shadow-inner">
+                  <button
+                    onClick={() => handleTabChange('departure')}
+                    className={`flex-1 py-4 px-6 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                      activeTab === 'departure'
+                        ? 'bg-white/90 text-blue-600 shadow-md backdrop-blur-md border border-white/40'
+                        : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
+                    }`}
+                  >
+                    For Departure
+                  </button>
+                  
+                  <button
+                    onClick={() => handleTabChange('return')}
+                    disabled={!formData.returnDate}
+                    className={`flex-1 py-4 px-6 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                      activeTab === 'return'
+                        ? 'bg-white/90 text-blue-600 shadow-md backdrop-blur-md border border-white/40'
+                        : formData.returnDate 
+                          ? 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
+                          : 'text-gray-400 cursor-not-allowed opacity-50'
+                    }`}
+                  >
+                    For Return
+                  </button>
+                </div>
+              </div>
+            )}
+            
             <BusListings 
-              buses={busResults} 
-              isLoading={isLoading} 
-              totalBuses={allBusResults.length}
-              travelDate={travelDate}
+              buses={currentBusResults} 
+              isLoading={tripType === 'twoWay' ? (activeTab === 'departure' ? isLoading : isLoadingReturn) : isLoading}
+              totalBuses={currentBusResults.length}
+              travelDate={activeTab === 'departure' ? travelDate : formData.returnDate}
               onSearchAgain={handleSearchAgain}
             />
           </div>
