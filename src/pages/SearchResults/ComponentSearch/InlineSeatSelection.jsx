@@ -164,7 +164,7 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
       // Row 3 - Middle section (aisle space) - Centered vertically
       row3: [
         { id: 'S2', type: bookedSeats.includes('S2') ? 'booked' : 'available', position: { x: 50 + centerOffset, y: 160 } },
-        { id: 'A19', type: bookedSeats.includes('A19') ? 'booked' : 'available', position: { x: 740 + centerOffset, y: 160 } },
+        { id: 'A17', type: bookedSeats.includes('A19') ? 'booked' : 'available', position: { x: 740 + centerOffset, y: 160 } },
       ],
 
       // Row 4 - Lower deck front row - Aligned with upper deck
@@ -341,9 +341,9 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
         </div>
 
         {/* Seat Map - Centered seat group with larger seats */}
-        <div className="relative px-6 pb-8 min-h-[410px] bg-gradient-to-b from-gray-50 to-white rounded-lg">
+        <div className="relative ml-18 px-6 pb-8 min-h-[410px] bg-gradient-to-b from-gray-50 to-white rounded-lg">
           {/* Bus outline for visual context - optimized dimensions */}
-          <div className="absolute inset-x-6 top-4 bottom-4 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50/30"></div>
+          <div className="absolute  inset-x-6 top-4 bottom-4 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50/30"></div>
           
           {/* Driver section indicator - positioned within bus outline */}
           <div className="absolute top-8 left-12 bg-gray-700 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
@@ -356,15 +356,16 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
             
             return (
               <div
+              
                 key={seat.id}
-                className={`absolute transition-all duration-200 ease-in-out cursor-pointer group ${
+                className={`absolute transition-all duration-200 ease-in-out cursor-pointer  group ${
                   currentType === 'booked' 
                     ? 'cursor-not-allowed opacity-80' 
                     : 'hover:scale-110 hover:z-10 hover:shadow-lg'
                 }`}
                 style={{
-                  left: `${seat.position.x + 25}px`,
-                  top: `${seat.position.y + 25}px`,
+                  left: `${seat.position.x + 25 + 70}px`,
+                  top: `${seat.position.y + 17}px`,
                 }}
                 onClick={() => handleSeatClick(seat.id, seat.type)}
                 title={`Seat ${seat.id} - ${currentType.charAt(0).toUpperCase() + currentType.slice(1)}`}
