@@ -170,26 +170,26 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
       // Row 4 - Lower deck front row - Aligned with upper deck
       row4: [
         { id: 'S1', type: bookedSeats.includes('S1') ? 'booked' : 'available', position: { x: 50 + centerOffset, y: 240 } },
-        { id: 'A2', type: bookedSeats.includes('A2') ? 'booked' : 'available', position: { x: 240 + centerOffset, y: 210 } },
-        { id: 'A4', type: bookedSeats.includes('A4') ? 'booked' : 'available', position: { x: 320 + centerOffset, y: 210 } },
-        { id: 'A6', type: bookedSeats.includes('A6') ? 'booked' : 'available', position: { x: 380 + centerOffset, y: 210 } },
-        { id: 'A8', type: bookedSeats.includes('A8') ? 'booked' : 'available', position: { x: 460 + centerOffset, y: 210 } },
-        { id: 'A10', type: bookedSeats.includes('A10') ? 'booked' : 'available', position: { x: 520 + centerOffset, y: 210 } },
-        { id: 'A12', type: bookedSeats.includes('A12') ? 'booked' : 'available', position: { x: 600 + centerOffset, y: 210 } },
-        { id: 'A14', type: bookedSeats.includes('A14') ? 'booked' : 'available', position: { x: 660 + centerOffset, y: 210 } },
-        { id: 'A16', type: bookedSeats.includes('A16') ? 'booked' : 'available', position: { x: 740 + centerOffset, y: 210 } },
+        { id: 'A2', type: bookedSeats.includes('A2') ? 'booked' : 'available', position: { x: 240 + centerOffset, y: 230 } },
+        { id: 'A4', type: bookedSeats.includes('A4') ? 'booked' : 'available', position: { x: 320 + centerOffset, y: 230 } },
+        { id: 'A6', type: bookedSeats.includes('A6') ? 'booked' : 'available', position: { x: 380 + centerOffset, y: 230 } },
+        { id: 'A8', type: bookedSeats.includes('A8') ? 'booked' : 'available', position: { x: 460 + centerOffset, y: 230 } },
+        { id: 'A10', type: bookedSeats.includes('A10') ? 'booked' : 'available', position: { x: 520 + centerOffset, y: 230 } },
+        { id: 'A12', type: bookedSeats.includes('A12') ? 'booked' : 'available', position: { x: 600 + centerOffset, y: 230 } },
+        { id: 'A14', type: bookedSeats.includes('A14') ? 'booked' : 'available', position: { x: 660 + centerOffset, y: 230 } },
+        { id: 'A16', type: bookedSeats.includes('A16') ? 'booked' : 'available', position: { x: 740 + centerOffset, y: 230 } },
       ],
 
       // Row 5 - Lower deck back row - Aligned with front row
       row5: [
-        { id: 'A1', type: bookedSeats.includes('A1') ? 'booked' : 'available', position: { x: 240 + centerOffset, y: 280 } },
-        { id: 'A3', type: bookedSeats.includes('A3') ? 'booked' : 'available', position: { x: 320 + centerOffset, y: 280 } },
-        { id: 'A5', type: bookedSeats.includes('A5') ? 'booked' : 'available', position: { x: 380 + centerOffset, y: 280 } },
-        { id: 'A7', type: bookedSeats.includes('A7') ? 'booked' : 'available', position: { x: 460 + centerOffset, y: 280 } },
-        { id: 'A9', type: bookedSeats.includes('A9') ? 'booked' : 'available', position: { x: 520 + centerOffset, y: 280 } },
-        { id: 'A11', type: bookedSeats.includes('A11') ? 'booked' : 'available', position: { x: 600 + centerOffset, y: 280 } },
-        { id: 'A13', type: bookedSeats.includes('A13') ? 'booked' : 'available', position: { x: 660 + centerOffset, y: 280 } },
-        { id: 'A15', type: bookedSeats.includes('A15') ? 'booked' : 'available', position: { x: 740 + centerOffset, y: 280 } },
+        { id: 'A1', type: bookedSeats.includes('A1') ? 'booked' : 'available', position: { x: 240 + centerOffset, y: 300 } },
+        { id: 'A3', type: bookedSeats.includes('A3') ? 'booked' : 'available', position: { x: 320 + centerOffset, y: 300 } },
+        { id: 'A5', type: bookedSeats.includes('A5') ? 'booked' : 'available', position: { x: 380 + centerOffset, y: 300 } },
+        { id: 'A7', type: bookedSeats.includes('A7') ? 'booked' : 'available', position: { x: 460 + centerOffset, y: 300 } },
+        { id: 'A9', type: bookedSeats.includes('A9') ? 'booked' : 'available', position: { x: 520 + centerOffset, y: 300 } },
+        { id: 'A11', type: bookedSeats.includes('A11') ? 'booked' : 'available', position: { x: 600 + centerOffset, y: 300 } },
+        { id: 'A13', type: bookedSeats.includes('A13') ? 'booked' : 'available', position: { x: 660 + centerOffset, y: 300 } },
+        { id: 'A15', type: bookedSeats.includes('A15') ? 'booked' : 'available', position: { x: 740 + centerOffset, y: 300 } },
       ],
     };
 
