@@ -168,7 +168,7 @@ const Header = () => {
           <Link to="/hotels" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Hotels
           </Link>
-          <Link to="/bookings" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
+          <Link to="/profile?tab=mybookings" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Bookings
           </Link>
           <Link to="/live-track" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
@@ -356,7 +356,7 @@ const Header = () => {
               Hotels
             </Link>
             <Link 
-              to="/bookings" 
+              to="/profile?tab=mybookings" 
               className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >

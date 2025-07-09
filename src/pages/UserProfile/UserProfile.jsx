@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import Tabs from '../../components/ui/Tabs';
@@ -11,6 +12,8 @@ import MyFavorites from './ComponentUserProfile/MyFavorites.jsx';
 import Discounts from './ComponentUserProfile/Discounts.jsx';
 
 const UserProfile = () => {
+  const location = useLocation();
+  
   // Tab configuration
   const tabsData = [
     {
@@ -37,7 +40,20 @@ const UserProfile = () => {
       label: 'Discounts',
       content: <Discounts />
     }
-  ];  return (
+  ];
+
+  // Get default active tab from URL parameter
+  const getDefaultActiveTab = () => {
+    const urlParams = new URLSearchParams(location.search);
+    const tabParam = urlParams.get('tab');
+    
+    if (tabParam === 'mybookings') {
+      return 1; // My Bookings tab index
+    }
+    return 0; // Default to My Account
+  };
+
+  return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
@@ -49,7 +65,7 @@ const UserProfile = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <Tabs 
             tabs={tabsData}
-            defaultActiveTab={0}
+            defaultActiveTab={getDefaultActiveTab()}
             className="w-full"
           />
         </div>

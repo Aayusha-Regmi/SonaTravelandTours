@@ -99,8 +99,62 @@ const PassengerDetail = () => {
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];
 
+  // Helper function to format phone number
+  const formatPhoneNumber = (value) => {
+    // Remove all non-numeric characters
+    const numbersOnly = value.replace(/[^0-9]/g, '');
+    
+    // Format based on Nepal phone number patterns
+    if (numbersOnly.length <= 10) {
+      // Format mobile numbers: 98XXXXXXXX -> 98XX-XXX-XXX
+      if (numbersOnly.length === 10 && numbersOnly.startsWith('9')) {
+        return numbersOnly.replace(/(\d{4})(\d{3})(\d{3})/, '$1-$2-$3');
+      }
+      // Format landline: 01XXXXXXX -> 01-XXXXXXX
+      if (numbersOnly.length >= 8 && numbersOnly.startsWith('0')) {
+        return numbersOnly.replace(/(\d{2})(\d{4})(\d{0,3})/, '$1-$2-$3').replace(/-$/, '');
+      }
+    }
+    
+    return numbersOnly;
+  };
+
+  // Helper function to validate email in real-time
+  const validateEmail = (email) => {
+    if (!email) return { isValid: true, message: '' };
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return {
+      isValid: emailRegex.test(email),
+      message: emailRegex.test(email) ? '' : 'Please enter a valid email address'
+    };
+  };
+
+  // Helper function to validate phone number in real-time
+  const validatePhoneNumber = (phoneNumber) => {
+    if (!phoneNumber) return { isValid: false, message: 'Phone number is required' };
+    
+    const cleanPhone = phoneNumber.replace(/\s|-|\(|\)/g, '');
+    const nepaliMobileRegex = /^(\+977[-\s]?)?[9][0-9]{9}$/;
+    const nepaliLandlineRegex = /^(\+977[-\s]?)?[0][1-9][0-9]{6,7}$/;
+    
+    if (nepaliMobileRegex.test(cleanPhone) || nepaliLandlineRegex.test(cleanPhone)) {
+      return { isValid: true, message: '' };
+    }
+    
+    return {
+      isValid: false,
+      message: 'Please enter a valid Nepali phone number (e.g., 9841234567 or 01-4567890)'
+    };
+  };
+
   const handlePassengerChange = (index, field, value) => {
     const updatedPassengers = [...passengers];
+    
+    // Special handling for phone number formatting
+    if (field === 'phoneNumber') {
+      value = formatPhoneNumber(value);
+    }
+    
     updatedPassengers[index][field] = value;
     setPassengers(updatedPassengers);
     
@@ -119,18 +173,46 @@ const PassengerDetail = () => {
       // Required field validations
       if (!passenger.fullName.trim()) {
         newErrors[`${index}-fullName`] = 'Full name is required';
+      } else if (passenger.fullName.trim().length < 2) {
+        newErrors[`${index}-fullName`] = 'Name must be at least 2 characters long';
+      } else if (!/^[a-zA-Z\s]+$/.test(passenger.fullName.trim())) {
+        newErrors[`${index}-fullName`] = 'Name can only contain letters and spaces';
       }
+      
       if (!passenger.gender) {
         newErrors[`${index}-gender`] = 'Gender is required';
       }
-      if (passenger.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(passenger.email)) {
-        newErrors[`${index}-email`] = 'Please enter a valid email address';
+      
+      // Enhanced email validation
+      if (passenger.email && passenger.email.trim()) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(passenger.email.trim())) {
+          newErrors[`${index}-email`] = 'Please enter a valid email address';
+        }
       }
+      
+      // Enhanced phone number validation for Nepal
       if (!passenger.phoneNumber.trim()) {
         newErrors[`${index}-phoneNumber`] = 'Phone number is required';
-      } else if (!/^[\+]?[0-9\s\-\(\)]{10,}$/.test(passenger.phoneNumber)) {
-        newErrors[`${index}-phoneNumber`] = 'Please enter a valid phone number';
+      } else {
+        const phoneNumber = passenger.phoneNumber.replace(/\s|-|\(|\)/g, ''); // Remove spaces, dashes, parentheses
+        
+        // Nepal phone number patterns:
+        // Mobile: 98xxxxxxxx, 97xxxxxxxx, 96xxxxxxxx, 95xxxxxxxx, 94xxxxxxxx, 985xxxxxxx, 986xxxxxxx, 988xxxxxxx
+        // Landline: 01-xxxxxxx (Kathmandu), 021-xxxxxx (Pokhara), etc.
+        // International: +977-98xxxxxxxx
+        
+        const nepaliMobileRegex = /^(\+977[-\s]?)?[9][0-9]{9}$/;
+        const nepaliLandlineRegex = /^(\+977[-\s]?)?[0][1-9][0-9]{6,7}$/;
+        const internationalRegex = /^(\+977[-\s]?)[0-9]{8,10}$/;
+        
+        if (!nepaliMobileRegex.test(phoneNumber) && 
+            !nepaliLandlineRegex.test(phoneNumber) && 
+            !internationalRegex.test(phoneNumber)) {
+          newErrors[`${index}-phoneNumber`] = 'Please enter a valid Nepali phone number (e.g., 9841234567 or 01-4567890)';
+        }
       }
+      
       if (!passenger.cityOfResidence) {
         newErrors[`${index}-cityOfResidence`] = 'City of residence is required';
       }
@@ -358,15 +440,61 @@ const PassengerDetail = () => {
 
                       {/* Row 2: Phone, City, Boarding & Dropping Points */}
                       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
-                        <InputField
-                          label="Phone Number"
-                          type="tel"
-                          value={passenger.phoneNumber}
-                          onChange={(e) => handlePassengerChange(index, 'phoneNumber', e.target.value)}
-                          placeholder="Enter phone number"
-                          required
-                          error={errors[`${index}-phoneNumber`]}
-                        />
+                        <div className="relative">
+                          <InputField
+                            label="Phone Number"
+                            type="tel"
+                            value={passenger.phoneNumber}
+                            onChange={(e) => handlePassengerChange(index, 'phoneNumber', e.target.value)}
+                            placeholder="Enter Phone Number"
+                            required
+                            error={errors[`${index}-phoneNumber`]}
+                          />
+                          {/* Real-time validation feedback */}
+                          {passenger.phoneNumber && !errors[`${index}-phoneNumber`] && (
+                            <div className="mt-1">
+                              {validatePhoneNumber(passenger.phoneNumber).isValid ? (
+                                <div className="flex items-center text-green-600 text-xs">
+                                  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                  Valid phone number
+                                </div>
+                              ) : (
+                                <div className="text-amber-600 text-xs">
+                                  {validatePhoneNumber(passenger.phoneNumber).message}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <InputField
+                            label="Email (Optional)"
+                            type="email"
+                            value={passenger.email}
+                            onChange={(e) => handlePassengerChange(index, 'email', e.target.value)}
+                            placeholder="example@email.com"
+                            error={errors[`${index}-email`]}
+                          />
+                          {/* Real-time email validation feedback */}
+                          {passenger.email && !errors[`${index}-email`] && (
+                            <div className="mt-1">
+                              {validateEmail(passenger.email).isValid ? (
+                                <div className="flex items-center text-green-600 text-xs">
+                                  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                  Valid email
+                                </div>
+                              ) : (
+                                <div className="text-amber-600 text-xs">
+                                  {validateEmail(passenger.email).message}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                         <div className="relative" style={{ zIndex: 1400 - index * 10 }}>
                           <Dropdown
                             label="City of Residence"

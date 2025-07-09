@@ -232,7 +232,7 @@ const PhoneSignupPage = () => {
           {/* Footer Links */}
           <div className="mt-6 text-center space-y-2">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              Already have an account?{' '}
               <Link to="/login" className="text-[#0a639d] hover:underline font-medium">
                 Sign in
               </Link>

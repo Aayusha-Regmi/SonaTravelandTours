@@ -116,9 +116,17 @@ const AppRoutes = () => {
         path="/insurance" 
         element={<TravelInsurance />} 
       /> 
-      {/* User Profile Route */}
+      {/* User Profile Routes */}
       <Route 
         path="/user-profile" 
+        element={
+          <ProtectedRoute>
+            <UserProfile />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile" 
         element={
           <ProtectedRoute>
             <UserProfile />

@@ -450,7 +450,7 @@ const Footer = () => {
               <div className="f_widget about-widget pl_70">
                 <h3 className="f-title f_600 t_color f_size_18">Transportation</h3>
                 <ul className="f_list">
-                  <li><Link to="/bookings">My Bookings</Link></li>
+                  <li><Link to="/profile?tab=mybookings">My Bookings</Link></li>
                   <li><Link to="/routes">Bus Routes</Link></li>
                   <li><Link to="/insurance">Travel Insurance</Link></li>
                   <li><Link to="/live-track">Live Track</Link></li>
