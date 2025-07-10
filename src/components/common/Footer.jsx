@@ -339,6 +339,30 @@ const Footer = () => {
         .company_widget {
           text-align: center;
           padding: 0 20px;
+        }
+        
+        .iso-certification {
+          position: relative;
+          padding: 10px;
+          border-radius: 12px;
+          background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          transition: all 0.3s ease;
+        }
+        
+        .iso-certification:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .iso-certification img {
+          transition: all 0.3s ease;
+        }
+        
+        .iso-certification:hover img {
+          transform: scale(1.05);
         }        .company_widget .contact-info {
           margin: 24px 0;
         }
@@ -402,7 +426,8 @@ const Footer = () => {
                     alt="Sona Travel & Tours Logo" 
                     className="h-20 w-auto object-contain mx-auto"
                   />
-                </div>                <div className="contact-info">
+                </div>
+                <div className="contact-info">
                   <p className="email-info">info@sonatraveltours.com</p>
                   <div className="phone-numbers">
                     <p className="phone-item">(+977) 9802353260</p>
@@ -464,6 +489,18 @@ const Footer = () => {
                   <li><Link to="/hotels">Hotels</Link></li>
                   <li><Link to="/tours">Tours</Link></li>
                 </ul>
+                <div className="iso-certification mt-4">
+                  <div className="relative inline-block">
+                    <img 
+                      src="/images/iso-1-1-702x351-removebg-preview.png" 
+                      alt="ISO Certified" 
+                      className="h-20 w-auto object-contain mx-auto filter drop-shadow-lg"
+                    />
+                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse">
+                      Verified
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
