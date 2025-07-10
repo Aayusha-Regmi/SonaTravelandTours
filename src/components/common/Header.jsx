@@ -173,7 +173,11 @@ const Header = () => {
           </Link>
           <Link to="/live-track" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Live Track
-          </Link>          <Link to="/faqs" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
+          </Link>
+          <Link to="/feed" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
+            Feed
+          </Link>
+          <Link to="/faqs" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             FAQs
           </Link><div className="relative group">
             <div className="flex items-center cursor-pointer text-base font-medium text-[#5f5f5f] hover:text-[#0a639d] transition-colors">
@@ -368,6 +372,13 @@ const Header = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Live Track
+            </Link>
+            <Link 
+              to="/feed" 
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Feed
             </Link>
             <Link 
               to="/faqs" 

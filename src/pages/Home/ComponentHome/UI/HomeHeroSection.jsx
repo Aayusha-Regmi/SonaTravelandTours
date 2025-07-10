@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button';
 const HeroSection = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSocialOpen, setIsSocialOpen] = useState(false);
 
   const handleUnavailableService = (serviceName) => {
     toast.info(`${serviceName} booking will be available soon! Stay tuned for updates.`, {
@@ -17,6 +18,22 @@ const HeroSection = () => {
       theme: "light"
     });
   };
+
+  // const handleSocialClick = (platform) => {
+  //   const links = {
+  //     feeds: '/feed', // Feeds page
+  //     whatsapp: 'https://wa.me/9779851234567?text=Hello! I would like to inquire about bus booking services.',
+  //     routes: '/routes', // Internal route for bus routes
+  //     linkedin: 'https://www.linkedin.com/company/sona-travel-tours',
+  //   };
+  //   if (['feeds', 'routes'].includes(platform)) {
+  //     window.location.href = links[platform];
+  //   } else if (platform === 'linkedin') {
+  //     window.open(links[platform], '_blank');
+  //   } else if (platform === 'whatsapp') {
+  //     window.open(links[platform], '_blank');
+  //   }
+  // };
 
   // Mouse movement effect
   useEffect(() => {
@@ -111,6 +128,7 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
+
       {/* Scroll Down Indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
         <div className="animate-bounce">

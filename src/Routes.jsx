@@ -30,6 +30,7 @@ import LiveTrack from './pages/LiveTrack/LiveTrack';
 import TravelInsurance from './pages/TravelInsurance/TravelInsurance';
 import HotelsPage from './pages/Hotels/HotelsPage';
 import ToursPage from './pages/Tours/ToursPage';
+import Feed from './pages/Feed/Feed';
 
 const AppRoutes = () => {
   return (
@@ -43,6 +44,7 @@ const AppRoutes = () => {
       <Route path="/about" element={<AboutUs />} />
       <Route path="/terms-conditions" element={<TermsConditions />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/feed" element={<Feed />} />
       <Route path="/faqs" element={<FAQs />} />
       <Route path="/testimonials" element={<Testimonials />} />
       <Route path="/visit-counters" element={<VisitCounters />} />
