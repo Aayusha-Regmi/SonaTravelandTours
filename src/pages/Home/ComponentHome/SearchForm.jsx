@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import InputField from '../../../components/ui/InputField';
 import Button from '../../../components/ui/Button';
 import DatePicker from './UI/DatePickerNew';
@@ -9,6 +9,7 @@ import { isAuthenticated, storeSearchData, redirectToLogin } from '../../../util
 
 const SearchForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const searchFormRef = useRef(null);
   const [tripType, setTripType] = useState('oneWay');  const [formData, setFormData] = useState({
     from: '',
@@ -36,6 +37,33 @@ const SearchForm = () => {
   useEffect(() => {
     fetchRoutes();
   }, []);
+
+  // Handle restored search data after login
+  useEffect(() => {
+    if (location.state?.fromLogin && location.state?.restoreSearch && location.state?.searchParams) {
+      console.log('Restoring search data after login:', location.state.searchParams);
+      
+      const { searchParams } = location.state;
+      
+      // Restore form data
+      setFormData({
+        from: searchParams.fromCity || searchParams.from || '',
+        to: searchParams.toCity || searchParams.to || '',
+        date: searchParams.date || '',
+        returnDate: searchParams.returnDate || ''
+      });
+      
+      // Restore trip type if available
+      if (searchParams.tripType) {
+        setTripType(searchParams.tripType);
+      }
+      
+      console.log('Search form data restored');
+      
+      // Clear the navigation state to prevent re-restoration
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   
   // Add effect to handle form visibility when user interacts with form inputs
   useEffect(() => {

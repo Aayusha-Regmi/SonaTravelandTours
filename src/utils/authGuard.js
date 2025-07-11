@@ -39,6 +39,16 @@ export const storeSearchData = (searchData) => {
   }
 };
 
+// Store page state for restoration after login
+export const storePageState = (pageState) => {
+  try {
+    localStorage.setItem('pendingPageState', JSON.stringify(pageState));
+    console.log('Page state stored:', pageState);
+  } catch (error) {
+    console.error('Error storing page state:', error);
+  }
+};
+
 // Retrieve and clear stored search data
 export const getAndClearSearchData = () => {
   try {
@@ -50,6 +60,21 @@ export const getAndClearSearchData = () => {
     return null;
   } catch (error) {
     console.error('Error retrieving search data:', error);
+    return null;
+  }
+};
+
+// Retrieve and clear stored page state
+export const getAndClearPageState = () => {
+  try {
+    const data = localStorage.getItem('pendingPageState');
+    if (data) {
+      localStorage.removeItem('pendingPageState');
+      return JSON.parse(data);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error retrieving page state:', error);
     return null;
   }
 };
@@ -67,15 +92,30 @@ export const clearAuthData = () => {
 };
 
 // Redirect to login with return path
-export const redirectToLogin = (returnPath = null, searchData = null) => {
+export const redirectToLogin = (returnPath = null, searchData = null, pageState = null) => {
   if (searchData) {
     storeSearchData(searchData);
   }
   
-  const loginUrl = '/login';
-  if (returnPath) {
-    localStorage.setItem('returnPath', returnPath);
+  if (pageState) {
+    storePageState(pageState);
   }
+  
+  const loginUrl = '/login';
+  
+  // Determine the return path
+  let pathToStore = returnPath;
+  if (!pathToStore) {
+    // If no returnPath provided, capture current location
+    pathToStore = window.location.pathname + window.location.search;
+  } else if (!pathToStore.includes('?') && window.location.search) {
+    // If returnPath doesn't include query params but current location has them
+    pathToStore = pathToStore + window.location.search;
+  }
+  
+  // Store the complete path
+  localStorage.setItem('returnPath', pathToStore);
+  console.log('Return path stored:', pathToStore);
   
   return loginUrl;
 };
@@ -85,7 +125,9 @@ export const getAndClearReturnPath = () => {
   const returnPath = localStorage.getItem('returnPath');
   if (returnPath) {
     localStorage.removeItem('returnPath');
+    console.log('Return path retrieved and cleared:', returnPath);
     return returnPath;
   }
-  return '/';
+  console.log('No return path found');
+  return null; // Return null instead of '/' to distinguish between no path and home path
 };

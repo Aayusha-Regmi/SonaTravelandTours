@@ -1,12 +1,18 @@
 import Routes from './Routes';
 import APIDebugger from './components/dev/APIDebugger';
+import SessionMonitor from './components/SessionMonitor';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ScrollToTop from './ScrollToTop';
+import './utils/sessionDebug'; // Load session debugging utilities
+
+// Import session test utilities for debugging
+import './utils/sessionTestUtils';
 
 function App() {
   return (
     <>
+      <SessionMonitor />
       <ScrollToTop />
       <Routes />      
       <ToastContainer 

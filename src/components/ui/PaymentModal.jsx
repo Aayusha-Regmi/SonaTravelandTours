@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
+import { useNavigate } from 'react-router-dom';
+import { isAuthenticated, clearAuthToken } from '../../utils/authToken';
 
 const PaymentModal = ({ 
   isOpen, 
@@ -15,6 +17,7 @@ const PaymentModal = ({
   selectedCategory,
   onPaymentSuccess 
 }) => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: instruments, 2: qr, 3: success
   const [isLoading, setIsLoading] = useState(false);
   const [paymentTransaction, setPaymentTransaction] = useState(null);
@@ -26,9 +29,46 @@ const PaymentModal = ({
   const [webSocket, setWebSocket] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Session expiry handler for payment modal
+  const handleSessionExpiry = (message = 'Session expired. Please login again to continue payment.') => {
+    console.warn('PaymentModal: Session expired, redirecting to login');
+    
+    // Clear all auth tokens
+    clearAuthToken();
+    
+    // Close the payment modal
+    onClose();
+    
+    // Show session expiry message and redirect
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      onClose: () => {
+        navigate('/login', { 
+          state: { 
+            sessionExpired: true,
+            message: message,
+            returnUrl: window.location.pathname + window.location.search 
+          }
+        });
+      }
+    });
+  };
+
   // Initialize payment when modal opens
   useEffect(() => {
     if (isOpen) {
+      // Double-check authentication before initializing payment
+      if (!isAuthenticated()) {
+        console.warn('PaymentModal: Modal opened but user not authenticated, closing');
+        handleSessionExpiry('Please login to access payment options');
+        return;
+      }
+      
       initializePayment();
     }
     return () => {
@@ -79,20 +119,24 @@ const PaymentModal = ({
   const initializePayment = async () => {
     setIsLoading(true);
     try {
-      console.log('Initializing payment for amount:', totalPrice);
+      console.log('PaymentModal: Initializing payment for amount:', totalPrice);
       
-      // Check authentication first
-      const authCheck = api.checkAuthentication();
-      if (!authCheck.isAuthenticated) {
-        const errorMsg = authCheck.error || 'Please log in to continue with payment';
-        toast.error(`🔐 ${errorMsg}`);
-        console.error('❌ Not authenticated - cannot proceed with payment');
-        console.error('🔍 Auth check details:', authCheck);
-        onClose();
+      // Check authentication first using our centralized utility
+      if (!isAuthenticated()) {
+        console.error('PaymentModal: User not authenticated');
+        handleSessionExpiry('Please login to continue with payment');
         return;
       }
       
-      console.log('Authentication verified:', authCheck.source);
+      // Check authentication through API service
+      const authCheck = api.checkAuthentication();
+      if (!authCheck.isAuthenticated) {
+        console.error('PaymentModal: API authentication check failed:', authCheck.error);
+        handleSessionExpiry(authCheck.error || 'Please log in to continue with payment');
+        return;
+      }
+      
+      console.log('PaymentModal: Authentication verified:', authCheck.source);
       
       // Migrate tokens for compatibility
       api.migrateAuthTokens();
@@ -117,8 +161,7 @@ const PaymentModal = ({
           }
         } else if (instruments.requiresAuth) {
           console.error('❌ Authentication required for payment instruments:', instruments.message);
-          toast.error('🔐 Please log in again to view payment options');
-          onClose();
+          handleSessionExpiry('Please log in again to view payment options');
         } else {
           console.error('❌ Failed to load payment instruments:', instruments.message);
           
@@ -132,9 +175,7 @@ const PaymentModal = ({
         
         // Handle authentication errors specifically
         if (paymentInitiated.requiresAuth || paymentInitiated.statusCode === 401) {
-          toast.error('🔐 Authentication required. Please log in again.');
-          // Optionally redirect to login
-          // window.location.href = '/login';
+          handleSessionExpiry('Authentication required. Please log in again.');
         } else {
           // Show detailed error message for debugging
           const errorMsg = paymentInitiated.message || 'Unknown error';

@@ -4,8 +4,10 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import { validateLoginInput, validateField, detectInputType } from '../../utils/authUtils';
-import { getAndClearReturnPath, getAndClearSearchData } from '../../utils/authGuard';
+import { getAndClearReturnPath, getAndClearSearchData, getAndClearPageState } from '../../utils/authGuard';
 import { API_URLS } from '../../config/api';
+import { logSessionStatus } from '../../utils/sessionDebug';
+import { setAuthToken, clearAuthToken } from '../../utils/authToken';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -25,11 +27,36 @@ const LoginPage = () => {
   const [touchedFields, setTouchedFields] = useState({});
   const [roleMessage, setRoleMessage] = useState(''); // Add role message state
   const [successMessage, setSuccessMessage] = useState(''); // Add success message state
+  const [sessionMessage, setSessionMessage] = useState(''); // Add session expiry message state
 
-  // Check for success message from signup
+  // Check for messages from navigation state
   useEffect(() => {
-    if (location.state && location.state.message) {
-      setSuccessMessage(location.state.message);
+    // Log session status when login page loads
+    logSessionStatus('LoginPage Load');
+    
+    if (location.state) {
+      console.log('LoginPage: Navigation state received:', location.state);
+      
+      // Handle regular success messages
+      if (location.state.message) {
+        setSuccessMessage(location.state.message);
+      }
+      
+      // Handle session expiry messages specifically
+      if (location.state.sessionExpired || 
+          (location.state.message && location.state.message.toLowerCase().includes('session'))) {
+        setSessionMessage(location.state.message || 'Your session has expired. Please login again.');
+        setSuccessMessage(''); // Clear success message if it's a session expiry
+        console.log('LoginPage: Session expiry message set:', location.state.message);
+      }
+      
+      // Handle redirect messages from payment or other protected pages
+      if (location.state.redirectMessage) {
+        setSessionMessage(location.state.redirectMessage);
+        console.log('LoginPage: Redirect message set:', location.state.redirectMessage);
+      }
+    } else {
+      console.log('LoginPage: No navigation state received');
     }
   }, [location.state]);
 
@@ -44,16 +71,19 @@ const LoginPage = () => {
         ...prev,
         [name]: ''
       }));
-    }
-
-    // Clear role message when user starts typing
+    }    // Clear role message when user starts typing
     if (roleMessage) {
       setRoleMessage('');
     }
-
+    
     // Clear success message when user starts typing
     if (successMessage) {
       setSuccessMessage('');
+    }
+    
+    // Clear session message when user starts typing
+    if (sessionMessage) {
+      setSessionMessage('');
     }
 
     // Real-time validation for touched fields
@@ -80,6 +110,13 @@ const LoginPage = () => {
   };  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+
+    // Clear any existing session messages when user attempts login
+    setSessionMessage('');
+    setSuccessMessage('');
+    
+    // Log session status before login attempt
+    logSessionStatus('Before Login Attempt');
 
     // Validate all fields
     const validation = validateLoginInput(formData.emailOrPhone, formData.password);
@@ -154,10 +191,14 @@ const LoginPage = () => {
           // Login successful
           console.log('Login successful:', result.message);
           
-          // Store authentication token from result.data.token
+          // Store authentication token using enhanced token management
           if (result.data && result.data.token) {
-            localStorage.setItem('authToken', result.data.token);
-            console.log('Token stored successfully');
+            // Clear any existing tokens first
+            clearAuthToken();
+            
+            // Set the new token with proper expiry
+            setAuthToken(result.data.token);
+            console.log('Token stored successfully with expiry');
             
             // Decode JWT token to check user role
             try {
@@ -177,27 +218,58 @@ const LoginPage = () => {
                 // Handle return path and search data after successful login
                 const returnPath = getAndClearReturnPath();
                 const searchData = getAndClearSearchData();
+                const pageState = getAndClearPageState();
                 
                 console.log('Post-login navigation - Return path:', returnPath);
                 console.log('Post-login navigation - Search data:', searchData);
+                console.log('Post-login navigation - Page state:', pageState);
                 
                 setIsLoading(false);
                 
-                if (searchData && returnPath === '/search-results') {
-                  // User was redirected from search, navigate to search results with data
-                  navigate('/search-results', {
+                // Priority 1: If user was on a specific page (not home), return them there with all state
+                if (returnPath && returnPath !== '/' && returnPath !== '/login') {
+                  console.log('Redirecting to return path:', returnPath);
+                  
+                  // Special handling for search results page
+                  if (returnPath.includes('/search-results')) {
+                    // User was on search results page, restore their search state
+                    navigate(returnPath, {
+                      state: {
+                        searchResults: pageState?.searchResults || [], 
+                        searchParams: searchData || pageState?.searchParams || {},
+                        fromLogin: true,
+                        preserveSearch: true // Flag to indicate we should preserve search state
+                      }
+                    });
+                  } else {
+                    // User was on any other protected page, restore with all state
+                    navigate(returnPath, {
+                      state: {
+                        fromLogin: true,
+                        ...pageState, // Restore any page state
+                        ...(searchData && { searchParams: searchData, restoreSearch: true })
+                      }
+                    });
+                  }
+                } else if (searchData && (returnPath === '/' || !returnPath)) {
+                  // Priority 2: If user was on home page with search data, or has search data but no return path
+                  // This means user was in middle of searching on home page
+                  console.log('Redirecting to home with search data:', searchData);
+                  navigate('/', {
                     state: {
-                      searchResults: [],
+                      fromLogin: true,
                       searchParams: searchData,
+                      restoreSearch: true // Flag to restore search form
+                    }
+                  });
+                } else {
+                  // Priority 3: Normal login or return to home page without search data
+                  console.log('Normal login, redirecting to home');
+                  navigate('/', {
+                    state: {
                       fromLogin: true
                     }
                   });
-                } else if (returnPath && returnPath !== '/') {
-                  // User was redirected from a protected page
-                  navigate(returnPath);
-                } else {
-                  // Normal login, go to home
-                  navigate('/');
                 }
               } else if (userRole === 'admin') {
                 // Admin role - show message and redirect link
@@ -320,6 +392,27 @@ const LoginPage = () => {
           {successMessage && (
             <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
               {successMessage}
+            </div>
+          )}
+
+          {/* Session Expiry Messages */}
+          {sessionMessage && (
+            <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <div className="text-orange-800 text-sm font-medium">
+                    {sessionMessage}
+                  </div>
+                  <div className="text-orange-700 text-xs mt-1">
+                    Please enter your credentials to continue
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
