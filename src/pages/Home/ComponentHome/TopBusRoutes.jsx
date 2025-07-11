@@ -7,21 +7,21 @@ const TopBusRoutes = () => {
       id: 1,
       title: 'Birgunj to Kathmandu',
       offerType: "Today\'s Offer",
-      price: 'R.s 1500.00',
+      price: 'R.s 1100.00',
       image: '/images/img_bestplacestovsitinkathmandunepal71683x1024_1.png'
     },
     {
       id: 2,
       title: 'Kathmandu to Birgunj',
       offerType: "Holiday\'s Offer",
-      price: 'R.s 1500.00',
+      price: 'R.s 1100.00',
       image: '/images/img_bestplacestovsitinkathmandunepal71683x1024_1_487x388.png'
     },
     {
       id: 3,
-      title: 'Kathmandu to Pokhara',
+      title: 'Banepa to Kalaiya',
       offerType: "Weekend\'s Offer",
-      price: 'R.s 1500.00',
+      price: 'R.s 1100.00',
       image: '/images/img_bestplacestovsitinkathmandunepal71683x1024_1_1.png'
     }
   ];

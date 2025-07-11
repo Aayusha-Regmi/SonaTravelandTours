@@ -14,7 +14,7 @@ const MyFavorites = ({ favorites = [] }) => {
       image: "/images/Bus.png",
       rating: 4.8,
       reviews: 245,
-      price: 1500,
+      price: 1100,
       duration: "6-7 hours",
       features: ["AC", "WiFi", "Comfortable Seats"],
       description: "Scenic route through beautiful landscapes",

@@ -178,7 +178,7 @@ const BusListings = ({
         departureTimeFormatted: formattedDepartureTime,
         arrivalTimeFormatted: formattedArrivalTime,
         duration: duration,
-        price: `Rs. ${bus.fair || bus.fare || bus.price || 1500}`, // Use 'fair' from API
+        price: `Rs. ${bus.fair || bus.fare || bus.price || 1100}`, // Use 'fair' from API
         priceUnit: '/seat',
         rating: bus.rating || 4.2,
         availableSeats: availableSeats, // From API response - critical for accurate seat count
