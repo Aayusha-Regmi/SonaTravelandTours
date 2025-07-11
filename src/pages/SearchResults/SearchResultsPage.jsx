@@ -20,13 +20,20 @@ const SearchResultsPage = () => {
   // Get search results and params from location state
   const { searchResults = [], searchParams = {}, fromLogin = false } = location.state || {};
   
+  console.log('🔍 SearchResults initialized with:', {
+    searchResults: searchResults.length,
+    searchParams,
+    fromLogin,
+    tripTypeFromParams: searchParams.tripType
+  });
+  
   const [tripType, setTripType] = useState(searchParams.tripType || 'oneWay');
   const [activeTab, setActiveTab] = useState('departure'); // New state for two-way tab navigation
   const [formData, setFormData] = useState({
     from: searchParams.from || '',
     to: searchParams.to || '',
     date: searchParams.date || '',
-    returnDate: '' // Always start with empty return date
+    returnDate: searchParams.returnDate || '' // Use return date from search params
   });
   
   // Set default values or values from search params
@@ -92,6 +99,8 @@ const SearchResultsPage = () => {
     console.log('📥 Search Parameters:', searchParams);
     console.log('📥 Trip Type:', tripType);
     console.log('📥 Source:', source);
+    console.log('📥 Form Data returnDate:', formData.returnDate);
+    console.log('📥 SearchParams returnDate:', searchParams.returnDate);
 
     setIsLoading(true);
     setError(null);
@@ -141,38 +150,42 @@ const SearchResultsPage = () => {
       setBusResults(departureBusData);
 
       // For two-way trips, also search for return journey
-      if (tripType === 'twoWay' && formData.returnDate) {
+      if (tripType === 'twoWay' && (formData.returnDate || searchParams.returnDate)) {
         console.log('🔄 Searching for return journey...');
+        console.log('🔄 Return date from formData:', formData.returnDate);
+        console.log('🔄 Return date from searchParams:', searchParams.returnDate);
         setIsLoadingReturn(true);
 
-        const returnApiDate = convertDate(formData.returnDate);
+        const returnDateToUse = formData.returnDate || searchParams.returnDate;
+        const returnApiDate = convertDate(returnDateToUse);
         if (!returnApiDate) {
-          throw new Error('Invalid return date');
-        }
-
-        // Return journey API call (swap from/to)
-        const returnApiParams = {
-          fromCity: searchParams.toCity,    // Swap destinations
-          toCity: searchParams.fromCity,    // Swap destinations
-          date: returnApiDate
-        };
-
-        console.log('📤 Return API Request:', returnApiParams);
-        const returnStartTime = performance.now();
-        
-        const returnBusData = await api.searchBuses(returnApiParams);
-        
-        const returnEndTime = performance.now();
-        console.log(`📥 Return API Response in ${Math.round(returnEndTime - returnStartTime)}ms:`, returnBusData);
-
-        if (!returnBusData || !Array.isArray(returnBusData)) {
-          console.warn('Invalid return API response, setting empty array');
-          setReturnBusResults([]);
+          console.warn('Invalid return date, skipping return search');
+          setIsLoadingReturn(false);
         } else {
-          setReturnBusResults(returnBusData);
+          // Return journey API call (swap from/to)
+          const returnApiParams = {
+            fromCity: searchParams.toCity,    // Swap destinations
+            toCity: searchParams.fromCity,    // Swap destinations
+            date: returnApiDate
+          };
+
+          console.log('📤 Return API Request:', returnApiParams);
+          const returnStartTime = performance.now();
+          
+          const returnBusData = await api.searchBuses(returnApiParams);
+          
+          const returnEndTime = performance.now();
+          console.log(`📥 Return API Response in ${Math.round(returnEndTime - returnStartTime)}ms:`, returnBusData);
+
+          if (!returnBusData || !Array.isArray(returnBusData)) {
+            console.warn('Invalid return API response, setting empty array');
+            setReturnBusResults([]);
+          } else {
+            setReturnBusResults(returnBusData);
+          }
+          
+          setIsLoadingReturn(false);
         }
-        
-        setIsLoadingReturn(false);
       } else {
         // Clear return results for one-way trips
         setReturnBusResults([]);
@@ -235,8 +248,27 @@ const SearchResultsPage = () => {
   // Initial fetch on component mount
   useEffect(() => {
     const fetchInitialData = async () => {
+      console.log('🏁 fetchInitialData called with:', {
+        searchResultsLength: searchResults.length,
+        fromLogin,
+        searchParams,
+        tripType,
+        formData
+      });
+      
       if (searchResults.length > 0) {
         console.log('✅ Using existing search results from navigation');
+        // For two-way trips, still need to search for return if we have return date
+        if (tripType === 'twoWay' && (searchParams.returnDate || formData.returnDate)) {
+          console.log('🔄 Existing results but need return search for two-way');
+          const searchData = {
+            fromCity: searchParams.fromCity || formData.from,
+            toCity: searchParams.toCity || formData.to,
+            date: searchParams.date || formData.date,
+            returnDate: searchParams.returnDate || formData.returnDate
+          };
+          await performSearch(searchData, 'two-way-return-search');
+        }
         return;
       }
 
@@ -245,7 +277,8 @@ const SearchResultsPage = () => {
         const searchData = {
           fromCity: searchParams.from,
           toCity: searchParams.to,
-          date: searchParams.date
+          date: searchParams.date,
+          returnDate: searchParams.returnDate // Include return date for login scenarios
         };
         await performSearch(searchData, 'login-redirect');
         return;
