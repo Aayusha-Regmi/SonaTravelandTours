@@ -135,6 +135,15 @@ module.exports = {
         'flow-zigzag': 'flow-zigzag 4s linear infinite',
         'flow-zigzag-reverse': 'flow-zigzag-reverse 4s linear infinite',
       },
+      scrollBehavior: {
+        'smooth': 'smooth',
+        'auto': 'auto',
+      },
+      overscrollBehavior: {
+        'none': 'none',
+        'contain': 'contain',
+        'auto': 'auto',
+      },
     },
   },
   plugins: [],

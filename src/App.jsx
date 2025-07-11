@@ -5,11 +5,20 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ScrollToTop from './ScrollToTop';
 import './utils/sessionDebug'; // Load session debugging utilities
+import { useEffect } from 'react';
+import { initScrollFixes } from './utils/scrollUtils';
 
 // Import session test utilities for debugging
 import './utils/sessionTestUtils';
 
 function App() {
+  // Initialize scroll fixes when app loads
+  useEffect(() => {
+    const cleanup = initScrollFixes();
+    
+    return cleanup;
+  }, []);
+
   return (
     <>
       <SessionMonitor />

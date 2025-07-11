@@ -197,7 +197,13 @@ const DatePicker = ({
       return;
     }
     
-    // Handle calendar positioning when it opens
+    // Completely disable auto-scroll on mobile devices
+    const isMobile = window.innerWidth <= 1024;
+    if (isMobile) {
+      return; // Exit early on mobile devices - no auto-scroll at all
+    }
+
+    // Handle calendar positioning when it opens - DESKTOP ONLY
     if (isOpen && calendarRef.current) {
       // Use a short delay to ensure DOM is ready
       const timer = setTimeout(() => {
@@ -224,27 +230,37 @@ const DatePicker = ({
       
       return () => clearTimeout(timer);
     }
-  }, [isOpen, selectedDate, minDate]);  // Helper function to ensure calendar is visible
+  }, [isOpen, selectedDate, minDate]);  // Helper function to ensure calendar is visible - improved for desktop
   const ensureCalendarVisible = (calendarElement) => {
     if (!calendarElement || !calendarRef.current) return;
     
+    // Completely disable auto-scroll on mobile devices
+    const isMobile = window.innerWidth <= 1024;
+    if (isMobile) {
+      return; // Exit early on mobile devices
+    }
+
+    // Enhanced desktop behavior
     // Get real dimensions
     const calendarRect = calendarElement.getBoundingClientRect();
     const inputRect = calendarRef.current.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const scrollY = window.scrollY || window.pageYOffset;
-    const padding = 35; // Increased padding to ensure full visibility    // Calculate if calendar extends beyond viewport
-    const calendarHeight = calendarRect.height || 520; // Increased fallback height if measurement fails
-    const calendarBottom = inputRect.top + calendarHeight;
-    const bottomOverflow = Math.max(0, calendarBottom - viewportHeight);
+    const headerHeight = 80; // Account for header
+    const padding = 20; // Padding from edges
+
+    // Calculate if calendar extends beyond viewport
+    const calendarHeight = calendarRect.height || 520; // Fallback height if measurement fails
+    const calendarBottom = inputRect.bottom + calendarHeight + 8; // 8px for calendar margin
     
-    // Only scroll if necessary (calendar gets cut off)
-    if (bottomOverflow > 0) {
-      // Precisely calculate minimum scroll needed to show entire calendar
-      const scrollAmount = scrollY + bottomOverflow + padding;
+    // Check if calendar would be cut off
+    if (calendarBottom > viewportHeight - padding) {
+      // Calculate scroll needed to show calendar properly
+      const overflow = calendarBottom - (viewportHeight - padding);
+      const scrollAmount = scrollY + overflow + padding;
       
       window.scrollTo({
-        top: scrollAmount,
+        top: Math.max(0, scrollAmount),
         behavior: 'smooth'
       });
     }

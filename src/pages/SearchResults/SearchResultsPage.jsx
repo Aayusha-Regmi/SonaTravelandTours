@@ -8,11 +8,14 @@ import DateSelector from './ComponentSearch/DateSelector';
 import Button from '../../components/ui/Button';
 import LocationDropdown from '../Home/ComponentHome/UI/LocationDropdown';
 import DatePicker from '../Home/ComponentHome/UI/DatePickerNew';
+import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 import api from '../../services/api';
 
 const SearchResultsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { handleSocialClick } = useSocialActions();
   
   // Get search results and params from location state
   const { searchResults = [], searchParams = {}, fromLogin = false } = location.state || {};
@@ -827,6 +830,7 @@ const SearchResultsPage = () => {
       </main>
 
       <Footer />
+      <FloatingActionBar handleSocialClick={handleSocialClick} />
     </div>
   );
 };

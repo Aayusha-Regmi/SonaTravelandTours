@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import HeroSection from './ComponentHome/UI/HomeHeroSection';
@@ -9,26 +9,61 @@ import UnifiedSections from './ComponentHome/UnifiedSections';
 import AppPromotion from './ComponentHome/AppPromotion';
 import PaymentMethods from './ComponentHome/PaymentMethods';
 import FloatingActionBar from './ComponentHome/UI/FloatingActionBar';
-
-const handleSocialClick = (platform) => {
-  const links = {
-    feeds: '/feed',
-    whatsapp: 'https://wa.me/9779851234567?text=Hello! I would like to inquire about bus booking services.',
-    routes: '/routes',
-    linkedin: 'https://www.linkedin.com/company/sona-travel-tours',
-  };
-  if (["feeds", "routes"].includes(platform)) {
-    window.location.href = links[platform];
-  } else if (platform === "linkedin" || platform === "whatsapp") {
-    window.open(links[platform], '_blank');
-  }
-};
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const HomePage = () => {
+  const { handleSocialClick } = useSocialActions();
+
+  // Prevent unwanted auto-scrolling on mobile devices
+  useEffect(() => {
+    const preventAutoScroll = () => {
+      // More aggressive mobile auto-scroll prevention
+      if (window.innerWidth <= 1024) {
+        // Store original scroll methods
+        const originalScrollTo = window.scrollTo;
+        const originalScrollBy = window.scrollBy;
+        const originalScrollIntoView = Element.prototype.scrollIntoView;
+        
+        // Override scroll methods to prevent programmatic scrolling on mobile
+        window.scrollTo = (x, y, options) => {
+          // Allow manual scrolling (no options) or immediate scrolling
+          if (arguments.length <= 2 || !options || options.behavior !== 'smooth') {
+            return originalScrollTo.call(window, x, y);
+          }
+          // Block smooth scrolling that might be triggered by components
+          return;
+        };
+        
+        window.scrollBy = (x, y, options) => {
+          // Allow manual scrolling only
+          if (arguments.length <= 2 || !options || options.behavior !== 'smooth') {
+            return originalScrollBy.call(window, x, y);
+          }
+          return;
+        };
+        
+        // Completely disable scrollIntoView on mobile
+        Element.prototype.scrollIntoView = () => {
+          return;
+        };
+        
+        // Cleanup function to restore methods when component unmounts
+        return () => {
+          window.scrollTo = originalScrollTo;
+          window.scrollBy = originalScrollBy;
+          Element.prototype.scrollIntoView = originalScrollIntoView;
+        };
+      }
+    };
+
+    const cleanup = preventAutoScroll();
+    return cleanup;
+  }, []);
+
   return (
-    <div className="bg-[#f5f5f5] min-h-screen">
+    <div className="bg-[#f5f5f5] min-h-screen overflow-x-hidden lg:scroll-smooth">
       <Header />
-      <FloatingActionBar handleSocialClick={handleSocialClick} />
+      
       <main className="pt-[80px]">
         <HeroSection />
         <SearchForm />
@@ -38,7 +73,9 @@ const HomePage = () => {
         <AppPromotion />
         <PaymentMethods />
       </main>
+      
       <Footer />
+      <FloatingActionBar handleSocialClick={handleSocialClick} />
     </div>
   );
 };

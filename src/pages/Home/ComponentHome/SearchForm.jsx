@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import InputField from '../../../components/ui/InputField';
 import Button from '../../../components/ui/Button';
 import DatePicker from './UI/DatePickerNew';
@@ -7,10 +7,35 @@ import LocationDropdown from './UI/LocationDropdown';
 import api from '../../../services/api';
 import { isAuthenticated, storeSearchData, redirectToLogin } from '../../../utils/authGuard';
 
+// Mobile scroll lock utility
+const useMobileScrollLock = () => {
+  const [isScrollLocked, setIsScrollLocked] = useState(false);
+  
+  useEffect(() => {
+    if (window.innerWidth <= 1024 && isScrollLocked) {
+      // Lock scroll position on mobile
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      
+      return () => {
+        // Unlock scroll
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isScrollLocked]);
+  
+  return { setIsScrollLocked };
+};
+
 const SearchForm = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const searchFormRef = useRef(null);
+  const { setIsScrollLocked } = useMobileScrollLock();
   const [tripType, setTripType] = useState('oneWay');  const [formData, setFormData] = useState({
     from: '',
     to: '',
@@ -37,56 +62,65 @@ const SearchForm = () => {
   useEffect(() => {
     fetchRoutes();
   }, []);
-
-  // Handle restored search data after login
-  useEffect(() => {
-    if (location.state?.fromLogin && location.state?.restoreSearch && location.state?.searchParams) {
-      console.log('Restoring search data after login:', location.state.searchParams);
-      
-      const { searchParams } = location.state;
-      
-      // Restore form data
-      setFormData({
-        from: searchParams.fromCity || searchParams.from || '',
-        to: searchParams.toCity || searchParams.to || '',
-        date: searchParams.date || '',
-        returnDate: searchParams.returnDate || ''
-      });
-      
-      // Restore trip type if available
-      if (searchParams.tripType) {
-        setTripType(searchParams.tripType);
-      }
-      
-      console.log('Search form data restored');
-      
-      // Clear the navigation state to prevent re-restoration
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
   
-  // Add effect to handle form visibility when user interacts with form inputs
+  // Completely disable auto-scroll behavior for mobile devices, enable smart scroll for desktop
   useEffect(() => {
-    // Attach click handlers to form elements that might open dropdowns
-    const handleFormElementFocus = () => {
-      ensureFormInView();
+    // Check if device is mobile/tablet
+    const isMobile = window.innerWidth <= 1024;
+    
+    if (isMobile) {
+      // On mobile, completely disable any auto-scroll functionality
+      // Override any scroll methods that might be called
+      const originalScrollTo = window.scrollTo;
+      const originalScrollIntoView = Element.prototype.scrollIntoView;
+      
+      // Disable scrollTo on mobile for this component
+      window.scrollTo = (...args) => {
+        // Only allow manual scrolling, not programmatic
+        if (args.length === 0 || (args[0] && args[0].behavior !== 'smooth')) {
+          return originalScrollTo.apply(window, args);
+        }
+        // Block smooth scrolling on mobile
+        return;
+      };
+      
+      // Disable scrollIntoView on mobile
+      Element.prototype.scrollIntoView = () => {
+        // Block all scrollIntoView calls on mobile
+        return;
+      };
+      
+      // Cleanup function to restore original methods
+      return () => {
+        window.scrollTo = originalScrollTo;
+        Element.prototype.scrollIntoView = originalScrollIntoView;
+      };
+    }
+
+    // Desktop behavior - smart auto-scroll when form elements are clicked
+    const handleFormInteraction = (event) => {
+      const target = event.target;
+      const isFormElement = target.closest('[data-dropdown-trigger]') || 
+                           target.closest('.date-picker') || 
+                           target.closest('.location-dropdown');
+      
+      if (isFormElement) {
+        // Add a small delay to ensure the element is ready
+        setTimeout(() => {
+          ensureFormInViewForDesktop();
+        }, 150);
+      }
     };
 
     const formContainer = searchFormRef.current;
     if (formContainer) {
-      // Add listeners to all interactive elements in the form
-      const interactiveElements = formContainer.querySelectorAll('button, input, select');
-      interactiveElements.forEach(element => {
-        element.addEventListener('click', handleFormElementFocus);
-        element.addEventListener('focus', handleFormElementFocus);
-      });
+      // Add listeners to form container for better event capture
+      formContainer.addEventListener('click', handleFormInteraction);
+      formContainer.addEventListener('focus', handleFormInteraction, true);
 
       return () => {
-        // Clean up listeners
-        interactiveElements.forEach(element => {
-          element.removeEventListener('click', handleFormElementFocus);
-          element.removeEventListener('focus', handleFormElementFocus);
-        });
+        formContainer.removeEventListener('click', handleFormInteraction);
+        formContainer.removeEventListener('focus', handleFormInteraction, true);
       };
     }
   }, []);
@@ -243,34 +277,49 @@ const SearchForm = () => {
       from: prevData.to,
       to: prevData.from
     }));
-  };  // Helper function to ensure form is visible when dropdown opens
-  const ensureFormInView = () => {
+  };  // Helper function to ensure form is visible on desktop with perfect positioning
+  const ensureFormInViewForDesktop = () => {
+    // Only work on desktop devices
+    const isMobile = window.innerWidth <= 1024;
+    if (isMobile) {
+      return; // Exit early on mobile devices
+    }
+
     if (searchFormRef.current) {
       const rect = searchFormRef.current.getBoundingClientRect();
       const windowHeight = window.innerHeight;
+      const headerHeight = 80; // Adjust based on your header height
+      const buffer = 20; // Additional spacing from top
       
-      // Only scroll if the top of the form is out of view
-      if (rect.top < 20) { // 20px buffer from top
+      // Calculate ideal position - form should be visible with some space from header
+      const idealTop = headerHeight + buffer;
+      
+      // Check if form needs repositioning
+      const needsScroll = rect.top < idealTop || rect.top > windowHeight * 0.7;
+      
+      if (needsScroll) {
         const scrollY = window.scrollY || window.pageYOffset;
-        const newScrollY = scrollY + rect.top - 20; // Position with small buffer from top
+        // Calculate new scroll position to place form at ideal position
+        const newScrollY = scrollY + rect.top - idealTop;
         
         window.scrollTo({
           top: Math.max(0, newScrollY),
           behavior: 'smooth'
         });
       }
-      // Don't scroll for cases where the form extends below viewport
-      // Let the individual dropdowns handle that with their specific positioning
     }
   };
+
+  // Keep the old function for backward compatibility
+  const ensureFormInViewIfNeeded = () => {
+    ensureFormInViewForDesktop();
+  };
   
-  // Handle window resize events
+  // Handle window resize events - remove auto-scroll completely
   useEffect(() => {
     const handleResize = () => {
-      // Ensure form is in view after resize completes
-      if (searchFormRef.current) {
-        setTimeout(ensureFormInView, 100);
-      }
+      // Remove any auto-scroll behavior on resize to prevent unwanted scrolling
+      // Just let the natural responsive behavior handle layout changes
     };
     
     window.addEventListener('resize', handleResize);
@@ -333,7 +382,8 @@ const SearchForm = () => {
                       onChange={handleInputChange}
                       placeholder="Choose Departure Date"
                       required
-                      className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
+                      data-dropdown-trigger="true"
+                      className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm date-picker"
                     />
                   </div>
                 </div>
@@ -350,13 +400,14 @@ const SearchForm = () => {
                       onChange={handleInputChange}
                       placeholder="Choose Return Date"
                       required
+                      data-dropdown-trigger="true"
                       minDate={formData.date ? (() => {
                         const nextDay = new Date(formData.date.split(' ').join(' '));
                         nextDay.setDate(nextDay.getDate() + 1);
                         return nextDay;
                       })() : new Date()}
                       disabled={!formData.date}
-                      className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
+                      className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm date-picker"
                     />
                   </div>
                 </div>
@@ -375,7 +426,8 @@ const SearchForm = () => {
                     onChange={handleInputChange}
                     placeholder="Choose Departure Date"
                     required
-                    className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
+                    data-dropdown-trigger="true"
+                    className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm date-picker"
                   />
                 </div>
               </div>
@@ -397,7 +449,8 @@ const SearchForm = () => {
                   placeholder="Choose Departure Place"
                   options={locationOptions}
                   required
-                  className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
+                  data-dropdown-trigger="true"
+                  className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm location-dropdown"
                 />
               </div>
             </div>
@@ -420,7 +473,8 @@ const SearchForm = () => {
                   placeholder="Choose Destination Place"
                   options={locationOptions.filter(option => option.value !== formData.from)}
                   required
-                  className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm"
+                  data-dropdown-trigger="true"
+                  className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm location-dropdown"
                 />
               </div>
             </div>

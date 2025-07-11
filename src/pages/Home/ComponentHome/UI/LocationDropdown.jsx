@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const LocationDropdown = ({
@@ -86,7 +86,13 @@ const LocationDropdown = ({
       return;
     }
     
-    // Handle dropdown positioning when it opens
+    // Completely disable auto-scroll on mobile devices
+    const isMobile = window.innerWidth <= 1024;
+    if (isMobile) {
+      return; // Exit early on mobile devices - no auto-scroll at all
+    }
+
+    // Handle dropdown positioning when it opens - DESKTOP ONLY
     if (dropdownRef.current) {
       setTimeout(() => {
         const dropdown = dropdownRef.current.querySelector('.location-dropdown-menu');
@@ -111,26 +117,37 @@ const LocationDropdown = ({
     }
   }, [isOpen]);
   
-  // Helper function to ensure dropdown is visible
+  // Helper function to ensure dropdown is visible - improved for desktop
   const ensureDropdownVisible = (dropdownElement) => {
-    if (!dropdownElement || !dropdownRef.current) return;    // Get real measurements
+    if (!dropdownElement || !dropdownRef.current) return;
+    
+    // Completely disable auto-scroll on mobile devices
+    const isMobile = window.innerWidth <= 1024;
+    if (isMobile) {
+      return; // Exit early on mobile devices
+    }
+
+    // Enhanced desktop behavior
+    // Get real measurements
     const dropdownRect = dropdownElement.getBoundingClientRect();
     const inputRect = dropdownRef.current.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const scrollY = window.scrollY || window.pageYOffset;
-    const padding = 35; // Increased padding to ensure full visibility
+    const headerHeight = 80; // Account for header
+    const padding = 20; // Padding from edges
     
     // Calculate if dropdown extends beyond viewport
-    const dropdownBottom = inputRect.top + dropdownRect.height + 8; // 8px for dropdown margin
-    const bottomOverflow = Math.max(0, dropdownBottom - viewportHeight);
+    const dropdownBottom = inputRect.bottom + dropdownRect.height + 8; // 8px for dropdown margin
+    const availableSpace = viewportHeight - headerHeight - padding;
     
-    // Only scroll if necessary (dropdown gets cut off)
-    if (bottomOverflow > 0) {
-      // Precisely calculate minimum scroll needed
-      const scrollAmount = scrollY + bottomOverflow + padding;
+    // Check if dropdown would be cut off
+    if (dropdownBottom > viewportHeight - padding) {
+      // Calculate scroll needed to show dropdown properly
+      const overflow = dropdownBottom - (viewportHeight - padding);
+      const scrollAmount = scrollY + overflow + padding;
       
       window.scrollTo({
-        top: scrollAmount,
+        top: Math.max(0, scrollAmount),
         behavior: 'smooth'
       });
     }

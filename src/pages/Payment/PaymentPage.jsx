@@ -7,12 +7,15 @@ import Footer from '../../components/common/Footer';
 import ProgressBar from '../../components/common/BookingStepComponents/ProgressBar';
 import BusDetail from '../../components/common/BookingStepComponents/BusDetail';
 import PaymentModal from '../../components/ui/PaymentModal';
+import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 import api from '../../services/api';
 import { getAuthToken, getAuthHeaders, isAuthenticated } from '../../utils/authToken';
 
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { handleSocialClick } = useSocialActions();
   
   // 🔥 FIX: Get complete data from passenger details
   const { 
@@ -781,6 +784,7 @@ const PaymentPage = () => {
           />
         );
       })()}
+      <FloatingActionBar handleSocialClick={handleSocialClick} />
     </div>
   );
 };
