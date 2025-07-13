@@ -332,27 +332,35 @@ const UnifiedSections = () => {
   const offers = [
     {
       id: 1,
-      title: 'UNLOCK A YEAR OF SAVINGS',
-      subtitle: 'UNLOCK A YEAR OF',
-      discount: 'Up To 10% Discount',
-      promoCode: 'Sona12345',
-      image: '/images/img_modernbusistransportingpassengersmountainswithsunsetholidaybannergenerativeai69969036051.png'
+      title: 'Nepali New Year (Bikram Sambat)',
+      subtitle: 'Naya Barsa',
+      discount: '25% Discount',
+      promoCode: 'NEWYR2025',
+      image: '/images/636589929000896220-EPA-NEPAL-BISKA-FESTIVAL.webp'
     },
     {
       id: 2,
-      title: 'Maha Shivrati Festival',
-      subtitle: 'Maha Shivrati',
-      discount: '20% Discount',
-      promoCode: 'Sona12345',
-      image: '/images/img_modernbusistransportingpassengersmountainswithsunsetholidaygenerativeai69969036093_1.png'
+      title: 'Dashain Festival',
+      subtitle: 'Bada Dashain',
+      discount: '30% Discount',
+      promoCode: 'DASHAIN25',
+      image: '/images/Dashain.png'
     },
     {
       id: 3,
-      title: 'Maha Shivrati Festival',
-      subtitle: 'Maha Shivrati',
+      title: 'Tihar (Deepawali)',
+      subtitle: 'Festival of Lights',
+      discount: '25% Discount',
+      promoCode: 'TIHAR25',
+      image: '/images/c893c128-6871-4bab-94db-c4436e419e28.png'
+    },
+    {
+      id: 4,
+      title: 'Holi Festival',
+      subtitle: 'Festival of Colors',
       discount: '20% Discount',
-      promoCode: 'Sona12345',
-      image: '/images/img_shanghaistreetviewwithcityscape135921_1.png'
+      promoCode: 'HOLI2025',
+      image: '/images/img_modernbusistransportingpassengersmountainswithsunsetholidaybannergenerativeai69969036051.png'
     }
   ];  return (
     <section className="relative py-24 overflow-hidden bg-gradient-to-br from-slate-800 via-gray-900 to-zinc-900 min-h-screen">
@@ -892,10 +900,10 @@ const UnifiedSections = () => {
           </div>
 
           {/* Offers Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {offers.map((offer, index) => (
-              <div key={offer.id} className="group relative" style={{ animationDelay: `${index * 0.2}s` }}>
-                <div className="relative backdrop-blur-xl bg-gradient-to-br from-white/20 to-white/5 border border-white/30 rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-700 hover:scale-105 hover:-translate-y-2">
+              <div key={offer.id} className="group relative h-full" style={{ animationDelay: `${index * 0.2}s` }}>
+                <div className="relative backdrop-blur-xl bg-gradient-to-br from-white/20 to-white/5 border border-white/30 rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-700 hover:scale-105 hover:-translate-y-2 h-full flex flex-col">
                   
                   {/* HOT Badge */}
                   <div className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold z-20 animate-pulse">
@@ -903,7 +911,7 @@ const UnifiedSections = () => {
                   </div>
 
                   {/* Background Image */}
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative h-48 overflow-hidden flex-shrink-0">
                     <img 
                       src={offer.image} 
                       alt={offer.title}
@@ -913,17 +921,17 @@ const UnifiedSections = () => {
                   </div>
 
                   {/* Content */}
-                  <div className="p-6">
+                  <div className="p-6 flex-1 flex flex-col">
                     <div className="text-white/80 text-sm mb-2">{offer.subtitle}</div>
-                    <h3 className="text-white text-xl font-bold mb-4">{offer.title}</h3>
+                    <h3 className="text-white text-lg font-bold mb-3 leading-tight line-clamp-2">{offer.title}</h3>
                     <div className="text-orange-400 text-lg font-bold mb-4">{offer.discount}</div>
                     
-                    <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                      <div>
+                    <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-lg p-3 mt-auto">
+                      <div className="flex-1 min-w-0 mr-3">
                         <div className="text-white/80 text-xs">Promo Code:</div>
-                        <div className="text-white font-mono font-bold">{offer.promoCode}</div>
+                        <div className="text-white font-mono font-bold text-sm truncate">{offer.promoCode}</div>
                       </div>
-                      <button className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-blue-600 hover:to-cyan-600 transition-all duration-300">
+                      <button className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-2 rounded-lg text-xs font-medium hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 flex-shrink-0">
                         Copy
                       </button>
                     </div>
