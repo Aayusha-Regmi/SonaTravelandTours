@@ -585,7 +585,7 @@ const SearchResultsPage = () => {
         )}
 
         {/* Search Section - Glass Morphism */}
-        <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-2xl shadow-xl p-6 mb-8 transform hover:scale-[1.01] transition-all duration-300"
+        <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-2xl shadow-xl p-6 mb-8 transform hover:scale-[1.01] transition-all duration-300 relative z-50"
              style={{
                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
                backdropFilter: 'blur(20px)',
