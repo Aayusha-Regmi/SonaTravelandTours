@@ -6,8 +6,8 @@ export const useSocialActions = () => {
   const handleSocialClick = (action) => {
     switch (action) {
       case 'feeds':
-        // Navigate to feeds or news page - adjust route as needed
-        navigate('/feeds');
+        // Navigate to feeds page
+        navigate('/feed');
         break;
       case 'whatsapp':
         // Open WhatsApp with predefined message - updated number
@@ -15,8 +15,8 @@ export const useSocialActions = () => {
         window.open(`https://wa.me/9779802374215?text=${whatsappMessage}`, '_blank');
         break;
       case 'routes':
-        // Navigate to routes page - adjust route as needed
-        navigate('/routes');
+        // Navigate to bus routes page
+        navigate('/bus-routes');
         break;
       case 'call':
         // This is handled directly by the anchor tag with tel: link
