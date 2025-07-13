@@ -569,12 +569,12 @@ const SearchResultsPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
       
-      <main className="container mx-auto px-4 sm:px-8 py-6 md:py-8 lg:py-12 max-w-7xl">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12 max-w-7xl mt-12 sm:mt-6 lg:mt-0">
         {/* Breadcrumb */}
-        <div className="flex items-center space-x-3 mb-6">
-          <span className="text-sm font-medium text-gray-400">Home</span>
-          <div className="w-1 h-4 bg-gray-300 transform rotate-12"></div>
-          <span className="text-sm font-semibold text-gray-700">Search Results</span>
+        <div className="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
+          <span className="text-xs sm:text-sm font-medium text-gray-400">Home</span>
+          <div className="w-1 h-3 sm:h-4 bg-gray-300 transform rotate-12"></div>
+          <span className="text-xs sm:text-sm font-semibold text-gray-700">Search Results</span>
         </div>
 
         {/* Error message display */}
@@ -585,29 +585,29 @@ const SearchResultsPage = () => {
         )}
 
         {/* Search Section - Glass Morphism */}
-        <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-2xl shadow-xl p-6 mb-8 transform hover:scale-[1.01] transition-all duration-300 relative z-50"
+        <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-4 lg:p-6 mb-6 sm:mb-8 transform hover:scale-[1.01] transition-all duration-300 relative z-10"
              style={{
                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
                backdropFilter: 'blur(20px)',
                WebkitBackdropFilter: 'blur(20px)'
              }}>
-          <div className="flex flex-wrap items-end gap-4 lg:gap-3">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3 sm:gap-4 lg:gap-3">
             {/* Trip Type Selector */}
-            <div className="flex flex-col order-1 w-[150px]">
-              <label htmlFor="tripType" className="text-sm font-medium text-gray-700 mb-1">Trip Type</label>
+            <div className="flex flex-col order-1 w-full sm:w-[130px] lg:w-[150px]">
+              <label htmlFor="tripType" className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Trip Type</label>
               <div className="relative">
                 <select 
                   id="tripType"
                   value={tripType}
                   onChange={(e) => handleTripTypeChange(e.target.value)}
-                  className="w-full appearance-none backdrop-blur-sm bg-white/50 border border-white/30 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-lg h-[42px] transition-all duration-300"
+                  className="w-full appearance-none backdrop-blur-sm bg-white/50 border border-white/30 rounded-lg sm:rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-lg h-[38px] sm:h-[42px] transition-all duration-300"
                   aria-label="Select trip type"
                 >
                   <option value="oneWay">One Way</option>
                   <option value="twoWay">Two Ways</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -615,7 +615,7 @@ const SearchResultsPage = () => {
             </div>
 
             {/* From Location */}
-            <div className="w-[200px] order-2">
+            <div className="w-full sm:w-[160px] lg:w-[200px] order-2">
               <LocationDropdown
                 label="From"
                 name="from"
@@ -627,8 +627,37 @@ const SearchResultsPage = () => {
               />
             </div>
 
-            {/* Swap Button */}
-            <div className="self-center order-3 mt-3">
+            {/* To Location */}
+            <div className="w-full sm:w-[160px] lg:w-[200px] order-4 sm:order-3">
+              <LocationDropdown
+                label="To"
+                name="to"
+                value={formData.to}
+                onChange={handleInputChange}
+                placeholder="Select destination"
+                options={locationOptions.filter(option => option.value !== formData.from)}
+                required
+              />
+            </div>
+
+            {/* Mobile Swap Button */}
+            <div className="flex justify-center order-3 sm:hidden w-full">
+              <button 
+                onClick={handleSwapLocations}
+                className="backdrop-blur-sm bg-white/50 border border-white/30 rounded-full p-2 shadow-lg hover:bg-white/70 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-300/50 active:scale-95 transform"
+                title="Swap locations"
+                aria-label="Swap departure and destination locations"
+              >
+                <img 
+                  src="/images/img_hicon_linear_arrow_swap_horizontal.svg" 
+                  alt="Swap" 
+                  className="w-5 h-5 transition-transform duration-300 ease-in-out hover:rotate-180"
+                />
+              </button>
+            </div>
+
+            {/* Desktop Swap Button */}
+            <div className="hidden sm:flex self-center order-4 lg:order-3 mt-3">
               <button 
                 onClick={handleSwapLocations}
                 className="backdrop-blur-sm bg-white/50 border border-white/30 rounded-full p-3 mt-3 shadow-lg hover:bg-white/70 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-300/50 active:scale-95 transform"
@@ -643,23 +672,10 @@ const SearchResultsPage = () => {
               </button>
             </div>
 
-            {/* To Location */}
-            <div className="w-[200px] order-4">
-              <LocationDropdown
-                label="To"
-                name="to"
-                value={formData.to}
-                onChange={handleInputChange}
-                placeholder="Select destination"
-                options={locationOptions.filter(option => option.value !== formData.from)}
-                required
-              />
-            </div>
-
             {/* Date Pickers with more compact layout */}
-            <div className="flex items-end space-x-3 flex-nowrap order-5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end space-y-3 sm:space-y-0 sm:space-x-3 flex-nowrap order-5 w-full sm:w-auto">
               {/* Departure Date */}
-              <div className={tripType === 'twoWay' ? 'w-[170px]' : 'w-[200px]'}>
+              <div className={tripType === 'twoWay' ? 'w-full sm:w-[140px] lg:w-[170px]' : 'w-full sm:w-[160px] lg:w-[200px]'}>
                 <DatePicker
                   label={tripType === 'twoWay' ? "Departure" : "Date"}
                   name="date"
@@ -673,7 +689,7 @@ const SearchResultsPage = () => {
 
               {/* Return Date (for two-way trips) */}
               {tripType === 'twoWay' && (
-                <div className="w-[170px]">
+                <div className="w-full sm:w-[140px] lg:w-[170px]">
                   <DatePicker
                     label="Return"
                     name="returnDate"
@@ -694,35 +710,35 @@ const SearchResultsPage = () => {
             </div>
 
             {/* Search Button */}
-            <div className="order-6 ml-auto">
+            <div className="order-6 w-full sm:w-auto sm:ml-auto">
               <Button
                 variant="primary"
                 onClick={handleSearchAgain}
-                className="w-full backdrop-blur-sm bg-gradient-to-r from-blue-600/90 to-purple-600/90 border border-white/20 text-white rounded-xl px-6 py-3 h-[44px] hover:from-blue-700/90 hover:to-purple-700/90 shadow-xl transition-all duration-300 focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 cursor-pointer flex items-center justify-center transform hover:scale-105 active:scale-95"
+                className="w-full backdrop-blur-sm bg-gradient-to-r from-blue-600/90 to-purple-600/90 border border-white/20 text-white rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 sm:py-3 h-[38px] sm:h-[44px] hover:from-blue-700/90 hover:to-purple-700/90 shadow-xl transition-all duration-300 focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 cursor-pointer flex items-center justify-center transform hover:scale-105 active:scale-95"
                 style={{ opacity: isLoading ? 0.8 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
                     <span className="animate-spin mr-2">
-                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                     </span>
-                    <span className="text-sm font-medium">Searching...</span>
+                    <span className="text-xs sm:text-sm font-medium">Searching...</span>
                   </>
                 ) : (
                   <>
                     <svg
-                      className="w-4 h-4 mr-2"
+                      className="w-3 h-3 sm:w-4 sm:h-4 mr-2"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
-                    <span className="text-sm font-medium">Search Again</span>
+                    <span className="text-xs sm:text-sm font-medium">Search Again</span>
                   </>
                 )}
               </Button>
@@ -753,41 +769,43 @@ const SearchResultsPage = () => {
         />
 
         {/* Results Header - Glass Morphism */}
-        <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-2xl p-6 mb-6 flex items-center justify-between shadow-xl transform hover:scale-[1.01] transition-all duration-300"
+        <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-xl transform hover:scale-[1.01] transition-all duration-300"
              style={{
                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
                backdropFilter: 'blur(20px)',
                WebkitBackdropFilter: 'blur(20px)'
              }}>
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center mr-3">
-              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <div className="flex items-center mb-4 sm:mb-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
               </svg>
             </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-              {currentBusResults.length} Bus{currentBusResults.length !== 1 ? 'es' : ''} found
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="text-sm sm:text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                {currentBusResults.length} Bus{currentBusResults.length !== 1 ? 'es' : ''} found
+              </span>
               {tripType === 'twoWay' && (
-                <span className="text-sm font-normal text-gray-600 ml-2">
+                <span className="text-xs sm:text-sm font-normal text-gray-600 sm:ml-2">
                   ({activeTab === 'departure' ? 'Departure' : 'Return'} Journey)
                 </span>
               )}
-            </span>
+            </div>
           </div>
 
-          <div className="h-8 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent mx-4"></div>
+          <div className="hidden sm:block h-8 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent mx-4"></div>
 
-          <div className="flex items-center overflow-x-auto no-scrollbar">
-            <div className="backdrop-blur-sm bg-white/20 border border-white/30 rounded-xl px-4 py-2 flex items-center mr-4">
-              <svg className="w-4 h-4 text-gray-700 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center w-full sm:w-auto overflow-x-auto no-scrollbar">
+            <div className="backdrop-blur-sm bg-white/20 border border-white/30 rounded-lg sm:rounded-xl px-3 sm:px-4 py-1 sm:py-2 flex items-center mb-3 sm:mb-0 sm:mr-4">
+              <svg className="w-3 h-3 sm:w-4 sm:h-4 text-gray-700 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
               </svg>
-              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">
                 Sort By:
               </span>
             </div>
 
-            <div className="flex space-x-4 overflow-x-auto no-scrollbar">
+            <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:space-x-4 overflow-x-auto no-scrollbar w-full sm:w-auto">
               {sortOptions.map((option, index) => (
                 <button
                   key={index}
@@ -796,7 +814,7 @@ const SearchResultsPage = () => {
                   tabIndex="0"
                   role="radio"
                   aria-label={`Sort by ${option}`}
-                  className={`text-sm transition-all duration-300 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 rounded-lg px-3 py-2 transform hover:scale-105 ${
+                  className={`text-xs sm:text-sm transition-all duration-300 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 rounded-lg px-2 sm:px-3 py-1 sm:py-2 transform hover:scale-105 ${
                     sortBy === option 
                       ? 'font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent backdrop-blur-sm bg-white/30 border border-white/30 shadow-lg' 
                       : 'font-medium text-gray-600 hover:text-blue-600 hover:bg-white/20'
@@ -816,16 +834,16 @@ const SearchResultsPage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Bus Listings */}
           <div className="flex-grow" id="resultsSection">
             {/* Two-Way Tab Navigation - Glass Morphism Style */}
             {tripType === 'twoWay' && (
-              <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-2xl p-6 mb-6 shadow-lg">
-                <div className="flex backdrop-blur-sm bg-white/10 border border-white/20 rounded-xl p-1 shadow-inner">
+              <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-xl sm:rounded-2xl p-3 sm:p-6 mb-4 sm:mb-6 shadow-lg">
+                <div className="flex backdrop-blur-sm bg-white/10 border border-white/20 rounded-lg sm:rounded-xl p-1 shadow-inner">
                   <button
                     onClick={() => handleTabChange('departure')}
-                    className={`flex-1 py-4 px-6 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                    className={`flex-1 py-2 sm:py-4 px-3 sm:px-6 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 ${
                       activeTab === 'departure'
                         ? 'bg-white/90 text-blue-600 shadow-md backdrop-blur-md border border-white/40'
                         : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
@@ -837,7 +855,7 @@ const SearchResultsPage = () => {
                   <button
                     onClick={() => handleTabChange('return')}
                     disabled={!formData.returnDate}
-                    className={`flex-1 py-4 px-6 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                    className={`flex-1 py-2 sm:py-4 px-3 sm:px-6 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 ${
                       activeTab === 'return'
                         ? 'bg-white/90 text-blue-600 shadow-md backdrop-blur-md border border-white/40'
                         : formData.returnDate 
