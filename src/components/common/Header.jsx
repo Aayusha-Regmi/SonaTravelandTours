@@ -165,9 +165,6 @@ const Header = () => {
           <Link to="/bus-routes" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Bus Routes
           </Link>
-          <Link to="/hotels" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
-            Hotels
-          </Link>
           <Link to="/profile?tab=mybookings" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             Bookings
           </Link>
@@ -175,7 +172,7 @@ const Header = () => {
             Live Track
           </Link>
           <Link to="/feed" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
-            Feed
+            Feeds
           </Link>
           <Link to="/faqs" className="text-[#5f5f5f] text-base font-medium hover:text-[#0a639d] transition-colors">
             FAQs
@@ -353,13 +350,6 @@ const Header = () => {
               Bus Routes
             </Link>
             <Link 
-              to="/hotels" 
-              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Hotels
-            </Link>
-            <Link 
               to="/profile?tab=mybookings" 
               className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
               onClick={() => setIsMenuOpen(false)}
@@ -378,7 +368,7 @@ const Header = () => {
               className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
-              Feed
+              Feeds
             </Link>
             <Link 
               to="/faqs" 
