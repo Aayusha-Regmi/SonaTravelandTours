@@ -8,7 +8,6 @@ import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import Dropdown from '../../components/ui/Dropdown';
 import Checkbox from '../../components/ui/Checkbox';
-import BusDetail from '../../components/common/BookingStepComponents/BusDetail';
 import ProgressBar from '../../components/common/BookingStepComponents/ProgressBar';
 
 const PassengerDetail = () => {
@@ -559,18 +558,8 @@ const PassengerDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 font-['Inter',system-ui,sans-serif]">
-      <Header />      {/* Bus Detail Component */}
+      <Header />
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pt-20 sm:pt-22 md:pt-24">
-        <BusDetail
-          busName={busData?.busName || busData?.name || "Bus Information"}
-          busType={busData?.busType || busData?.type || "Standard"}
-          date={travelDate || new Date().toLocaleDateString()}
-          time={busData?.departureTime || "TBD"}
-          boardingPlace={searchParams?.fromCity || busData?.departureLocation || "Kathmandu"}
-          droppingPlace={searchParams?.toCity || busData?.arrivalLocation || "Birgunj"}
-          duration={busData?.duration || "TBD"}
-        />
-
         {/* Bus Listing Header */}
         <BusListingHeader 
           title="Available Buses"

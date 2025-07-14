@@ -6,7 +6,6 @@ import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import BusListingHeader from '../../components/common/BusListingHeader';
 import ProgressBar from '../../components/common/BookingStepComponents/ProgressBar';
-import BusDetail from '../../components/common/BookingStepComponents/BusDetail';
 import PaymentModal from '../../components/ui/PaymentModal';
 import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
@@ -446,25 +445,6 @@ const PaymentPage = () => {
 
       <Header />
         <main className="max-w-7xl mt-20 mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
-        {/* Bus Information Section with glassmorphism */}
-        <div className="mb-8 transform hover:scale-[1.02] transition-all duration-300">
-          <BusDetail
-            busName={busData?.busName || busData?.name || "Bus Information"}
-            busType={busData?.busType || busData?.type || "Standard"}
-            date={travelDate || new Date().toLocaleDateString()}
-            time={busData?.departureTime || "TBD"}
-            boardingPlace={bookingDetails?.origin || searchParams?.fromCity || "Kathmandu"}
-            droppingPlace={bookingDetails?.destination || searchParams?.toCity || "Birgunj"}
-            duration={busData?.duration || "TBD"}
-            // Two-way trip props
-            tripType={tripType}
-            returnDate={returnTravelDate}
-            returnTime={returnBusData?.departureTime}
-            returnBusName={returnBusData?.busName || returnBusData?.name}
-            returnBusType={returnBusData?.busType || returnBusData?.type}
-          />
-        </div>
-
         {/* Bus Listing Header */}
         <BusListingHeader 
           title="Available Buses"
