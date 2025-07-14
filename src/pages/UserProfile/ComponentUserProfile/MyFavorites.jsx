@@ -8,86 +8,86 @@ const MyFavorites = ({ favorites = [] }) => {
   const staticFavorites = [
     {
       id: 1,
-      name: "Kathmandu to Pokhara",
-      location: "Nepal Tourism Route",
-      type: "Tourist Bus",
+      name: "Birgunj to Gaushala",
+      location: "Central Nepal Route",
+      type: "Express Bus",
       image: "/images/Bus.png",
       rating: 4.8,
       reviews: 245,
-      price: 1100,
-      duration: "6-7 hours",
+      price: 2500,
+      duration: "4-5 hours",
       features: ["AC", "WiFi", "Comfortable Seats"],
-      description: "Scenic route through beautiful landscapes",
+      description: "Direct route connecting southern border to central Nepal",
       operator: "Sona Travel"
     },
     {
       id: 2,
-      name: "Kathmandu to Chitwan",
-      location: "Wildlife Adventure",
+      name: "Birgunj to Kathmandu",
+      location: "Capital Connection",
       type: "Deluxe Bus",
       image: "/images/img_beautifullandscapetouristbustraveltransportbackground87582536524.png",
       rating: 4.6,
       reviews: 180,
-      price: 1200,
+      price: 2200,
       duration: "5-6 hours",
       features: ["AC", "Snacks", "Rest Stops"],
-      description: "Journey to Nepal's wildlife paradise",
+      description: "Main highway route to Nepal's capital city",
       operator: "Sona Travel"
     },
     {
       id: 3,
-      name: "Kathmandu to Lumbini",
-      location: "Buddhist Pilgrimage",
+      name: "Kathmandu to Kalaiya",
+      location: "Terai Region",
       type: "Tourist Bus",
       image: "/images/img_busroadgenerativeai22087319731_1.png",
       rating: 4.7,
       reviews: 156,
-      price: 1800,
-      duration: "8-9 hours",
+      price: 4000,
+      duration: "6-7 hours",
       features: ["AC", "Meals", "Guide"],
-      description: "Spiritual journey to Buddha's birthplace",
+      description: "Journey from capital to southern plains region",
       operator: "Sona Travel"
     },
     {
       id: 4,
-      name: "Kathmandu to Bandipur",
-      location: "Cultural Heritage",
+      name: "Banepa to Birgunj",
+      location: "Historical Route",
       type: "Premium Bus",
       image: "/images/img_bestplacestovsitinkathmandunepal71683x1024_1.png",
       rating: 4.9,
       reviews: 98,
-      price: 1400,
+      price: 1800,
       duration: "4-5 hours",
       features: ["AC", "WiFi", "Premium Seats"],
-      description: "Explore traditional Newari architecture",
+      description: "Connecting ancient town to border region",
       operator: "Sona Travel"
     },
     {
       id: 5,
-      name: "Pokhara to Jomsom",
-      location: "Mountain Adventure",
-      type: "Mountain Bus",
+      name: "Gaushala to Banepa",
+      location: "Valley Connection",
+      type: "Standard Bus",
       image: "/images/img_coupletakingselfiewhiletravelingbytrain232149304471.png",
       rating: 4.5,
       reviews: 89,
-      price: 2200,
-      duration: "6-7 hours",
-      features: ["4WD", "Oxygen", "Mountain Guide"],
-      description: "Himalayan adventure through Mustang",
+      price: 1500,
+      duration: "2-3 hours",
+      features: ["Comfortable Seats", "Local Guide"],
+      description: "Short route within Kathmandu valley region",
       operator: "Sona Travel"
     },
     {
       id: 6,
-      name: "Kathmandu to Nagarkot",
-      location: "Sunrise Point",
-      type: "Day Trip",
+      name: "Kalaiya to Kathmandu",
+      location: "Return Journey",
+      type: "Express Bus",
       image: "/images/img_ellipse_184.png",
       rating: 4.4,
       reviews: 67,
-      price: 800,
-      duration: "2-3 hours",
-      features: ["Scenic Route", "Photography", "Breakfast"],
-      description: "Best sunrise views in Nepal",
+      price: 3800,
+      duration: "6-7 hours",
+      features: ["AC", "WiFi", "Evening Service"],
+      description: "Return trip from southern region to capital",
       operator: "Sona Travel"
     }
   ];
@@ -252,7 +252,7 @@ const MyFavorites = ({ favorites = [] }) => {
           }
           
           .animate-marquee {
-            animation: marquee 25s linear infinite;
+            animation: marquee 18s linear infinite;
           }
           
           .animate-marquee:hover {
