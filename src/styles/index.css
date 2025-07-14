@@ -140,6 +140,89 @@ body {
   animation: fadeInSlideDown 0.3s ease-out;
 }
 
+/* Custom animations for enhanced UI effects */
+@keyframes gradient-xy {
+  0%, 100% {
+    background-size: 400% 400%;
+    background-position: left center;
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.95;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Utility classes for animations */
+.animate-gradient-xy {
+  animation: gradient-xy 3s ease infinite;
+  background-size: 400% 400%;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background-size: 200px 100%;
+}
+
+/* Enhanced gradient backgrounds */
+.bg-gradient-green {
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+}
+
+.bg-gradient-teal {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 50%, #0f766e 100%);
+}
+
+.bg-gradient-blue-soft {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+}
+
+/* Glass morphism effects */
+.glass-morphism {
+  backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+  border-radius: 12px;
+}
+
+.glass-morphism-green {
+  backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(16, 185, 129, 0.125);
+  border-radius: 12px;
+}
+
+.glass-morphism-blue {
+  backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(59, 130, 246, 0.25);
+  border: 1px solid rgba(59, 130, 246, 0.125);
+  border-radius: 12px;
+}
+
 /* Prevent focus-triggered scrolling on form elements */
 input:focus, 
 select:focus, 

@@ -13,7 +13,24 @@ const Card = ({ children, className = '' }) => (
 );
 
 
-const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) => {
+const InlineSeatSelection = ({ 
+  busData, 
+  busId, 
+  searchParams = {}, 
+  travelDate,
+  tripType = 'oneWay',
+  activeTab = 'departure',
+  departureSeats = [],
+  returnSeats = [],
+  departureBusData = null,
+  returnBusData = null,
+  setDepartureSeats = () => {},
+  setReturnSeats = () => {},
+  setDepartureBusData = () => {},
+  setReturnBusData = () => {},
+  formData = {},
+  onTabChange = () => {} // Add function to handle tab change
+}) => {
   const navigate = useNavigate();
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
@@ -26,6 +43,19 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
   
   // Get dynamic seat price from bus data, fallback to 2000
   const seatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+  
+  // Update seat selection when seats change
+  useEffect(() => {
+    if (tripType === 'twoWay') {
+      if (activeTab === 'departure') {
+        setSelectedSeats(departureSeats);
+        setTotalPrice(departureSeats.length * seatPrice);
+      } else {
+        setSelectedSeats(returnSeats);
+        setTotalPrice(returnSeats.length * seatPrice);
+      }
+    }
+  }, [departureSeats, returnSeats, activeTab, tripType, seatPrice]);
   
   // This useEffect will refresh booked seats whenever:
   // - busData changes (different bus selected)
@@ -261,10 +291,28 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
   const handleSeatClick = (seatId, seatType) => {
     if (seatType === 'booked') return;
     
+    let newSelectedSeats;
     if (selectedSeats.includes(seatId)) {
-      setSelectedSeats(selectedSeats.filter(seat => seat !== seatId));
+      newSelectedSeats = selectedSeats.filter(seat => seat !== seatId);
     } else {
-      setSelectedSeats([...selectedSeats, seatId]);
+      newSelectedSeats = [...selectedSeats, seatId];
+    }
+    
+    setSelectedSeats(newSelectedSeats);
+    
+    // Update the appropriate state based on trip type and active tab
+    if (tripType === 'twoWay') {
+      if (activeTab === 'departure') {
+        setDepartureSeats(newSelectedSeats);
+        if (newSelectedSeats.length > 0) {
+          setDepartureBusData(busData);
+        }
+      } else {
+        setReturnSeats(newSelectedSeats);
+        if (newSelectedSeats.length > 0) {
+          setReturnBusData(busData);
+        }
+      }
     }
   };
 
@@ -280,32 +328,54 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
       return;
     }
 
+    // For two-way trips, validate both departure and return seats
+    if (tripType === 'twoWay') {
+      if (departureSeats.length === 0) {
+        toast.error('Please select seats for departure journey first.');
+        return;
+      }
+      if (returnSeats.length === 0) {
+        toast.error('Please select seats for return journey to continue.');
+        return;
+      }
+      if (!departureBusData || !returnBusData) {
+        toast.error('Please complete seat selection for both journeys.');
+        return;
+      }
+    }
+
     console.log('🎯 Proceeding to passenger details with data:', {
-      selectedSeats,
-      busData,
+      selectedSeats: tripType === 'twoWay' ? departureSeats : selectedSeats,
+      busData: tripType === 'twoWay' ? departureBusData : busData,
+      returnSeats: tripType === 'twoWay' ? returnSeats : null,
+      returnBusData: tripType === 'twoWay' ? returnBusData : null,
       searchParams,
       travelDate,
-      totalPrice
+      totalPrice: tripType === 'twoWay' ? (departureSeats.length * seatPrice) + (returnSeats.length * seatPrice) : totalPrice
     });
 
     // 🔥 FIX: Navigate with complete data structure
     navigate('/passenger-detail', {
       state: {
-        selectedSeats: selectedSeats,        // ["A5", "B7"] - actual selected seats
-        busData: busData,                    // Complete bus information
+        selectedSeats: tripType === 'twoWay' ? departureSeats : selectedSeats,        // ["A5", "B7"] - actual selected seats
+        busData: tripType === 'twoWay' ? departureBusData : busData,                    // Complete bus information
+        returnSeats: tripType === 'twoWay' ? returnSeats : null,        // Return seats for two-way trips
+        returnBusData: tripType === 'twoWay' ? returnBusData : null,    // Return bus data for two-way trips
+        returnTravelDate: tripType === 'twoWay' ? formData.returnDate : null, // Return travel date
         searchParams: searchParams,          // Search parameters (from/to cities, etc.)
         travelDate: travelDate,              // Travel date
-        totalPrice: totalPrice,              // Total calculated price
+        totalPrice: tripType === 'twoWay' ? (departureSeats.length * seatPrice) + (returnSeats.length * seatPrice) : totalPrice,              // Total calculated price
         seatPrice: seatPrice,                // Price per seat (2000)
+        tripType: tripType,                  // Trip type (oneWay/twoWay)
         bookingDetails: {
           busId: busData?.originalData?.busId || busData?.id || busId,
           busName: busData?.busName || busData?.name,
           route: `${searchParams?.fromCity || busData?.departureLocation} → ${searchParams?.toCity || busData?.arrivalLocation}`,
           departureTime: busData?.departureTime,
           arrivalTime: busData?.arrivalTime,
-          totalSeats: selectedSeats.length,
+          totalSeats: tripType === 'twoWay' ? departureSeats.length : selectedSeats.length,
           farePerSeat: seatPrice,
-          totalFare: totalPrice,
+          totalFare: tripType === 'twoWay' ? (departureSeats.length * seatPrice) + (returnSeats.length * seatPrice) : totalPrice,
           origin: searchParams?.fromCity || busData?.departureLocation || 'Kathmandu',
           destination: searchParams?.toCity || busData?.arrivalLocation || 'Birgunj'
         }
@@ -313,7 +383,10 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
     });
 
     // Show success message
-    toast.success(`Seats ${selectedSeats.join(', ')} selected successfully!`);
+    const seatsMessage = tripType === 'twoWay' 
+      ? `Departure seats ${departureSeats.join(', ')} and return seats ${returnSeats.join(', ')} selected successfully!`
+      : `Seats ${selectedSeats.join(', ')} selected successfully!`;
+    toast.success(seatsMessage);
   };
 
   const bookSeats = async (selectedSeats) => {
@@ -511,6 +584,11 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Selected Seat(s)
+              {tripType === 'twoWay' && (
+                <span className="text-sm font-medium text-gray-600 ml-2">
+                  ({activeTab === 'departure' ? 'Departure' : 'Return'})
+                </span>
+              )}
             </h3>
             <div className="flex items-center space-x-4">
               <p className="text-xl font-bold text-green-600">
@@ -522,32 +600,88 @@ const InlineSeatSelection = ({ busData, busId, searchParams = {}, travelDate }) 
                 </span>
               )}
             </div>
+            
+            {/* Two-Way Progress Indicator */}
+            {tripType === 'twoWay' && (
+              <div className="mt-3 flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <div className={`w-3 h-3 rounded-full ${departureSeats.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                  <span className="text-sm text-gray-600">
+                    Departure: {departureSeats.length > 0 ? departureSeats.join(', ') : 'Not selected'}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-3 h-3 rounded-full ${returnSeats.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                  <span className="text-sm text-gray-600">
+                    Return: {returnSeats.length > 0 ? returnSeats.join(', ') : 'Not selected'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="flex items-center space-x-6">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Amount</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">
+                Total Amount
+                {tripType === 'twoWay' && (
+                  <span className="text-xs text-gray-500 block">
+                    (Both journeys)
+                  </span>
+                )}
+              </p>
               <span className="text-2xl font-bold text-gray-800">
-                Rs. {totalPrice.toLocaleString()}
+                Rs. {(tripType === 'twoWay' 
+                  ? (departureSeats.length * seatPrice) + (returnSeats.length * seatPrice)
+                  : totalPrice
+                ).toLocaleString()}
               </span>
+              {tripType === 'twoWay' && (
+                <div className="text-xs text-gray-500 mt-1">
+                  <div>Departure: Rs. {(departureSeats.length * seatPrice).toLocaleString()}</div>
+                  <div>Return: Rs. {(returnSeats.length * seatPrice).toLocaleString()}</div>
+                </div>
+              )}
             </div>
             
-            <Button
-              onClick={handleProceedToPassengerDetails}
-              className={`
-                px-8 py-3 text-base font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2
-                ${selectedSeats.length === 0 || isLoadingSeats
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-                }
-              `}
-              disabled={selectedSeats.length === 0 || isLoadingSeats}
-            >
-              <span>Go to passenger details</span>
-              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </Button>          </div>
+            {/* Smart Button - Show different buttons based on trip type and tab */}
+            {tripType === 'twoWay' && activeTab === 'departure' && selectedSeats.length > 0 ? (
+              // Show "For Return" button when departure seats are selected
+              <Button
+                onClick={() => onTabChange('return')}
+                className="px-8 py-3 text-base font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <span>For Return</span>
+                <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </Button>
+            ) : (
+              // Show "Go to passenger details" button for all other cases
+              <Button
+                onClick={handleProceedToPassengerDetails}
+                className={`
+                  px-8 py-3 text-base font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2
+                  ${(selectedSeats.length === 0 || isLoadingSeats || 
+                    (tripType === 'twoWay' && (departureSeats.length === 0 || returnSeats.length === 0)))
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                  }
+                `}
+                disabled={selectedSeats.length === 0 || isLoadingSeats || 
+                         (tripType === 'twoWay' && (departureSeats.length === 0 || returnSeats.length === 0))}
+              >
+                <span>
+                  {tripType === 'twoWay' && (departureSeats.length === 0 || returnSeats.length === 0)
+                    ? 'Select seats for both journeys'
+                    : 'Go to passenger details'
+                  }
+                </span>
+                <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </Button>
+            )}          </div>
         </div>
       </Card>
     </div>

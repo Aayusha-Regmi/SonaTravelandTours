@@ -42,6 +42,12 @@ const SearchResultsPage = () => {
   const [travelDate, setTravelDate] = useState(searchParams.date || '06/06/2024');
   const [sortBy, setSortBy] = useState('Earliest');
   
+  // Seat selection state for two-way trips
+  const [departureSeats, setDepartureSeats] = useState([]);
+  const [returnSeats, setReturnSeats] = useState([]);
+  const [departureBusData, setDepartureBusData] = useState(null);
+  const [returnBusData, setReturnBusData] = useState(null);
+  
   // Initialize bus results state - separate for departure and return
   const [allBusResults, setAllBusResults] = useState(searchResults.length > 0 ? searchResults : []);
   const [departureBusResults, setDepartureBusResults] = useState(searchResults.length > 0 ? searchResults : []);
@@ -837,16 +843,16 @@ const SearchResultsPage = () => {
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Bus Listings */}
           <div className="flex-grow" id="resultsSection">
-            {/* Two-Way Tab Navigation - Glass Morphism Style */}
+            {/* Two-Way Tab Navigation - Enhanced Glass Morphism with Gradient */}
             {tripType === 'twoWay' && (
-              <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-xl sm:rounded-2xl p-3 sm:p-6 mb-4 sm:mb-6 shadow-lg">
-                <div className="flex backdrop-blur-sm bg-white/10 border border-white/20 rounded-lg sm:rounded-xl p-1 shadow-inner">
+              <div className="backdrop-blur-md bg-gradient-to-r from-green-100/30 to-teal-100/30 border border-green-200/40 rounded-xl sm:rounded-2xl p-3 sm:p-6 mb-4 sm:mb-6 shadow-lg">
+                <div className="flex backdrop-blur-sm bg-gradient-to-r from-green-50/20 to-teal-50/20 border border-green-200/30 rounded-lg sm:rounded-xl p-1 shadow-inner">
                   <button
                     onClick={() => handleTabChange('departure')}
                     className={`flex-1 py-2 sm:py-4 px-3 sm:px-6 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 ${
                       activeTab === 'departure'
-                        ? 'bg-white/90 text-blue-600 shadow-md backdrop-blur-md border border-white/40'
-                        : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
+                        ? 'bg-gradient-to-r from-green-400/90 to-teal-500/90 text-white shadow-lg backdrop-blur-md border border-green-300/50'
+                        : 'text-gray-700 hover:bg-gradient-to-r hover:from-green-200/30 hover:to-teal-200/30 hover:text-green-800'
                     }`}
                   >
                     For Departure
@@ -857,9 +863,9 @@ const SearchResultsPage = () => {
                     disabled={!formData.returnDate}
                     className={`flex-1 py-2 sm:py-4 px-3 sm:px-6 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 ${
                       activeTab === 'return'
-                        ? 'bg-white/90 text-blue-600 shadow-md backdrop-blur-md border border-white/40'
+                        ? 'bg-gradient-to-r from-green-400/90 to-teal-500/90 text-white shadow-lg backdrop-blur-md border border-green-300/50'
                         : formData.returnDate 
-                          ? 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
+                          ? 'text-gray-700 hover:bg-gradient-to-r hover:from-green-200/30 hover:to-teal-200/30 hover:text-green-800'
                           : 'text-gray-400 cursor-not-allowed opacity-50'
                     }`}
                   >
@@ -875,6 +881,19 @@ const SearchResultsPage = () => {
               totalBuses={currentBusResults.length}
               travelDate={activeTab === 'departure' ? travelDate : formData.returnDate}
               onSearchAgain={handleSearchAgain}
+              searchParams={searchParams}
+              tripType={tripType}
+              activeTab={activeTab}
+              departureSeats={departureSeats}
+              returnSeats={returnSeats}
+              departureBusData={departureBusData}
+              returnBusData={returnBusData}
+              setDepartureSeats={setDepartureSeats}
+              setReturnSeats={setReturnSeats}
+              setDepartureBusData={setDepartureBusData}
+              setReturnBusData={setReturnBusData}
+              formData={formData}
+              onTabChange={handleTabChange}
             />
           </div>
         </div>

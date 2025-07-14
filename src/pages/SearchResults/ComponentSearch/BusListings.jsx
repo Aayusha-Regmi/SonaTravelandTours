@@ -54,6 +54,19 @@ const BusListings = ({
   onSearchAgain,
   // Search parameters for seat refresh
   searchParams = {},
+  // Two-way trip props
+  tripType = 'oneWay',
+  activeTab = 'departure',
+  departureSeats = [],
+  returnSeats = [],
+  departureBusData = null,
+  returnBusData = null,
+  setDepartureSeats = () => {},
+  setReturnSeats = () => {},
+  setDepartureBusData = () => {},
+  setReturnBusData = () => {},
+  formData = {},
+  onTabChange = () => {}, // Add tab change handler
   // Add filter props
   selectedBoardingPlaces = [],
   selectedDroppingPlaces = [],
@@ -657,6 +670,18 @@ console.log('🚌 BusListings received props:', {
                 busId={bus.id}
                 searchParams={searchParams}
                 travelDate={travelDate}
+                tripType={tripType}
+                activeTab={activeTab}
+                departureSeats={departureSeats}
+                returnSeats={returnSeats}
+                departureBusData={departureBusData}
+                returnBusData={returnBusData}
+                setDepartureSeats={setDepartureSeats}
+                setReturnSeats={setReturnSeats}
+                setDepartureBusData={setDepartureBusData}
+                setReturnBusData={setReturnBusData}
+                formData={formData}
+                onTabChange={onTabChange}
               /></div>
           )}
             </div>
