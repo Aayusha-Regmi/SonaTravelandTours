@@ -116,6 +116,160 @@ const MyFavorites = ({ favorites = [] }) => {
 
   return (
     <div className="p-6">
+      {/* TODO: REMOVE THIS NOTICE SECTION WHEN DEVELOPMENT IS COMPLETE */}
+      {/* Professional Notice Banner with Marquee - TEMPORARY DEVELOPMENT NOTICE */}
+      <div className="mb-8 relative overflow-hidden">
+        {/* Background with animated gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-100/20 via-indigo-100/20 to-purple-100/20 animate-pulse"></div>
+        
+        <div className="relative bg-white/80 backdrop-blur-sm border-l-4 border-blue-500 rounded-r-xl shadow-lg overflow-hidden">
+          {/* Header Section */}
+          <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border-b border-blue-200/30">
+            {/* Professional Icon */}
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            
+            {/* Header Text */}
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                  <span className="text-blue-600">सूचना</span>
+                  <span className="text-gray-400">|</span>
+                  <span className="text-sm font-medium text-gray-600 uppercase tracking-wide">Notice</span>
+                </h3>
+                <div className="flex-1 h-px bg-gradient-to-r from-blue-200 to-transparent"></div>
+              </div>
+            </div>
+            
+            {/* Status Indicators */}
+            <div className="flex gap-2">
+              <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-200 rounded-full px-2 py-1">
+                <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-yellow-700">Development</span>
+              </div>
+              <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-full px-2 py-1">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                <span className="text-xs font-medium text-blue-700">Static Mode</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Professional Marquee Section */}
+          <div className="p-4">
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-lg p-3 shadow-inner">
+              {/* Marquee Container */}
+              <div className="relative overflow-hidden h-12 flex items-center">
+                {/* Gradient overlays for smooth fade effect */}
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-blue-50 to-transparent z-10 pointer-events-none"></div>
+                
+                {/* Professional Marquee Text */}
+                <div className="flex items-center whitespace-nowrap animate-marquee">
+                  <div className="flex items-center gap-8 text-gray-700 font-medium">
+                    <span className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      हाम्रो प्राविधिक टोली
+                    </span>
+                    
+                    <span className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-semibold">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Cancellation
+                      </span>
+                      <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                        My Review
+                      </span>
+                      <span className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-semibold">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        My Fav
+                      </span>
+                      पृष्ठहरूको विकासमा सक्रिय रूपमा कार्यरत छ
+                    </span>
+                    
+                    <span className="flex items-center gap-2 text-green-700">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      यी सेवाहरू चाँडै नै प्रयोगका लागि उपलब्ध हुनेछन्
+                    </span>
+                    
+                    <span className="flex items-center gap-2 text-blue-600">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      तपाईंको धैर्यताको लागि धन्यवाद
+                    </span>
+                    
+                    {/* Spacing for seamless loop */}
+                    <span className="ml-16"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Additional Info */}
+            <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Updates in progress
+              </span>
+              <span className="flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Sona Travel Tech Team
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Custom CSS for Marquee Animation - REMOVE WITH NOTICE */}
+        <style jsx>{`
+          @keyframes marquee {
+            0% {
+              transform: translateX(100%);
+            }
+            100% {
+              transform: translateX(-100%);
+            }
+          }
+          
+          .animate-marquee {
+            animation: marquee 25s linear infinite;
+          }
+          
+          .animate-marquee:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+      </div>
+      {/* END OF TEMPORARY NOTICE SECTION - REMOVE WHEN DEVELOPMENT IS COMPLETE */}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">My Favorites</h2>
+          <p className="text-gray-600">Your saved favorite destinations and routes</p>
+        </div>
+      </div>
+
       {/* Favorites Grid with 3D Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {displayFavorites.map((favorite, index) => (
