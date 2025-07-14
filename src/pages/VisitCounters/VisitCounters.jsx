@@ -27,11 +27,11 @@ const VisitCounters = () => {
     },
     {
       id: 3,
-      name: "Sona Travel Counter - Pokhara",
-      address: "Tourist Bus Park Area, Pokhara",
-      phone: "(+977) 9856789012",
+      name: "Sona Travel Counter - Gaushala Counter No. 31",
+      address: "Gaushala - Chowk ",
+      phone: "(+977) 9802362125",
       hours: "SUN - SAT (9 AM - 8 PM)",
-      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3515.865661441626!2d83.9591!3d28.2096!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDEyJzM0LjYiTiA4M8KwNTcnMzIuOCJF!5e0!3m2!1sen!2snp!4v1751437200000!5m2!1sen!2snp",
+      mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.351356409447!2d85.3448566!3d27.706436000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb198043c0c19d%3A0x3bf16770e7fed605!2sSona%20travels!5e0!3m2!1sen!2snp!4v1752467759771!5m2!1sen!2snp",
       city: "Pokhara",
       type: "Counter"
     },
