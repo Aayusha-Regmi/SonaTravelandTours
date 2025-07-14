@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import BusListingHeader from '../../components/common/BusListingHeader';
 import BusListings from './ComponentSearch/BusListings';
 import DateSelector from './ComponentSearch/DateSelector';
 import Button from '../../components/ui/Button';
@@ -87,26 +88,26 @@ const SearchResultsPage = () => {
   const performSearch = useCallback(async (searchParams, source = 'unknown') => {
     // Prevent multiple simultaneous searches
     if (isSearchingRef.current) {
-      console.log('🚫 Search already in progress, skipping...');
+      console.log(' Search already in progress, skipping...');
       return;
     }
 
     // Check if search params actually changed
     const searchKey = `${searchParams.fromCity}-${searchParams.toCity}-${searchParams.date}`;
     if (lastSearchParamsRef.current === searchKey && tripType === 'oneWay') {
-      console.log('🚫 Same search parameters, skipping duplicate search');
+      console.log(' Same search parameters, skipping duplicate search');
       return;
     }
 
     isSearchingRef.current = true;
     lastSearchParamsRef.current = searchKey;
 
-    console.log(`🚀 ========== PERFORMING SEARCH (${source.toUpperCase()}) ==========`);
-    console.log('📥 Search Parameters:', searchParams);
-    console.log('📥 Trip Type:', tripType);
-    console.log('📥 Source:', source);
-    console.log('📥 Form Data returnDate:', formData.returnDate);
-    console.log('📥 SearchParams returnDate:', searchParams.returnDate);
+    console.log(` ========== PERFORMING SEARCH (${source.toUpperCase()}) ==========`);
+    console.log(' Search Parameters:', searchParams);
+    console.log(' Trip Type:', tripType);
+    console.log(' Source:', source);
+    console.log(' Form Data returnDate:', formData.returnDate);
+    console.log(' SearchParams returnDate:', searchParams.returnDate);
 
     setIsLoading(true);
     setError(null);
@@ -138,13 +139,13 @@ const SearchResultsPage = () => {
         date: departureApiDate
       };
 
-      console.log('📤 Departure API Request:', departureApiParams);
+      console.log(' Departure API Request:', departureApiParams);
       const startTime = performance.now();
       
       const departureBusData = await api.searchBuses(departureApiParams);
       
       const endTime = performance.now();
-      console.log(`📥 Departure API Response in ${Math.round(endTime - startTime)}ms:`, departureBusData);
+      console.log(` Departure API Response in ${Math.round(endTime - startTime)}ms:`, departureBusData);
 
       if (!departureBusData || !Array.isArray(departureBusData)) {
         throw new Error('Invalid departure API response format');
@@ -157,9 +158,9 @@ const SearchResultsPage = () => {
 
       // For two-way trips, also search for return journey
       if (tripType === 'twoWay' && (formData.returnDate || searchParams.returnDate)) {
-        console.log('🔄 Searching for return journey...');
-        console.log('🔄 Return date from formData:', formData.returnDate);
-        console.log('🔄 Return date from searchParams:', searchParams.returnDate);
+        console.log(' Searching for return journey...');
+        console.log(' Return date from formData:', formData.returnDate);
+        console.log(' Return date from searchParams:', searchParams.returnDate);
         setIsLoadingReturn(true);
 
         const returnDateToUse = formData.returnDate || searchParams.returnDate;
@@ -874,6 +875,19 @@ const SearchResultsPage = () => {
                 </div>
               </div>
             )}
+            
+            {/* Bus Listing Header */}
+            <BusListingHeader 
+              title="Available Buses"
+              subtitle="Multiple Types"
+              departureDate={formData.date || travelDate}
+              returnDate={formData.returnDate}
+              fromCity={fromLocation}
+              toCity={toLocation}
+              duration="6h 15m"
+              tripType={tripType}
+              showDates={true}
+            />
             
             <BusListings 
               buses={currentBusResults} 

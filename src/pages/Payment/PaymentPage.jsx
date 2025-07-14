@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import BusListingHeader from '../../components/common/BusListingHeader';
 import ProgressBar from '../../components/common/BookingStepComponents/ProgressBar';
 import BusDetail from '../../components/common/BookingStepComponents/BusDetail';
 import PaymentModal from '../../components/ui/PaymentModal';
@@ -26,7 +27,15 @@ const PaymentPage = () => {
     travelDate = '',
     totalPrice = 0, 
     seatPrice = 0,
-    bookingDetails = {}
+    bookingDetails = {},
+    // Two-way trip data
+    tripType = 'oneWay',
+    returnPassengers = [],
+    returnSeats = [],
+    returnBusData = {},
+    returnTravelDate = '',
+    returnTotalPrice = 0,
+    returnSeatPrice = 0
   } = location.state || {};
 
   // Check authentication immediately on component mount
@@ -44,7 +53,15 @@ const PaymentPage = () => {
           travelDate,
           totalPrice,
           seatPrice,
-          bookingDetails
+          bookingDetails,
+          // Two-way trip data
+          tripType,
+          returnPassengers,
+          returnSeats,
+          returnBusData,
+          returnTravelDate,
+          returnTotalPrice,
+          returnSeatPrice
         }
       }));
       
@@ -56,7 +73,7 @@ const PaymentPage = () => {
         } 
       });
     }
-  }, [navigate, passengers, selectedSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails]);  // Include all dependencies used in the effect
+  }, [navigate, passengers, selectedSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails, tripType, returnPassengers, returnSeats, returnBusData, returnTravelDate, returnTotalPrice, returnSeatPrice]);  // Include all dependencies used in the effect
   
   // Show error if no data
   if (!passengers.length || !selectedSeats.length) {
@@ -80,6 +97,7 @@ const PaymentPage = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [activeTab, setActiveTab] = useState('departure'); // For two-way trip toggle
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];
   const currentStep = 2;
@@ -201,7 +219,15 @@ const PaymentPage = () => {
           travelDate,
           totalPrice,
           seatPrice,
-          bookingDetails
+          bookingDetails,
+          // Two-way trip data
+          tripType,
+          returnPassengers,
+          returnSeats,
+          returnBusData,
+          returnTravelDate,
+          returnTotalPrice,
+          returnSeatPrice
         }
       }));
       
@@ -430,8 +456,27 @@ const PaymentPage = () => {
             boardingPlace={bookingDetails?.origin || searchParams?.fromCity || "Kathmandu"}
             droppingPlace={bookingDetails?.destination || searchParams?.toCity || "Birgunj"}
             duration={busData?.duration || "TBD"}
+            // Two-way trip props
+            tripType={tripType}
+            returnDate={returnTravelDate}
+            returnTime={returnBusData?.departureTime}
+            returnBusName={returnBusData?.busName || returnBusData?.name}
+            returnBusType={returnBusData?.busType || returnBusData?.type}
           />
         </div>
+
+        {/* Bus Listing Header */}
+        <BusListingHeader 
+          title="Available Buses"
+          subtitle="Multiple Types"
+          departureDate={travelDate}
+          returnDate={returnTravelDate}
+          fromCity={bookingDetails?.origin || searchParams?.fromCity || "Kathmandu"}
+          toCity={bookingDetails?.destination || searchParams?.toCity || "Birgunj"}
+          duration="6h 15m"
+          tripType={tripType}
+          showDates={true}
+        />
 
         {/* Progress Bar with modern glassy effect */}
         <div className="mb-8 backdrop-blur-md bg-gradient-to-r from-white/80 via-white/70 to-white/80 rounded-2xl p-6 border border-white/40 shadow-xl shadow-blue-100/50 hover:shadow-2xl hover:shadow-blue-200/30 transition-all duration-500 transform hover:-translate-y-1">
@@ -447,91 +492,294 @@ const PaymentPage = () => {
                   Passenger Details
                 </h2>
                 <div className="w-32 h-1.5 bg-gradient-to-r from-blue-400 via-indigo-500 to-blue-600 mx-auto rounded-full shadow-lg"></div>
+                
+                {/* Toggle for Two-Way Trips */}
+                {tripType === 'twoWay' && (
+                  <div className="mt-6 flex bg-white/60 rounded-xl border border-slate-200/40 p-1 max-w-md mx-auto">
+                    <button
+                      onClick={() => setActiveTab('departure')}
+                      className={`flex-1 py-3 px-4 text-sm font-semibold transition-all duration-300 rounded-lg ${
+                        activeTab === 'departure'
+                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                          : 'text-slate-600 hover:bg-blue-50/60 hover:text-blue-700'
+                      }`}
+                    >
+                      🚌 Departure
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('return')}
+                      className={`flex-1 py-3 px-4 text-sm font-semibold transition-all duration-300 rounded-lg ${
+                        activeTab === 'return'
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
+                          : 'text-slate-600 hover:bg-green-50/60 hover:text-green-700'
+                      }`}
+                    >
+                      <span style={{ transform: 'scaleX(-1)', display: 'inline-block' }}>🚌</span> Return
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Enhanced Seat Sections with modern 3D cards */}
-              {passengers.map((passenger, index) => (
-                <div 
-                  key={passenger.id} 
-                  className={`mb-8 ${index < passengers.length - 1 ? 'border-b border-white/30 pb-8' : ''} 
-                    transform hover:scale-[1.01] transition-all duration-300 group`}
-                >
-                  {/* Seat header with modern gradient */}
-                  <div className="mb-6">
-                    <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/70 to-blue-50/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-200/50 shadow-lg shadow-blue-100/50 hover:shadow-xl hover:shadow-blue-200/40 transition-all duration-300 transform hover:-translate-y-1">
-                      <h2 className="text-lg font-bold text-slate-700 text-center font-opensans flex items-center justify-center gap-3">
-                        <span className="inline-block w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg transform hover:scale-110 transition-transform duration-200">
-                          {passenger.id}
-                        </span>
-                        Seat {passenger.id}
-                      </h2>
+              {tripType === 'twoWay' ? (
+                // Two-way trip: Show different content based on active tab
+                activeTab === 'departure' ? (
+                  passengers.map((passenger, index) => (
+                    <div 
+                      key={passenger.id} 
+                      className={`mb-8 ${index < passengers.length - 1 ? 'border-b border-white/30 pb-8' : ''} 
+                        transform hover:scale-[1.01] transition-all duration-300 group`}
+                    >
+                      {/* Seat header with modern gradient */}
+                      <div className="mb-6">
+                        <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/70 to-blue-50/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-200/50 shadow-lg shadow-blue-100/50 hover:shadow-xl hover:shadow-blue-200/40 transition-all duration-300 transform hover:-translate-y-1">
+                          <h2 className="text-lg font-bold text-slate-700 text-center font-opensans flex items-center justify-center gap-3">
+                            <span className="inline-block w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg transform hover:scale-110 transition-transform duration-200">
+                              {passenger.id}
+                            </span>
+                            Departure Seat {passenger.id}
+                          </h2>
+                        </div>
+                      </div>
+                      
+                      {/* Route section with glassy effect */}
+                      <div className="flex items-center justify-between mb-6 backdrop-blur-md bg-gradient-to-r from-gray-50/90 via-white/80 to-gray-50/90 rounded-2xl p-6 border border-gray-200/50 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="text-center flex-1">
+                          <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
+                            {bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu'}
+                          </h3>
+                          <p className="text-sm font-medium text-slate-600 font-opensans bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 inline-block shadow-md border border-white/50">
+                            {passenger.boardingPlace || 'Bus Park'}
+                          </p>
+                        </div>
+                        
+                        <div className="flex-shrink-0 mx-6">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-xl shadow-blue-200/50 transform hover:scale-110 hover:rotate-6 transition-all duration-300">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                          </div>
+                        </div>
+                        
+                        <div className="text-center flex-1">
+                          <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
+                            {bookingDetails?.destination || searchParams?.toCity || 'Birgunj'}
+                          </h3>
+                          <p className="text-sm font-medium text-slate-600 font-opensans bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 inline-block shadow-md border border-white/50">
+                            {passenger.droppingPlace || 'Bus Terminal'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Passenger Details with modern glassy cards */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        {[
+                          { label: 'Name', value: passenger.fullName || 'Not provided' },
+                          { label: 'Gender', value: passenger.gender || 'Not specified' },
+                          { label: 'City of Residence', value: passenger.cityOfResidence || 'Not specified' }
+                        ].map((item, idx) => (
+                          <div key={idx} className="backdrop-blur-sm bg-gradient-to-br from-white/90 to-white/80 rounded-xl p-4 border border-white/60 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] group">
+                            <h4 className="text-sm font-bold text-slate-700 font-opensans mb-2 group-hover:text-slate-800 transition-colors duration-200">
+                              {item.label}
+                            </h4>
+                            <p className="text-sm font-medium text-slate-600 font-opensans group-hover:text-slate-700 transition-colors duration-200">
+                              {item.value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          { label: 'Phone Number', value: passenger.phoneNumber || 'Not provided' },
+                          { label: 'Email', value: passenger.email || 'Not provided' }
+                        ].map((item, idx) => (
+                          <div key={idx} className="backdrop-blur-sm bg-gradient-to-br from-white/90 to-white/80 rounded-xl p-4 border border-white/60 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] group">
+                            <h4 className="text-sm font-bold text-slate-700 font-opensans mb-2 group-hover:text-slate-800 transition-colors duration-200">
+                              {item.label}
+                            </h4>
+                            <p className="text-sm font-medium text-slate-600 font-opensans group-hover:text-slate-700 transition-colors duration-200">
+                              {item.value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  
-                  {/* Route section with glassy effect */}
-                  <div className="flex items-center justify-between mb-6 backdrop-blur-md bg-gradient-to-r from-gray-50/90 via-white/80 to-gray-50/90 rounded-2xl p-6 border border-gray-200/50 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1">
-                    <div className="text-center flex-1">
-                      <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
-                        {bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu'}
-                      </h3>
-                      <p className="text-sm font-medium text-slate-600 font-opensans bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 inline-block shadow-md border border-white/50">
-                        {passenger.boardingPlace || 'Bus Park'}
-                      </p>
+                  )))
+                : (
+                  // Return passengers
+                  returnPassengers.map((passenger, index) => {
+                    // Get the corresponding return seat identifier 
+                    const returnSeatId = returnSeats[index] || passenger.id;
+                    
+                    return (
+                    <div 
+                      key={passenger.id} 
+                      className={`mb-8 ${index < returnPassengers.length - 1 ? 'border-b border-white/30 pb-8' : ''} 
+                        transform hover:scale-[1.01] transition-all duration-300 group`}
+                    >
+                      {/* Seat header with modern gradient */}
+                      <div className="mb-6">
+                        <div className="bg-gradient-to-r from-green-50/80 via-emerald-50/70 to-green-50/80 backdrop-blur-sm rounded-2xl p-5 border border-green-200/50 shadow-lg shadow-green-100/50 hover:shadow-xl hover:shadow-green-200/40 transition-all duration-300 transform hover:-translate-y-1">
+                          <h2 className="text-lg font-bold text-slate-700 text-center font-opensans flex items-center justify-center gap-3">
+                            <span className="inline-block w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg transform hover:scale-110 transition-transform duration-200">
+                              {returnSeatId}
+                            </span>
+                            Return Seat {returnSeatId}
+                          </h2>
+                        </div>
+                      </div>
+                      
+                      {/* Route section with glassy effect */}
+                      <div className="flex items-center justify-between mb-6 backdrop-blur-md bg-gradient-to-r from-gray-50/90 via-white/80 to-gray-50/90 rounded-2xl p-6 border border-gray-200/50 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="text-center flex-1">
+                          <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
+                            {bookingDetails?.destination || searchParams?.toCity || 'Birgunj'}
+                          </h3>
+                          <p className="text-sm font-medium text-slate-600 font-opensans bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 inline-block shadow-md border border-white/50">
+                            {passenger.boardingPlace || 'Bus Terminal'}
+                          </p>
+                        </div>
+                        
+                        <div className="flex-shrink-0 mx-6">
+                          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-xl shadow-green-200/50 transform hover:scale-110 hover:rotate-6 transition-all duration-300">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                            </svg>
+                          </div>
+                        </div>
+                        
+                        <div className="text-center flex-1">
+                          <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
+                            {bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu'}
+                          </h3>
+                          <p className="text-sm font-medium text-slate-600 font-opensans bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 inline-block shadow-md border border-white/50">
+                            {passenger.droppingPlace || 'Bus Park'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Passenger Details with modern glassy cards */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        {[
+                          { label: 'Name', value: passenger.fullName || 'Not provided' },
+                          { label: 'Gender', value: passenger.gender || 'Not specified' },
+                          { label: 'City of Residence', value: passenger.cityOfResidence || 'Not specified' }
+                        ].map((item, idx) => (
+                          <div key={idx} className="backdrop-blur-sm bg-gradient-to-br from-white/90 to-white/80 rounded-xl p-4 border border-white/60 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] group">
+                            <h4 className="text-sm font-bold text-slate-700 font-opensans mb-2 group-hover:text-slate-800 transition-colors duration-200">
+                              {item.label}
+                            </h4>
+                            <p className="text-sm font-medium text-slate-600 font-opensans group-hover:text-slate-700 transition-colors duration-200">
+                              {item.value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          { label: 'Phone Number', value: passenger.phoneNumber || 'Not provided' },
+                          { label: 'Email', value: passenger.email || 'Not provided' }
+                        ].map((item, idx) => (
+                          <div key={idx} className="backdrop-blur-sm bg-gradient-to-br from-white/90 to-white/80 rounded-xl p-4 border border-white/60 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] group">
+                            <h4 className="text-sm font-bold text-slate-700 font-opensans mb-2 group-hover:text-slate-800 transition-colors duration-200">
+                              {item.label}
+                            </h4>
+                            <p className="text-sm font-medium text-slate-600 font-opensans group-hover:text-slate-700 transition-colors duration-200">
+                              {item.value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>                    </div>
+                    );
+                  })
+                )
+              ) : (
+                // One-way trip: Show original layout
+                passengers.map((passenger, index) => (
+                  <div 
+                    key={passenger.id} 
+                    className={`mb-8 ${index < passengers.length - 1 ? 'border-b border-white/30 pb-8' : ''} 
+                      transform hover:scale-[1.01] transition-all duration-300 group`}
+                  >
+                    {/* Seat header with modern gradient */}
+                    <div className="mb-6">
+                      <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/70 to-blue-50/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-200/50 shadow-lg shadow-blue-100/50 hover:shadow-xl hover:shadow-blue-200/40 transition-all duration-300 transform hover:-translate-y-1">
+                        <h2 className="text-lg font-bold text-slate-700 text-center font-opensans flex items-center justify-center gap-3">
+                          <span className="inline-block w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg transform hover:scale-110 transition-transform duration-200">
+                            {passenger.id}
+                          </span>
+                          Seat {passenger.id}
+                        </h2>
+                      </div>
                     </div>
                     
-                    <div className="flex-shrink-0 mx-6">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-xl shadow-blue-200/50 transform hover:scale-110 hover:rotate-6 transition-all duration-300">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </div>
-                    </div>
-                    
-                    <div className="text-center flex-1">
-                      <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
-                        {bookingDetails?.destination || searchParams?.toCity || 'Birgunj'}
-                      </h3>
-                      <p className="text-sm font-medium text-slate-600 font-opensans bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 inline-block shadow-md border border-white/50">
-                        {passenger.droppingPlace || 'Bus Terminal'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Passenger Details with modern glassy cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    {[
-                      { label: 'Name', value: passenger.fullName || 'Not provided' },
-                      { label: 'Gender', value: passenger.gender || 'Not specified' },
-                      { label: 'City of Residence', value: passenger.cityOfResidence || 'Not specified' }
-                    ].map((item, idx) => (
-                      <div key={idx} className="backdrop-blur-sm bg-gradient-to-br from-white/90 to-white/80 rounded-xl p-4 border border-white/60 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] group">
-                        <h4 className="text-sm font-bold text-slate-700 font-opensans mb-2 group-hover:text-slate-800 transition-colors duration-200">
-                          {item.label}
-                        </h4>
-                        <p className="text-sm font-medium text-slate-600 font-opensans group-hover:text-slate-700 transition-colors duration-200">
-                          {item.value}
+                    {/* Route section with glassy effect */}
+                    <div className="flex items-center justify-between mb-6 backdrop-blur-md bg-gradient-to-r from-gray-50/90 via-white/80 to-gray-50/90 rounded-2xl p-6 border border-gray-200/50 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1">
+                      <div className="text-center flex-1">
+                        <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
+                          {bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu'}
+                        </h3>
+                        <p className="text-sm font-medium text-slate-600 font-opensans bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 inline-block shadow-md border border-white/50">
+                          {passenger.boardingPlace || 'Bus Park'}
                         </p>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { label: 'Phone Number', value: passenger.phoneNumber || 'Not provided' },
-                      { label: 'Email', value: passenger.email || 'Not provided' }
-                    ].map((item, idx) => (
-                      <div key={idx} className="backdrop-blur-sm bg-gradient-to-br from-white/90 to-white/80 rounded-xl p-4 border border-white/60 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] group">
-                        <h4 className="text-sm font-bold text-slate-700 font-opensans mb-2 group-hover:text-slate-800 transition-colors duration-200">
-                          {item.label}
-                        </h4>
-                        <p className="text-sm font-medium text-slate-600 font-opensans group-hover:text-slate-700 transition-colors duration-200">
-                          {item.value}
+                      
+                      <div className="flex-shrink-0 mx-6">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-xl shadow-blue-200/50 transform hover:scale-110 hover:rotate-6 transition-all duration-300">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </div>
+                      </div>
+                      
+                      <div className="text-center flex-1">
+                        <h3 className="text-lg font-bold text-slate-700 mb-2 font-opensans">
+                          {bookingDetails?.destination || searchParams?.toCity || 'Birgunj'}
+                        </h3>
+                        <p className="text-sm font-medium text-slate-600 font-opensans bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 inline-block shadow-md border border-white/50">
+                          {passenger.droppingPlace || 'Bus Terminal'}
                         </p>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Passenger Details with modern glassy cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      {[
+                        { label: 'Name', value: passenger.fullName || 'Not provided' },
+                        { label: 'Gender', value: passenger.gender || 'Not specified' },
+                        { label: 'City of Residence', value: passenger.cityOfResidence || 'Not specified' }
+                      ].map((item, idx) => (
+                        <div key={idx} className="backdrop-blur-sm bg-gradient-to-br from-white/90 to-white/80 rounded-xl p-4 border border-white/60 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] group">
+                          <h4 className="text-sm font-bold text-slate-700 font-opensans mb-2 group-hover:text-slate-800 transition-colors duration-200">
+                            {item.label}
+                          </h4>
+                          <p className="text-sm font-medium text-slate-600 font-opensans group-hover:text-slate-700 transition-colors duration-200">
+                            {item.value}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[
+                        { label: 'Phone Number', value: passenger.phoneNumber || 'Not provided' },
+                        { label: 'Email', value: passenger.email || 'Not provided' }
+                      ].map((item, idx) => (
+                        <div key={idx} className="backdrop-blur-sm bg-gradient-to-br from-white/90 to-white/80 rounded-xl p-4 border border-white/60 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] group">
+                          <h4 className="text-sm font-bold text-slate-700 font-opensans mb-2 group-hover:text-slate-800 transition-colors duration-200">
+                            {item.label}
+                          </h4>
+                          <p className="text-sm font-medium text-slate-600 font-opensans group-hover:text-slate-700 transition-colors duration-200">
+                            {item.value}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>          {/* Right Column - Enhanced Payment Details with modern glassy effect */}
           <div className="col-span-1">
@@ -554,40 +802,119 @@ const PaymentPage = () => {
 
                 {/* Enhanced Compact Fare Breakdown with mathematical calculations */}
                 <div className="space-y-3 mb-5">
-                  {/* Calculate base fare as 88.5% of total (removing 13% VAT from original total) */}
-                  {(() => {
-                    // Calculate base fare mathematically
-                    const baseFare = Math.round(
-                      seatPrice * selectedSeats.length || 
-                      totalPrice / 1.13 || // Remove VAT from total
-                      2300
-                    );
-                    
-                    // Calculate VAT amount (13% of base fare)
-                    const vatAmount = Math.round(baseFare * 0.13);
-                    
-                    return (
-                      <>
-                        <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-xl border border-blue-100/50 hover:shadow-md transition-all duration-200">
-                          <span className="text-sm font-medium text-slate-700 font-opensans">
-                            Bus Fare ({selectedSeats.length} seat{selectedSeats.length > 1 ? 's' : ''})
-                          </span>
-                          <span className="text-sm font-semibold text-slate-800 font-opensans">
-                            Rs. {baseFare.toLocaleString()}
-                          </span>
-                        </div>
+                  {tripType === 'twoWay' ? (
+                    // Two-way trip breakdown
+                    <>
+                      {/* Departure Fee */}
+                      {(() => {
+                        const departureFare = Math.round(
+                          seatPrice * selectedSeats.length || 
+                          totalPrice / 2.26 || // Half of total, removing VAT
+                          2300
+                        );
+                        const departureVAT = Math.round(departureFare * 0.13);
                         
-                        <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-indigo-50/80 to-purple-50/80 rounded-xl border border-indigo-100/50 hover:shadow-md transition-all duration-200">
-                          <span className="text-sm font-medium text-slate-700 font-opensans">
-                            VAT (13%)
-                          </span>
-                          <span className="text-sm font-semibold text-slate-800 font-opensans">
-                            Rs. {vatAmount.toLocaleString()}
-                          </span>
-                        </div>
-                      </>
-                    );
-                  })()}
+                        return (
+                          <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-xl border border-blue-100/50 hover:shadow-md transition-all duration-200">
+                            <span className="text-sm font-medium text-slate-700 font-opensans">
+                              🚌 Departure Fee ({selectedSeats.length} seat{selectedSeats.length > 1 ? 's' : ''})
+                            </span>
+                            <span className="text-sm font-semibold text-slate-800 font-opensans">
+                              Rs. {departureFare.toLocaleString()}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                      
+                      {/* Return Fee */}
+                      {(() => {
+                        const returnFare = Math.round(
+                          returnSeatPrice * returnSeats.length || 
+                          returnTotalPrice / 1.13 || // Remove VAT from return total
+                          seatPrice * returnSeats.length || 
+                          totalPrice / 2.26 || // Half of total, removing VAT
+                          2300
+                        );
+                        const returnVAT = Math.round(returnFare * 0.13);
+                        
+                        return (
+                          <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-green-50/80 to-emerald-50/80 rounded-xl border border-green-100/50 hover:shadow-md transition-all duration-200">
+                            <span className="text-sm font-medium text-slate-700 font-opensans">
+                              <span style={{ transform: 'scaleX(-1)', display: 'inline-block' }}>🚌</span> Return Fee ({returnSeats.length} seat{returnSeats.length > 1 ? 's' : ''})
+                            </span>
+                            <span className="text-sm font-semibold text-slate-800 font-opensans">
+                              Rs. {returnFare.toLocaleString()}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                      
+                      {/* Combined VAT */}
+                      {(() => {
+                        const departureFare = Math.round(
+                          seatPrice * selectedSeats.length || 
+                          totalPrice / 2.26 || 
+                          2300
+                        );
+                        const returnFare = Math.round(
+                          returnSeatPrice * returnSeats.length || 
+                          returnTotalPrice / 1.13 || 
+                          seatPrice * returnSeats.length || 
+                          totalPrice / 2.26 || 
+                          2300
+                        );
+                        const totalVAT = Math.round((departureFare + returnFare) * 0.13);
+                        
+                        return (
+                          <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-indigo-50/80 to-purple-50/80 rounded-xl border border-indigo-100/50 hover:shadow-md transition-all duration-200">
+                            <span className="text-sm font-medium text-slate-700 font-opensans">
+                              VAT (13%)
+                            </span>
+                            <span className="text-sm font-semibold text-slate-800 font-opensans">
+                              Rs. {totalVAT.toLocaleString()}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    // One-way trip breakdown
+                    <>
+                      {(() => {
+                        // Calculate base fare mathematically
+                        const baseFare = Math.round(
+                          seatPrice * selectedSeats.length || 
+                          totalPrice / 1.13 || // Remove VAT from total
+                          2300
+                        );
+                        
+                        // Calculate VAT amount (13% of base fare)
+                        const vatAmount = Math.round(baseFare * 0.13);
+                        
+                        return (
+                          <>
+                            <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-xl border border-blue-100/50 hover:shadow-md transition-all duration-200">
+                              <span className="text-sm font-medium text-slate-700 font-opensans">
+                                Bus Fare ({selectedSeats.length} seat{selectedSeats.length > 1 ? 's' : ''})
+                              </span>
+                              <span className="text-sm font-semibold text-slate-800 font-opensans">
+                                Rs. {baseFare.toLocaleString()}
+                              </span>
+                            </div>
+                            
+                            <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-indigo-50/80 to-purple-50/80 rounded-xl border border-indigo-100/50 hover:shadow-md transition-all duration-200">
+                              <span className="text-sm font-medium text-slate-700 font-opensans">
+                                VAT (13%)
+                              </span>
+                              <span className="text-sm font-semibold text-slate-800 font-opensans">
+                                Rs. {vatAmount.toLocaleString()}
+                              </span>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </>
+                  )}
 
                   {/* Show discount if a coupon is applied */}
                   {discountAmount > 0 && (
@@ -606,31 +933,62 @@ const PaymentPage = () => {
 
                 {/* Enhanced Total fare with modern glassy effect */}
                 {(() => {
-                  // Calculate base fare (removing VAT from total)
-                  const baseFare = Math.round(
-                    seatPrice * selectedSeats.length || 
-                    totalPrice / 1.13 || 
-                    2300
-                  );
-                  
-                  // Calculate VAT amount (13% of base fare)
-                  const vatAmount = Math.round(baseFare * 0.13);
-                  
-                  // Calculate subtotal (base + VAT)
-                  const subtotal = baseFare + vatAmount;
-                  
-                  return (
-                    <div className="backdrop-blur-md bg-gradient-to-r from-emerald-50/90 via-green-50/80 to-emerald-50/90 rounded-2xl p-4 mb-6 border border-emerald-200/50 shadow-xl shadow-emerald-100/50 hover:shadow-2xl hover:shadow-emerald-200/40 transition-all duration-300 transform hover:-translate-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-base font-bold text-emerald-700 font-opensans">
-                          Total Fare <span className="text-xs font-normal">(Inc. VAT)</span>
-                        </span>
-                        <span className="text-lg font-bold text-emerald-700 font-opensans">
-                          Rs. {subtotal.toLocaleString()}
-                        </span>
+                  if (tripType === 'twoWay') {
+                    // Two-way trip calculation
+                    const departureFare = Math.round(
+                      seatPrice * selectedSeats.length || 
+                      totalPrice / 2.26 || 
+                      2300
+                    );
+                    const returnFare = Math.round(
+                      returnSeatPrice * returnSeats.length || 
+                      returnTotalPrice / 1.13 || 
+                      seatPrice * returnSeats.length || 
+                      totalPrice / 2.26 || 
+                      2300
+                    );
+                    const totalVAT = Math.round((departureFare + returnFare) * 0.13);
+                    const subtotal = departureFare + returnFare + totalVAT;
+                    
+                    return (
+                      <div className="backdrop-blur-md bg-gradient-to-r from-emerald-50/90 via-green-50/80 to-emerald-50/90 rounded-2xl p-4 mb-6 border border-emerald-200/50 shadow-xl shadow-emerald-100/50 hover:shadow-2xl hover:shadow-emerald-200/40 transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-base font-bold text-emerald-700 font-opensans">
+                            Total Fare <span className="text-xs font-normal">(Inc. VAT)</span>
+                          </span>
+                          <span className="text-lg font-bold text-emerald-700 font-opensans">
+                            Rs. {subtotal.toLocaleString()}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
+                    );
+                  } else {
+                    // One-way trip calculation
+                    const baseFare = Math.round(
+                      seatPrice * selectedSeats.length || 
+                      totalPrice / 1.13 || 
+                      2300
+                    );
+                    
+                    // Calculate VAT amount (13% of base fare)
+                    const vatAmount = Math.round(baseFare * 0.13);
+                    
+                    // Calculate subtotal (base + VAT)
+                    const subtotal = baseFare + vatAmount;
+                    
+                    return (
+                      <div className="backdrop-blur-md bg-gradient-to-r from-emerald-50/90 via-green-50/80 to-emerald-50/90 rounded-2xl p-4 mb-6 border border-emerald-200/50 shadow-xl shadow-emerald-100/50 hover:shadow-2xl hover:shadow-emerald-200/40 transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-base font-bold text-emerald-700 font-opensans">
+                            Total Fare <span className="text-xs font-normal">(Inc. VAT)</span>
+                          </span>
+                          <span className="text-lg font-bold text-emerald-700 font-opensans">
+                            Rs. {subtotal.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
                 })()}
 
                 {/* Enhanced Promo Code with modern styling */}
@@ -660,18 +1018,38 @@ const PaymentPage = () => {
 
                 {/* Enhanced Final Total with premium glass effect */}
                 {(() => {
-                  // Calculate base fare (removing VAT from total)
-                  const baseFare = Math.round(
-                    seatPrice * selectedSeats.length || 
-                    totalPrice / 1.13 || 
-                    2300
-                  );
+                  let subtotal;
                   
-                  // Calculate VAT amount (13% of base fare)
-                  const vatAmount = Math.round(baseFare * 0.13);
-                  
-                  // Calculate subtotal (base + VAT)
-                  const subtotal = baseFare + vatAmount;
+                  if (tripType === 'twoWay') {
+                    // Two-way trip calculation
+                    const departureFare = Math.round(
+                      seatPrice * selectedSeats.length || 
+                      totalPrice / 2.26 || 
+                      2300
+                    );
+                    const returnFare = Math.round(
+                      returnSeatPrice * returnSeats.length || 
+                      returnTotalPrice / 1.13 || 
+                      seatPrice * returnSeats.length || 
+                      totalPrice / 2.26 || 
+                      2300
+                    );
+                    const totalVAT = Math.round((departureFare + returnFare) * 0.13);
+                    subtotal = departureFare + returnFare + totalVAT;
+                  } else {
+                    // One-way trip calculation
+                    const baseFare = Math.round(
+                      seatPrice * selectedSeats.length || 
+                      totalPrice / 1.13 || 
+                      2300
+                    );
+                    
+                    // Calculate VAT amount (13% of base fare)
+                    const vatAmount = Math.round(baseFare * 0.13);
+                    
+                    // Calculate subtotal (base + VAT)
+                    subtotal = baseFare + vatAmount;
+                  }
                   
                   // Apply discount if any
                   const finalAmount = Math.max(0, subtotal - discountAmount);
@@ -761,9 +1139,31 @@ const PaymentPage = () => {
       {/* Payment Modal */}
       {(() => {
         // Calculate the final payment amount with VAT and discount
-        const baseFare = Math.round(seatPrice * selectedSeats.length || totalPrice / 1.13);
-        const vatAmount = Math.round(baseFare * 0.13);
-        const subtotal = baseFare + vatAmount;
+        let subtotal;
+        
+        if (tripType === 'twoWay') {
+          // Two-way trip calculation
+          const departureFare = Math.round(
+            seatPrice * selectedSeats.length || 
+            totalPrice / 2.26 || 
+            2300
+          );
+          const returnFare = Math.round(
+            returnSeatPrice * returnSeats.length || 
+            returnTotalPrice / 1.13 || 
+            seatPrice * returnSeats.length || 
+            totalPrice / 2.26 || 
+            2300
+          );
+          const totalVAT = Math.round((departureFare + returnFare) * 0.13);
+          subtotal = departureFare + returnFare + totalVAT;
+        } else {
+          // One-way trip calculation
+          const baseFare = Math.round(seatPrice * selectedSeats.length || totalPrice / 1.13);
+          const vatAmount = Math.round(baseFare * 0.13);
+          subtotal = baseFare + vatAmount;
+        }
+        
         const finalPaymentAmount = Math.max(0, subtotal - discountAmount);
         
         return (

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import BusListingHeader from '../../components/common/BusListingHeader';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import Dropdown from '../../components/ui/Dropdown';
@@ -568,7 +569,22 @@ const PassengerDetail = () => {
           boardingPlace={searchParams?.fromCity || busData?.departureLocation || "Kathmandu"}
           droppingPlace={searchParams?.toCity || busData?.arrivalLocation || "Birgunj"}
           duration={busData?.duration || "TBD"}
-        />        {/* Progress Bar */}
+        />
+
+        {/* Bus Listing Header */}
+        <BusListingHeader 
+          title="Available Buses"
+          subtitle="Multiple Types"
+          departureDate={travelDate}
+          returnDate={returnTravelDate}
+          fromCity={searchParams?.fromCity || "Kathmandu"}
+          toCity={searchParams?.toCity || "Birgunj"}
+          duration="6h 15m"
+          tripType={tripType}
+          showDates={true}
+        />
+
+        {/* Progress Bar */}
         <div className="mb-6 sm:mb-8 px-2 sm:px-0">
           <ProgressBar steps={steps} currentStep={1} />
         </div>
@@ -897,8 +913,6 @@ const PassengerDetail = () => {
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
