@@ -399,7 +399,7 @@ const Cancellations = ({ cancellations = [] }) => {
           }
           
           .animate-marquee {
-            animation: marquee 8s linear infinite;
+            animation: marquee 25s linear infinite;
           }
           
           .animate-marquee:hover {
