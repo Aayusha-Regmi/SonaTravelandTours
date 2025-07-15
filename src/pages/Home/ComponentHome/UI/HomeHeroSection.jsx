@@ -47,12 +47,26 @@ const HeroSection = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Animation trigger on component mount
+  // Enhanced animation trigger on component mount with preload
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Preload the overlay image for smoother animation
+    const img = new Image();
+    img.src = "/images/overlayhero.png";
+    
+    img.onload = () => {
+      // Start animation after image is loaded
+      const timer = setTimeout(() => {
+        setIsLoaded(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    };
+    
+    // Fallback in case image doesn't load
+    const fallbackTimer = setTimeout(() => {
       setIsLoaded(true);
-    }, 500);
-    return () => clearTimeout(timer);
+    }, 800);
+    
+    return () => clearTimeout(fallbackTimer);
   }, []);
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">      
@@ -63,29 +77,38 @@ const HeroSection = () => {
           alt="Nepal Travel Background" 
           className="w-full h-full object-cover"        />
         
-        {/* Overlay Image with Smooth Opening Effect and Enhanced Cursor Movement */}
+        {/* Enhanced Overlay Image with Smooth Slide-Up Animation and 3D Effects */}
         <div className="absolute inset-0 z-5 overflow-hidden">
           <img 
             src="/images/overlayhero.png" 
             alt="Hero Overlay" 
-            className={`w-full h-full object-cover transition-all duration-1500 ease-out ${
+            className={`w-full h-full object-cover transition-all duration-2000 ease-out ${
               isLoaded ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-full opacity-0 scale-95'
             }`}
             style={{
               transform: `
                 ${isLoaded ? 'translateY(0)' : 'translateY(100%)'} 
-                translateX(${(mousePosition.x - 50) * 0.15}px) 
-                translateY(${isLoaded ? (mousePosition.y - 50) * 0.15 : 100}%) 
-                rotateX(${(mousePosition.y - 50) * 0.05}deg) 
-                rotateY(${(mousePosition.x - 50) * 0.05}deg) 
-                scale(${1.02 + (mousePosition.x * 0.0003)})
+                translateX(${(mousePosition.x - 50) * 0.12}px) 
+                translateY(${isLoaded ? (mousePosition.y - 50) * 0.12 : 100}%) 
+                rotateX(${(mousePosition.y - 50) * 0.03}deg) 
+                rotateY(${(mousePosition.x - 50) * 0.03}deg) 
+                scale(${1.01 + (mousePosition.x * 0.0002)})
               `,
               filter: `
-                drop-shadow(${(mousePosition.x - 50) * 0.1}px ${(mousePosition.y - 50) * 0.1}px 15px rgba(0,0,0,0.4))
-                brightness(${0.95 + (mousePosition.x * 0.001)})
+                drop-shadow(${(mousePosition.x - 50) * 0.08}px ${(mousePosition.y - 50) * 0.08}px 12px rgba(0,0,0,0.3))
+                brightness(${0.96 + (mousePosition.x * 0.0008)})
+                blur(${isLoaded ? 0 : 2}px)
               `,
               transformOrigin: 'center center',
-              transformStyle: 'preserve-3d'
+              transformStyle: 'preserve-3d',
+              transition: 'transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 2s ease-out, opacity 2s ease-out'
+            }}
+            onLoad={() => {
+              // Additional smooth effect when image loads
+              const img = document.querySelector('[alt="Hero Overlay"]');
+              if (img) {
+                img.style.transition = 'all 2.5s cubic-bezier(0.165, 0.84, 0.44, 1)';
+              }
             }}
           />
         </div>
