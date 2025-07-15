@@ -304,6 +304,68 @@ const Footer = () => {
           .company_widget .contact-info .phone-numbers {
             gap: 2px;
           }
+          
+          /* Awards responsive styles */
+          .certifications-awards {
+            padding: 12px;
+            margin-top: 20px;
+          }
+          
+          .certifications-awards h4 {
+            font-size: 12px;
+            margin-bottom: 8px;
+          }
+          
+          .certifications-awards .flex {
+            gap: 4px;
+          }
+          
+          .award-item .relative {
+            padding: 4px;
+          }
+          
+          .award-item img {
+            height: 28px;
+          }
+          
+          .iso-certification img {
+            height: 32px;
+          }
+          
+          /* Full width awards responsive */
+          .certifications-awards-fullwidth {
+            padding: 20px 0;
+            margin-top: 16px;
+          }
+          
+          .certifications-awards-fullwidth h4 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+          }
+          
+          .certifications-awards-fullwidth h4::after {
+            width: 60px;
+            height: 3px;
+          }
+          
+          .certifications-awards-fullwidth .flex {
+            gap: 4px;
+            max-width: 100%;
+          }
+          
+          .certifications-awards-fullwidth .iso-certification img {
+            height: 48px;
+          }
+          
+          .certifications-awards-fullwidth .award-item img {
+            height: 40px;
+          }
+          
+          .certifications-awards-fullwidth .award-item .relative {
+            padding: 8px;
+            border-radius: 8px;
+          }
         }.f_widget {
           text-align: center;
           padding: 0 15px;
@@ -363,6 +425,113 @@ const Footer = () => {
         
         .iso-certification:hover img {
           transform: scale(1.05);
+        }
+
+        /* Awards Section Styles */
+        .certifications-awards {
+          background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 16px;
+          padding: 20px;
+          transition: all 0.3s ease;
+        }
+        
+        .certifications-awards:hover {
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Full Width Awards Section */
+        .certifications-awards-fullwidth {
+          background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+          backdrop-filter: blur(15px);
+          border-top: 1px solid rgba(255, 255, 255, 0.25);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+          padding: 32px 0;
+          position: relative;
+          overflow: hidden;
+          margin-top: 20px;
+        }
+        
+        .certifications-awards-fullwidth::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, rgba(10, 99, 157, 0.06), rgba(255, 143, 31, 0.06));
+          opacity: 0.4;
+          z-index: 0;
+        }
+        
+        .certifications-awards-fullwidth > .container {
+          position: relative;
+          z-index: 1;
+        }
+        
+        .certifications-awards-fullwidth h4 {
+          color: #3d3d3d;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          margin-bottom: 24px;
+          position: relative;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .certifications-awards-fullwidth h4::after {
+          content: '';
+          position: absolute;
+          bottom: -8px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 80px;
+          height: 4px;
+          background: linear-gradient(to right, #0a639d, #ff8f1f, #0a639d);
+          border-radius: 2px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .awards-section h4 {
+          color: #3d3d3d;
+          font-size: 14px;
+          font-weight: 600;
+          margin-bottom: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .awards-grid {
+          gap: 8px;
+        }
+        
+        .award-item {
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .award-item:nth-child(odd) .relative {
+          background: linear-gradient(135deg, rgba(10, 99, 157, 0.1), rgba(255, 255, 255, 0.05));
+        }
+        
+        .award-item:nth-child(even) .relative {
+          background: linear-gradient(135deg, rgba(255, 143, 31, 0.1), rgba(255, 255, 255, 0.05));
+        }
+        
+        .award-item .relative:hover {
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .award-item img {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .award-item:hover img {
+          transform: scale(1.1);
+          filter: brightness(1.1) contrast(1.1);
         }        .company_widget .contact-info {
           margin: 24px 0;
         }
@@ -489,15 +658,69 @@ const Footer = () => {
                   <li><Link to="/hotels">Hotels</Link></li>
                   <li><Link to="/tours">Tours</Link></li>
                 </ul>
-                <div className="iso-certification mt-4">
-                  <div className="relative inline-block">
-                    <img 
-                      src="/images/iso-1-1-702x351-removebg-preview.png" 
-                      alt="ISO Certified" 
-                      className="h-20 w-auto object-contain mx-auto filter drop-shadow-lg"
-                    />
-                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse">
-                      Verified
+              </div>
+            </div>
+            
+            {/* Full Width Certifications & Awards Section */}
+            <div className="certifications-awards-fullwidth mt-6">
+              <div className="container mx-auto px-4 max-w-full">
+                <h4 className="text-center text-xl font-bold text-[#3d3d3d] mb-6">Certifications & Awards</h4>
+                <div className="flex justify-center items-center gap-8 flex-wrap max-w-6xl mx-auto">
+                  {/* ISO Certification */}
+                  <div className="iso-certification group">
+                    <div className="relative inline-block">
+                      <img 
+                        src="/images/iso-1-1-702x351-removebg-preview.png" 
+                        alt="ISO Certified" 
+                        className="h-20 w-auto object-contain filter drop-shadow-lg group-hover:drop-shadow-xl transition-all duration-300"
+                      />
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-pulse">
+                        Verified
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Award 1 */}
+                  <div className="award-item group">
+                    <div className="relative p-3 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-xl border border-white/30 hover:border-[#0a639d]/50 transition-all duration-300 hover:transform hover:scale-105 shadow-lg">
+                      <img 
+                        src="/images/Award1.jpg" 
+                        alt="Excellence Award" 
+                        className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Award 2 */}
+                  <div className="award-item group">
+                    <div className="relative p-3 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-xl border border-white/30 hover:border-[#ff8f1f]/50 transition-all duration-300 hover:transform hover:scale-105 shadow-lg">
+                      <img 
+                        src="/images/Award2.jpg" 
+                        alt="Quality Service Award" 
+                        className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Award 3 */}
+                  <div className="award-item group">
+                    <div className="relative p-3 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-xl border border-white/30 hover:border-[#0a639d]/50 transition-all duration-300 hover:transform hover:scale-105 shadow-lg">
+                      <img 
+                        src="/images/Award3.jpg" 
+                        alt="Customer Choice Award" 
+                        className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Award 4 */}
+                  <div className="award-item group">
+                    <div className="relative p-3 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-xl border border-white/30 hover:border-[#ff8f1f]/50 transition-all duration-300 hover:transform hover:scale-105 shadow-lg">
+                      <img 
+                        src="/images/Award4.jpg" 
+                        alt="Innovation Award" 
+                        className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
+                      />
                     </div>
                   </div>
                 </div>
