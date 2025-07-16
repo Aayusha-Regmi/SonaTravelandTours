@@ -11,6 +11,7 @@ import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 import api from '../../services/api';
 import { getAuthToken, getAuthHeaders, isAuthenticated } from '../../utils/authToken';
+import API_URLS from '../../config/api';
 
 const PaymentPage = () => {
   const location = useLocation();
@@ -93,6 +94,7 @@ const PaymentPage = () => {
   
   const [promoCode, setPromoCode] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -169,33 +171,151 @@ const PaymentPage = () => {
   const handlePromoCodeChange = (e) => {
     setPromoCode(e.target.value);
   };
-  const handleApplyPromo = () => {
-    if (promoCode.trim()) {
-      // Mock discount calculation - in a real app, this would validate with backend
-      // Different promo codes can give different discount amounts
-      let newDiscountAmount = 0;
-      
-      if (promoCode.toLowerCase() === 'newyear25') {
-        // 25% discount
-        newDiscountAmount = Math.round(totalPrice * 0.25);
-      } else if (promoCode.toLowerCase() === 'travel10') {
-        // 10% discount
-        newDiscountAmount = Math.round(totalPrice * 0.10);
-      } else if (promoCode.toLowerCase() === 'welcome500') {
-        // Fixed Rs. 500 discount
-        newDiscountAmount = 500;
-      } else {
-        // Default 5% discount for any other code
-        newDiscountAmount = Math.round(totalPrice * 0.05);
-      }
-      
-      // Update discount state
-      setDiscountAmount(newDiscountAmount);
-      toast.success(`Promo code "${promoCode}" applied successfully! Rs. ${newDiscountAmount.toLocaleString()} discount`);
-    } else {
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) {
       toast.error('Please enter a valid promo code');
-      setDiscountAmount(0); // Reset any previous discount
+      return;
     }
+
+    setIsApplyingCoupon(true);
+    
+    try {
+      // Check authentication first
+      const authCheck = api.checkAuthentication();
+      if (!authCheck.isAuthenticated) {
+        toast.error('Please login to apply coupon');
+        setIsApplyingCoupon(false);
+        return;
+      }
+
+      // Get token to verify it exists
+      const token = getAuthToken();
+      if (!token) {
+        toast.error('Authentication token missing. Please login again.');
+        setIsApplyingCoupon(false);
+        return;
+      }
+
+      // Format date properly for the API - moved before usage
+      const formatDateForAPI = (dateString) => {
+        if (!dateString) return new Date().toISOString().split('T')[0];
+        
+        // If it's already in YYYY-MM-DD format, use it
+        if (dateString.match && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          return dateString;
+        }
+        
+        // Try to parse and format the date
+        const date = new Date(dateString);
+        if (!isNaN(date.getTime())) {
+          // Try different formats that might work with the server
+          const isoFormat = date.toISOString().split('T')[0]; // YYYY-MM-DD
+          const usFormat = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`; // MM/DD/YYYY
+          
+          // Return ISO format (YYYY-MM-DD) first
+          return isoFormat;
+        }
+        
+        // Fallback to current date
+        const fallback = new Date().toISOString().split('T')[0];
+        return fallback;
+      };
+
+      const formattedTravelDate = formatDateForAPI(travelDate);
+      
+      // Get headers with proper authentication
+      const headers = getAuthHeaders();
+      
+      const requestBody = {
+        couponCode: promoCode.trim(),
+        travelDate: formattedTravelDate
+      };
+      
+      const response = await fetch(API_URLS.COUPONS.APPLY_DISCOUNT, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        let errorText = '';
+        let errorData = null;
+        
+        try {
+          errorText = await response.text();
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          // Silent error handling
+        }
+        
+        // Check if it's an authentication error
+        if (response.status === 401 || response.status === 403) {
+          toast.error('Authentication failed. Please login again.');
+          // Clear invalid tokens
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('token');
+          sessionStorage.removeItem('authToken');
+          sessionStorage.removeItem('token');
+          setIsApplyingCoupon(false);
+          return;
+        }
+        
+        // Check if it's a coupon not found error
+        if (response.status === 404 && errorData && errorData.message) {
+          if (errorData.message.includes('expired')) {
+            // Show orange warning toast for expired coupons
+            toast.warn(`${promoCode} is Expired`, {
+              style: {
+                background: '#fed7aa',
+                color: '#ea580c',
+                border: '1px solid #fdba74'
+              }
+            });
+          } else if (errorData.message.includes('not found')) {
+            toast.error(`Coupon "${promoCode}" not found. Try "SONAHOLI" for testing.`);
+          } else {
+            toast.error(errorData.message);
+          }
+          setIsApplyingCoupon(false);
+          return;
+        }
+        
+        // Check if it's a server error
+        if (response.status === 500) {
+          toast.error('Server error. Please try again later.');
+          setIsApplyingCoupon(false);
+          return;
+        }
+        
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        const rebateAmount = data.data.rebate || data.data.discountAmount || 0;
+        if (rebateAmount > 0) {
+          setDiscountAmount(rebateAmount);
+          toast.success(`Coupon "${promoCode}" applied successfully! Rs. ${rebateAmount.toLocaleString()} discount`);
+        } else {
+          toast.warning('Coupon applied but no discount amount available');
+        }
+      } else {
+        toast.error(data.message || 'Invalid coupon code or not applicable');
+        setDiscountAmount(0);
+      }
+    } catch (error) {
+      toast.error('Failed to apply coupon. Please try again.');
+      setDiscountAmount(0);
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const handleClearCoupon = () => {
+    setPromoCode('');
+    setDiscountAmount(0);
+    toast.info('Coupon removed');
   };
   const handleCategorySelect = async (category) => {
     // Migrate tokens to ensure compatibility
@@ -205,7 +325,6 @@ const PaymentPage = () => {
     const authCheck = api.checkAuthentication();
     if (!authCheck.isAuthenticated) {
       // Instead of showing error, navigate directly to login page
-      console.log('Authentication required for payment - redirecting to login');
       
       // Store current location state in localStorage to redirect back after login
       localStorage.setItem('redirectAfterLogin', JSON.stringify({
@@ -251,21 +370,12 @@ const PaymentPage = () => {
       return;
     }
 
-    console.log('Opening payment modal for category:', category.name, {
-      totalPrice,
-      passengers: passengers.length,
-      selectedSeats,
-      authenticated: authCheck.isAuthenticated
-    });
-
     // Set the selected category and open modal
     setSelectedCategory(category);
     setIsPaymentModalOpen(true);
   };
 
   const handlePaymentSuccess = (paymentDetails) => {
-    console.log('PAYMENT COMPLETED SUCCESSFULLY:', paymentDetails);
-    
     // Show success message
     toast.success(`🎉 Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);
     
@@ -337,8 +447,6 @@ const PaymentPage = () => {
         throw new Error('Authentication required');
       }
       
-      console.log('Starting seat booking API call...');
-      
       // Calculate the final payment amount with VAT and discount
       const baseFare = Math.round(seatPrice * selectedSeats.length || totalPrice / 1.13);
       const vatAmount = Math.round(baseFare * 0.13);
@@ -365,12 +473,6 @@ const PaymentPage = () => {
           email: passenger.email
         }))
       };
-
-      console.log('SEAT BOOKING REQUEST:', {
-        url: `${import.meta.env.VITE_API_BASE_URL}/seat`,
-        method: 'POST',
-        requestData: requestData
-      });
 
       // Get authentication token using centralized utility
       const headers = getAuthHeaders();
@@ -409,13 +511,6 @@ const PaymentPage = () => {
 
       const result = await response.json();
       
-      console.log('SEAT BOOKING RESPONSE:', {
-        status: response.status,
-        success: result.success,
-        bookingId: result.bookingId || result.data?.bookingId,
-        message: result.message
-      });
-
       if (response.ok && (result.success || response.status === 201)) {
         return {
           bookingId: result.bookingId || result.data?.bookingId || `BK${Date.now()}`,
@@ -425,7 +520,6 @@ const PaymentPage = () => {
         throw new Error(result.message || `HTTP ${response.status}: Booking failed`);
       }
     } catch (error) {
-      console.error('SEAT BOOKING ERROR:', error.message);
       throw error;
     }
   };
@@ -899,9 +993,17 @@ const PaymentPage = () => {
                   {/* Show discount if a coupon is applied */}
                   {discountAmount > 0 && (
                     <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-red-50/80 to-orange-50/80 rounded-xl border border-red-100/50 hover:shadow-md transition-all duration-200">
-                      <span className="text-sm font-medium text-red-700 font-opensans">
-                        Discount ({promoCode})
-                      </span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium text-red-700 font-opensans">
+                          Discount ({promoCode})
+                        </span>
+                        <button
+                          onClick={handleClearCoupon}
+                          className="text-xs text-red-600 hover:text-red-800 underline font-opensans"
+                        >
+                          Remove
+                        </button>
+                      </div>
                       <span className="text-sm font-semibold text-red-800 font-opensans">
                         - Rs. {discountAmount.toLocaleString()}
                       </span>
@@ -989,9 +1091,17 @@ const PaymentPage = () => {
                     </div>
                     <button 
                       onClick={handleApplyPromo}
-                      className="px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm font-opensans shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 hover:scale-105"
+                      disabled={isApplyingCoupon}
+                      className={`px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm font-opensans shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 hover:scale-105 ${isApplyingCoupon ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      Apply
+                      {isApplyingCoupon ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Applying...</span>
+                        </div>
+                      ) : (
+                        'Apply'
+                      )}
                     </button>
                   </div>
                 </div>
