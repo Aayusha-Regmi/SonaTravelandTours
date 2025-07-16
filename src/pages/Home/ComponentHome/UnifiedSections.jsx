@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import Card from './UI/HomeCards';
+import API_URLS from '../../../config/api';
 
 const UnifiedSections = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());  const [weatherData, setWeatherData] = useState({
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [offers, setOffers] = useState([]);
+  const [isLoadingOffers, setIsLoadingOffers] = useState(true);  const [weatherData, setWeatherData] = useState({
     kathmandu: { temperature: 'Loading...', humidity: '--', windSpeed: '--', condition: 'Loading...', icon: '⛅' },
     pokhara: { temperature: 'Loading...', humidity: '--', windSpeed: '--', condition: 'Loading...', icon: '⛅' },
     birgunj: { temperature: 'Loading...', humidity: '--', windSpeed: '--', condition: 'Loading...', icon: '⛅' },
@@ -244,6 +248,68 @@ const UnifiedSections = () => {
     getForecast('Birgunj', 'birgunj');
     getForecast('Chitwan', 'chitwan');
 
+    // Fetch offers from API
+    const fetchOffers = async () => {
+      try {
+        setIsLoadingOffers(true);
+        console.log('Fetching offers from:', API_URLS.COUPONS.GET_COUPONS);
+        
+        const response = await fetch(API_URLS.COUPONS.GET_COUPONS);
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Full API response:', data);
+        
+        if (data.success && data.data) {
+          console.log('Raw offers data:', data.data);
+          console.log('Number of offers received:', data.data.length);
+          
+          // Filter active offers only (temporarily disabled for debugging)
+          const now = new Date();
+          console.log('Current date:', now.toISOString());
+          
+          const activeOffers = data.data.filter(offer => {
+            const initDate = new Date(offer.couponInitDate);
+            const expDate = new Date(offer.couponExpDate);
+            
+            console.log(`Offer ${offer.couponCode}:`, {
+              initDate: initDate.toISOString(),
+              expDate: expDate.toISOString(),
+              isActive: now >= initDate && now <= expDate
+            });
+            
+            // Temporarily show all offers for debugging
+            return true; // This will show all offers regardless of date
+            // return now >= initDate && now <= expDate; // Re-enable this later
+          });
+          
+          console.log('Active offers after filtering:', activeOffers);
+          console.log('Number of active offers:', activeOffers.length);
+          
+          // Show only first 4 offers for home page
+          const homeOffers = activeOffers.slice(0, 4);
+          console.log('Home offers (first 4):', homeOffers);
+          
+          setOffers(homeOffers);
+        } else {
+          console.log('API response structure issue:', data);
+          setOffers([]);
+        }
+      } catch (error) {
+        console.error('Error fetching offers:', error);
+        // Fallback to empty array if API fails
+        setOffers([]);
+      } finally {
+        setIsLoadingOffers(false);
+      }
+    };
+
+    fetchOffers();
+
     return () => {
       clearInterval(timeInterval);
     };
@@ -329,40 +395,7 @@ const UnifiedSections = () => {
     }
   ];
 
-  const offers = [
-    {
-      id: 1,
-      title: 'Nepali New Year (Bikram Sambat)',
-      subtitle: 'Naya Barsa',
-      discount: '25% Discount',
-      promoCode: 'NEWYR2025',
-      image: '/images/636589929000896220-EPA-NEPAL-BISKA-FESTIVAL.webp'
-    },
-    {
-      id: 2,
-      title: 'Dashain Festival',
-      subtitle: 'Bada Dashain',
-      discount: '30% Discount',
-      promoCode: 'DASHAIN25',
-      image: '/images/Dashain.png'
-    },
-    {
-      id: 3,
-      title: 'Tihar (Deepawali)',
-      subtitle: 'Festival of Lights',
-      discount: '25% Discount',
-      promoCode: 'TIHAR25',
-      image: '/images/c893c128-6871-4bab-94db-c4436e419e28.png'
-    },
-    {
-      id: 4,
-      title: 'Holi Festival',
-      subtitle: 'Festival of Colors',
-      discount: '20% Discount',
-      promoCode: 'HOLI2025',
-      image: '/images/img_modernbusistransportingpassengersmountainswithsunsetholidaybannergenerativeai69969036051.png'
-    }
-  ];  return (
+  return (
     <section className="relative py-24 overflow-hidden bg-gradient-to-br from-slate-800 via-gray-900 to-zinc-900 min-h-screen">
       {/* Unified Animated Background Elements */}
       <div className="absolute inset-0">
@@ -901,44 +934,101 @@ const UnifiedSections = () => {
 
           {/* Offers Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {offers.map((offer, index) => (
-              <div key={offer.id} className="group relative h-full" style={{ animationDelay: `${index * 0.2}s` }}>
-                <div className="relative backdrop-blur-xl bg-gradient-to-br from-white/20 to-white/5 border border-white/30 rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-700 hover:scale-105 hover:-translate-y-2 h-full flex flex-col">
-                  
-                  {/* HOT Badge */}
-                  <div className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold z-20 animate-pulse">
-                    HOT!
-                  </div>
-
-                  {/* Background Image */}
-                  <div className="relative h-48 overflow-hidden flex-shrink-0">
-                    <img 
-                      src={offer.image} 
-                      alt={offer.title}
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 brightness-75"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-6 flex-1 flex flex-col">
-                    <div className="text-white/80 text-sm mb-2">{offer.subtitle}</div>
-                    <h3 className="text-white text-lg font-bold mb-3 leading-tight line-clamp-2">{offer.title}</h3>
-                    <div className="text-orange-400 text-lg font-bold mb-4">{offer.discount}</div>
-                    
-                    <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-lg p-3 mt-auto">
-                      <div className="flex-1 min-w-0 mr-3">
-                        <div className="text-white/80 text-xs">Promo Code:</div>
-                        <div className="text-white font-mono font-bold text-sm truncate">{offer.promoCode}</div>
-                      </div>
-                      <button className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-2 rounded-lg text-xs font-medium hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 flex-shrink-0">
-                        Copy
-                      </button>
+            {isLoadingOffers ? (
+              // Loading skeleton
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="group relative h-full">
+                  <div className="relative backdrop-blur-xl bg-gradient-to-br from-white/20 to-white/5 border border-white/30 rounded-3xl overflow-hidden shadow-2xl h-full flex flex-col animate-pulse">
+                    <div className="relative h-48 overflow-hidden flex-shrink-0 bg-gray-300/20"></div>
+                    <div className="p-6 flex-1 flex flex-col">
+                      <div className="h-4 bg-white/20 rounded mb-2"></div>
+                      <div className="h-6 bg-white/20 rounded mb-3"></div>
+                      <div className="h-6 bg-white/20 rounded mb-4"></div>
+                      <div className="h-12 bg-white/20 rounded mt-auto"></div>
                     </div>
                   </div>
                 </div>
+              ))
+            ) : offers.length > 0 ? (
+              offers.map((offer, index) => (
+                <div key={offer.couponId} className="group relative h-full" style={{ animationDelay: `${index * 0.2}s` }}>
+                  <div className="relative backdrop-blur-xl bg-gradient-to-br from-white/20 to-white/5 border border-white/30 rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-700 hover:scale-105 hover:-translate-y-2 h-full flex flex-col">
+                    
+                    {/* HOT Badge */}
+                    <div className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold z-20 animate-pulse">
+                      HOT!
+                    </div>
+
+                    {/* Background Image */}
+                    <div className="relative h-48 overflow-hidden flex-shrink-0">
+                      <img 
+                        src={offer.couponImageUrl} 
+                        alt={offer.title}
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 brightness-75"
+                        onError={(e) => {
+                          e.target.src = '/images/636589929000896220-EPA-NEPAL-BISKA-FESTIVAL.webp';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6 flex-1 flex flex-col">
+                      <div className="text-white/80 text-sm mb-2">{offer.couponType}</div>
+                      <h3 className="text-white text-lg font-bold mb-3 leading-tight line-clamp-2" title={offer.description}>
+                        {offer.title}
+                      </h3>
+                      <div className="text-orange-400 text-lg font-bold mb-2">
+                        {offer.discountAmount > 0 ? `Rs. ${offer.discountAmount} OFF` : `Up to Rs. ${offer.discountUpperLimit} OFF`}
+                      </div>
+                      
+                      {/* Description */}
+                      <div className="text-white/70 text-xs mb-2 line-clamp-2">
+                        {offer.description}
+                      </div>
+                      
+                      {/* Expiration Date */}
+                      <div className="text-white/60 text-xs mb-4">
+                        Valid till: {new Date(offer.couponExpDate).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </div>
+                      
+                      <div className="flex items-center justify-between bg-white/10 backdrop-blur-sm rounded-lg p-3 mt-auto">
+                        <div className="flex-1 min-w-0 mr-3">
+                          <div className="text-white/80 text-xs">Promo Code:</div>
+                          <div className="text-white font-mono font-bold text-sm truncate">{offer.couponCode}</div>
+                        </div>
+                        <button 
+                          className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-2 rounded-lg text-xs font-medium hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 flex-shrink-0"
+                          onClick={() => {
+                            navigator.clipboard.writeText(offer.couponCode);
+                            toast.success(`Copied "${offer.couponCode}" to clipboard!`, {
+                              position: "top-right",
+                              autoClose: 2000,
+                              hideProgressBar: false,
+                              closeOnClick: true,
+                              pauseOnHover: true,
+                              draggable: true,
+                            });
+                          }}
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // No offers available
+              <div className="col-span-full text-center py-12">
+                <div className="text-white/60 text-lg">No offers available at the moment</div>
+                <div className="text-white/40 text-sm mt-2">Check back later for exciting deals!</div>
               </div>
-            ))}
+            )}
           </div>
 
           {/* View All Button */}
