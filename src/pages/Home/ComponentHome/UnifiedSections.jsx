@@ -282,6 +282,11 @@ const UnifiedSections = () => {
               isActive: now >= initDate && now <= expDate
             });
             
+            // Exclude SonaTest coupon from trending offers
+            if (offer.couponCode === 'SonaTest') {
+              return false;
+            }
+            
             // Temporarily show all offers for debugging
             return true; // This will show all offers regardless of date
             // return now >= initDate && now <= expDate; // Re-enable this later

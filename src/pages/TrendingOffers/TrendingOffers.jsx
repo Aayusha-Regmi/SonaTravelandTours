@@ -64,9 +64,13 @@ const TrendingOffers = () => {
 							isActive: now >= initDate && now <= expDate
 						});
 						
-						// Exclude SONAFIRST from grid (it's shown in the special card)
+						// Exclude SONAFIRST and SonaTest from grid
+						if (offer.couponCode === 'SonaTest') {
+							return false;
+						}
+						
 						// Show all other offers for now (you can enable filtering later)
-						return offer.couponCode !== 'SONAFIRST'; // Change to: return offer.couponCode !== 'SONAFIRST' && now >= initDate && now <= expDate;
+						return true; // Change to: return now >= initDate && now <= expDate;
 					});
 					
 					console.log('Active offers after filtering:', activeOffers);
