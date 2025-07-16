@@ -1,3 +1,11 @@
+/**
+ * Sona Travel and Tours - Main Application Component
+ * 
+ * Developed by: Rohit Jha and Aayusha Regmi
+ * LinkedIn: https://www.linkedin.com/in/jrohitofficial/
+ * LinkedIn: https://www.linkedin.com/in/aayusha-regmi/
+ */
+
 import Routes from './Routes';
 import APIDebugger from './components/dev/APIDebugger';
 import SessionMonitor from './components/SessionMonitor';

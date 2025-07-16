@@ -332,16 +332,16 @@ const Footer = () => {
             height: 32px;
           }
           
-          /* Full width awards responsive */
+          /* Compact awards responsive */
           .certifications-awards-fullwidth {
-            padding: 20px 0;
-            margin-top: 16px;
+            padding: 24px 0;
+            margin-top: 20px;
           }
           
           .certifications-awards-fullwidth h4 {
-            font-size: 18px;
-            margin-bottom: 16px;
-            letter-spacing: 1px;
+            font-size: 20px;
+            margin-bottom: 20px;
+            letter-spacing: 0.8px;
           }
           
           .certifications-awards-fullwidth h4::after {
@@ -350,21 +350,28 @@ const Footer = () => {
           }
           
           .certifications-awards-fullwidth .flex {
-            gap: 4px;
+            gap: 10px;
             max-width: 100%;
           }
           
           .certifications-awards-fullwidth .iso-certification img {
-            height: 48px;
+            height: 24px;
           }
           
           .certifications-awards-fullwidth .award-item img {
-            height: 40px;
+            height: 20px;
           }
           
           .certifications-awards-fullwidth .award-item .relative {
-            padding: 8px;
-            border-radius: 8px;
+            padding: 6px;
+            border-radius: 10px;
+          }
+          
+          .certifications-awards-fullwidth .iso-certification .absolute {
+            padding: 3px 8px;
+            font-size: 12px;
+            -top: -3px;
+            -right: -3px;
           }
         }.f_widget {
           text-align: center;
@@ -442,16 +449,16 @@ const Footer = () => {
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         
-        /* Full Width Awards Section */
+        /* Compact Awards Section */
         .certifications-awards-fullwidth {
-          background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
-          backdrop-filter: blur(15px);
-          border-top: 1px solid rgba(255, 255, 255, 0.25);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-          padding: 32px 0;
+          background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+          backdrop-filter: blur(10px);
+          border-top: 1px solid rgba(255, 255, 255, 0.15);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+          padding: 20px 0;
           position: relative;
           overflow: hidden;
-          margin-top: 20px;
+          margin-top: 16px;
         }
         
         .certifications-awards-fullwidth::before {
@@ -461,8 +468,8 @@ const Footer = () => {
           left: 0;
           right: 0;
           bottom: 0;
-          background: linear-gradient(135deg, rgba(10, 99, 157, 0.06), rgba(255, 143, 31, 0.06));
-          opacity: 0.4;
+          background: linear-gradient(135deg, rgba(10, 99, 157, 0.04), rgba(255, 143, 31, 0.04));
+          opacity: 0.6;
           z-index: 0;
         }
         
@@ -473,25 +480,25 @@ const Footer = () => {
         
         .certifications-awards-fullwidth h4 {
           color: #3d3d3d;
-          font-weight: 800;
+          font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 1.5px;
-          margin-bottom: 24px;
+          letter-spacing: 1px;
+          margin-bottom: 16px;
           position: relative;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         
         .certifications-awards-fullwidth h4::after {
           content: '';
           position: absolute;
-          bottom: -8px;
+          bottom: -4px;
           left: 50%;
           transform: translateX(-50%);
-          width: 80px;
-          height: 4px;
+          width: 60px;
+          height: 2px;
           background: linear-gradient(to right, #0a639d, #ff8f1f, #0a639d);
-          border-radius: 2px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          border-radius: 1px;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
         }
         
         .awards-section h4 {
@@ -661,65 +668,65 @@ const Footer = () => {
               </div>
             </div>
             
-            {/* Full Width Certifications & Awards Section */}
-            <div className="certifications-awards-fullwidth mt-6">
-              <div className="container mx-auto px-4 max-w-full">
-                <h4 className="text-center text-xl font-bold text-[#3d3d3d] mb-6">Certifications & Awards</h4>
-                <div className="flex justify-center items-center gap-8 flex-wrap max-w-6xl mx-auto">
+            {/* Compact Certifications & Awards Section */}
+            <div className="certifications-awards-fullwidth mt-4">
+              <div className="container mx-auto px-4 max-w-5xl">
+                <h4 className="text-center text-lg font-semibold text-[#3d3d3d] mb-4">Certifications & Awards</h4>
+                <div className="flex justify-center items-center gap-4 flex-wrap">
                   {/* ISO Certification */}
                   <div className="iso-certification group">
                     <div className="relative inline-block">
                       <img 
                         src="/images/iso-1-1-702x351-removebg-preview.png" 
                         alt="ISO Certified" 
-                        className="h-20 w-auto object-contain filter drop-shadow-lg group-hover:drop-shadow-xl transition-all duration-300"
+                        className="h-12 w-auto object-contain filter drop-shadow-md group-hover:drop-shadow-lg transition-all duration-300"
                       />
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-pulse">
-                        Verified
+                      <div className="absolute -top-1 -right-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold shadow-md animate-pulse">
+                        ✓
                       </div>
                     </div>
                   </div>
                   
                   {/* Award 1 */}
                   <div className="award-item group">
-                    <div className="relative p-3 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-xl border border-white/30 hover:border-[#0a639d]/50 transition-all duration-300 hover:transform hover:scale-105 shadow-lg">
+                    <div className="relative p-2 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-lg border border-white/20 hover:border-[#0a639d]/40 transition-all duration-300 hover:transform hover:scale-110 shadow-md">
                       <img 
                         src="/images/Award1.jpg" 
                         alt="Excellence Award" 
-                        className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
+                        className="h-10 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
                       />
                     </div>
                   </div>
                   
                   {/* Award 2 */}
                   <div className="award-item group">
-                    <div className="relative p-3 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-xl border border-white/30 hover:border-[#ff8f1f]/50 transition-all duration-300 hover:transform hover:scale-105 shadow-lg">
+                    <div className="relative p-2 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-lg border border-white/20 hover:border-[#ff8f1f]/40 transition-all duration-300 hover:transform hover:scale-110 shadow-md">
                       <img 
                         src="/images/Award2.jpg" 
                         alt="Quality Service Award" 
-                        className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
+                        className="h-10 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
                       />
                     </div>
                   </div>
                   
                   {/* Award 3 */}
                   <div className="award-item group">
-                    <div className="relative p-3 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-xl border border-white/30 hover:border-[#0a639d]/50 transition-all duration-300 hover:transform hover:scale-105 shadow-lg">
+                    <div className="relative p-2 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-lg border border-white/20 hover:border-[#0a639d]/40 transition-all duration-300 hover:transform hover:scale-110 shadow-md">
                       <img 
                         src="/images/Award3.jpg" 
                         alt="Customer Choice Award" 
-                        className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
+                        className="h-10 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
                       />
                     </div>
                   </div>
                   
                   {/* Award 4 */}
                   <div className="award-item group">
-                    <div className="relative p-3 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-xl border border-white/30 hover:border-[#ff8f1f]/50 transition-all duration-300 hover:transform hover:scale-105 shadow-lg">
+                    <div className="relative p-2 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-lg border border-white/20 hover:border-[#ff8f1f]/40 transition-all duration-300 hover:transform hover:scale-110 shadow-md">
                       <img 
                         src="/images/Award4.jpg" 
                         alt="Innovation Award" 
-                        className="h-16 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
+                        className="h-10 w-auto object-contain filter drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300"
                       />
                     </div>
                   </div>

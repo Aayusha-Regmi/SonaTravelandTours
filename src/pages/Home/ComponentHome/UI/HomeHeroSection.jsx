@@ -125,7 +125,9 @@ const HeroSection = () => {
         {/* Dark overlay for better text readability */}
         <div className="absolute inset-0 z-10 bg-black/40"></div>
       </div>      {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20">          <div className="max-w-4xl mx-auto">          {/* Service Tabs - Positioned to align with search form left corner */}          
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20">          
+        <div className="max-w-4xl mx-auto">         
+          {/* Service Tabs - Positioned to align with search form left corner */}          
           <div className="absolute left-4 sm:left-8 md:left-16 lg:left-24 xl:left-40 top-[95%] transform -translate-y-1/2 bg-white/10 backdrop-blur-md rounded-2xl p-3 sm:p-4 md:p-6 max-w-xs sm:max-w-sm md:max-w-md z-30 mt-20 mb-10">
             <div className="flex space-x-2 sm:space-x-3 justify-center">
               <Button 

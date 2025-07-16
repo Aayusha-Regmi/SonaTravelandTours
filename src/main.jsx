@@ -1,3 +1,11 @@
+/**
+ * Sona Travel and Tours - Application Entry Point
+ * 
+ * Developed by: Rohit Jha and Aayusha Regmi
+ * LinkedIn: https://www.linkedin.com/in/jrohitofficial/
+ * LinkedIn: https://www.linkedin.com/in/aayusha-regmi/
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
