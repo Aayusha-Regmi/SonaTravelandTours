@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-const FloatingActionBar = ({ handleSocialClick }) => {
+const FloatingActionBar = ({ isVisible, socialActions }) => {
   const [showCallPopup, setShowCallPopup] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisibleState, setIsVisibleState] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
   const handleCallClick = () => {
@@ -22,10 +22,10 @@ const FloatingActionBar = ({ handleSocialClick }) => {
         
         // Show navbar when scrolling up or at the top
         if (currentScrollY < lastScrollY || currentScrollY < 100) {
-          setIsVisible(true);
+          setIsVisibleState(true);
         } else {
           // Hide navbar when scrolling down (only after scrolling past 100px)
-          setIsVisible(false);
+          setIsVisibleState(false);
         }
         
         setLastScrollY(currentScrollY);
@@ -41,6 +41,9 @@ const FloatingActionBar = ({ handleSocialClick }) => {
       };
     }
   }, [lastScrollY]);
+
+  // Use passed isVisible prop if provided, otherwise use internal state
+  const shouldShow = isVisible !== undefined ? isVisible : isVisibleState;
 
   return (
     <>
@@ -60,15 +63,15 @@ const FloatingActionBar = ({ handleSocialClick }) => {
         >
           {/* Feeds Button */}
           <button
-            onClick={() => handleSocialClick('feeds')}
-            className="w-12 h-12 flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-blue-100/50 to-blue-300/30 border border-white/50 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-200 group relative overflow-hidden backdrop-blur-sm"
+            onClick={() => socialActions?.handleSocialClick('feeds')}
+            className="w-12 h-12 flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-purple-100/50 to-purple-300/30 border border-white/50 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-200 group relative overflow-hidden backdrop-blur-sm"
             aria-label="Feeds"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-200/20 to-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl"></div>
-            <svg className="w-5 h-5 text-blue-600 drop-shadow-sm relative z-10" fill="currentColor" viewBox="0 0 24 24">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-200/20 to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl"></div>
+            <svg className="w-5 h-5 text-purple-600 drop-shadow-sm relative z-10" fill="currentColor" viewBox="0 0 24 24">
               <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
             </svg>
-            <span className="text-[7px] font-bold text-blue-700 tracking-wider mt-0.5 relative z-10">FEEDS</span>
+            <span className="text-[7px] font-bold text-purple-700 tracking-wider mt-0.5 relative z-10">FEEDS</span>
           </button>
 
           {/* Call Button */}
@@ -86,7 +89,7 @@ const FloatingActionBar = ({ handleSocialClick }) => {
 
           {/* Bus Routes Button */}
           <button
-            onClick={() => handleSocialClick('routes')}
+            onClick={() => socialActions?.handleSocialClick('routes')}
             className="w-12 h-12 flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-orange-100/50 to-orange-300/30 border border-white/50 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-200 group relative overflow-hidden backdrop-blur-sm"
             aria-label="Bus Routes"
           >
@@ -99,7 +102,7 @@ const FloatingActionBar = ({ handleSocialClick }) => {
 
           {/* WhatsApp Button */}
           <button
-            onClick={() => handleSocialClick('whatsapp')}
+            onClick={() => socialActions?.handleSocialClick('whatsapp')}
             className="w-12 h-12 flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-green-100/50 to-green-300/30 border border-white/50 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-200 group relative overflow-hidden backdrop-blur-sm"
             aria-label="WhatsApp"
           >
@@ -114,7 +117,7 @@ const FloatingActionBar = ({ handleSocialClick }) => {
 
       {/* Mobile Bottom Navigation Bar - Only visible on mobile/tablet */}
       <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out ${
-        isVisible ? 'translate-y-0' : 'translate-y-full'
+        shouldShow ? 'translate-y-0' : 'translate-y-full'
       }`}>
         <div 
           className="relative px-4 py-4 shadow-xl border-t-2 border-[#ff8f1f]"
@@ -133,9 +136,9 @@ const FloatingActionBar = ({ handleSocialClick }) => {
           <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white/30 rounded-full"></div>
           
           <div className="flex items-center justify-around max-w-md mx-auto">
-            {/* Home Button (replacing Profile) */}
+            {/* Home Button */}
             <button
-              onClick={() => handleSocialClick('home')}
+              onClick={() => socialActions?.handleSocialClick('home')}
               className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200 group"
               aria-label="Home"
             >
@@ -149,16 +152,16 @@ const FloatingActionBar = ({ handleSocialClick }) => {
 
             {/* Feeds Button */}
             <button
-              onClick={() => handleSocialClick('feeds')}
+              onClick={() => socialActions?.handleSocialClick('feeds')}
               className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200 group"
               aria-label="Feeds"
             >
               <div className="w-6 h-6 mb-1">
-                <svg className="w-full h-full text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-full h-full text-purple-600" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
                 </svg>
               </div>
-              <span className="text-xs font-medium text-gray-600 group-hover:text-blue-600">Feeds</span>
+              <span className="text-xs font-medium text-gray-600 group-hover:text-purple-600">Feeds</span>
             </button>
 
             {/* Call Button */}
@@ -177,7 +180,7 @@ const FloatingActionBar = ({ handleSocialClick }) => {
 
             {/* Bus Routes Button */}
             <button
-              onClick={() => handleSocialClick('routes')}
+              onClick={() => socialActions?.handleSocialClick('routes')}
               className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200 group"
               aria-label="Bus Routes"
             >
@@ -191,7 +194,7 @@ const FloatingActionBar = ({ handleSocialClick }) => {
 
             {/* WhatsApp Button */}
             <button
-              onClick={() => handleSocialClick('whatsapp')}
+              onClick={() => socialActions?.handleSocialClick('whatsapp')}
               className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200 group"
               aria-label="WhatsApp"
             >

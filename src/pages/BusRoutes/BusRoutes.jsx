@@ -1,9 +1,177 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const BusRoutes = () => {
-  return (    <>
+  const { handleSocialClick } = useSocialActions();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filteredRoutes, setFilteredRoutes] = useState([]);
+
+  // Sample bus routes data with detailed information
+  const busRoutes = [
+    {
+      id: 1,
+      from: 'Kathmandu',
+      to: 'Pokhara',
+      category: 'tourist',
+      duration: '6 hours',
+      distance: '200 km',
+      price: 800,
+      busType: 'Luxury AC',
+      frequency: 'Every 2 hours',
+      operator: 'Sona Travel',
+      amenities: ['WiFi', 'AC', 'Reclining Seats', 'Charging Ports'],
+      route: 'Kathmandu → Mugling → Dumre → Pokhara',
+      image: '/images/Bus.png',
+      rating: 4.8,
+      reviews: 324,
+      departure: ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00'],
+      features: ['Scenic Mountain Views', 'Professional Driver', 'First Aid Kit']
+    },
+    {
+      id: 2,
+      from: 'Kathmandu',
+      to: 'Chitwan',
+      category: 'safari',
+      duration: '5 hours',
+      distance: '150 km',
+      price: 600,
+      busType: 'Deluxe',
+      frequency: 'Every 3 hours',
+      operator: 'Jungle Express',
+      amenities: ['AC', 'Music System', 'Refreshments'],
+      route: 'Kathmandu → Hetauda → Narayanghat → Chitwan',
+      image: '/images/Bus (2).PNG',
+      rating: 4.6,
+      reviews: 256,
+      departure: ['07:00', '10:00', '13:00', '16:00'],
+      features: ['Wildlife Guide', 'Jungle Safari Information', 'Nature Documentary']
+    },
+    {
+      id: 3,
+      from: 'Kathmandu',
+      to: 'Lumbini',
+      category: 'pilgrimage',
+      duration: '8 hours',
+      distance: '280 km',
+      price: 1000,
+      busType: 'Super Deluxe AC',
+      frequency: 'Twice daily',
+      operator: 'Buddha Express',
+      amenities: ['WiFi', 'AC', 'Meal Service', 'Prayer Room'],
+      route: 'Kathmandu → Narayanghat → Butwal → Lumbini',
+      image: '/images/Bus.png',
+      rating: 4.9,
+      reviews: 412,
+      departure: ['06:00', '14:00'],
+      features: ['Buddhist Guide', 'Meditation Area', 'Religious Literature']
+    },
+    {
+      id: 4,
+      from: 'Pokhara',
+      to: 'Kathmandu',
+      category: 'tourist',
+      duration: '6 hours',
+      distance: '200 km',
+      price: 800,
+      busType: 'Luxury AC',
+      frequency: 'Every 2 hours',
+      operator: 'Mountain View Express',
+      amenities: ['WiFi', 'AC', 'Panoramic Windows', 'Snack Service'],
+      route: 'Pokhara → Dumre → Mugling → Kathmandu',
+      image: '/images/Bus (2).PNG',
+      rating: 4.7,
+      reviews: 298,
+      departure: ['06:30', '08:30', '10:30', '12:30', '14:30', '16:30'],
+      features: ['Himalayan Views', 'Photo Stops', 'Travel Commentary']
+    },
+    {
+      id: 5,
+      from: 'Kathmandu',
+      to: 'Janakpur',
+      category: 'pilgrimage',
+      duration: '7 hours',
+      distance: '225 km',
+      price: 700,
+      busType: 'AC Sleeper',
+      frequency: 'Daily',
+      operator: 'Janaki Express',
+      amenities: ['AC', 'Sleeping Berths', 'Blankets', 'Pillow Service'],
+      route: 'Kathmandu → Bardibas → Janakpur',
+      image: '/images/Bus.png',
+      rating: 4.5,
+      reviews: 189,
+      departure: ['22:00'],
+      features: ['Night Travel', 'Cultural Information', 'Temple Guide']
+    },
+    {
+      id: 6,
+      from: 'Kathmandu',
+      to: 'Dhangadhi',
+      category: 'long-distance',
+      duration: '14 hours',
+      distance: '580 km',
+      price: 1500,
+      busType: 'Night Coach',
+      frequency: 'Daily',
+      operator: 'Far West Express',
+      amenities: ['AC', 'Sleeping Berths', 'Meal Service', 'Entertainment'],
+      route: 'Kathmandu → Nepalgunj → Dhangadhi',
+      image: '/images/Bus (2).PNG',
+      rating: 4.4,
+      reviews: 156,
+      departure: ['19:00'],
+      features: ['Overnight Journey', 'Multiple Stops', 'Comfortable Berths']
+    }
+  ];
+
+  const categories = [
+    { id: 'all', name: 'All Routes', icon: '🚌', color: 'bg-blue-500' },
+    { id: 'tourist', name: 'Tourist Routes', icon: '🏔️', color: 'bg-green-500' },
+    { id: 'safari', name: 'Safari Routes', icon: '🦏', color: 'bg-orange-500' },
+    { id: 'pilgrimage', name: 'Pilgrimage', icon: '🛕', color: 'bg-purple-500' },
+    { id: 'long-distance', name: 'Long Distance', icon: '🛣️', color: 'bg-red-500' }
+  ];
+
+  // Filter routes based on search and category
+  useEffect(() => {
+    let filtered = busRoutes;
+    
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(route => route.category === selectedCategory);
+    }
+    
+    if (searchTerm) {
+      filtered = filtered.filter(route => 
+        route.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        route.to.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        route.operator.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    setFilteredRoutes(filtered);
+  }, [searchTerm, selectedCategory]);
+
+  const openRouteModal = (route) => {
+    setSelectedRoute(route);
+  };
+
+  const closeRouteModal = () => {
+    setSelectedRoute(null);
+  };
+
+  const handleBooking = (route) => {
+    // Handle booking logic here
+    alert(`Booking ${route.operator} from ${route.from} to ${route.to}`);
+  };
+  
+  return (
+    <>
       <Header />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/80 to-indigo-100/60 relative overflow-hidden">
         {/* Ultra Premium Background with Animated Elements */}
@@ -618,6 +786,7 @@ const BusRoutes = () => {
       </div>
       </div>
       <Footer />
+      <FloatingActionBar handleSocialClick={handleSocialClick} />
     </>
   );
 };

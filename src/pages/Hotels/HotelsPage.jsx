@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
-import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 
 const HotelsPage = () => {
-  const { handleSocialClick } = useSocialActions();
+  const { isVisible, socialActions } = useSocialActions();
   
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -342,7 +342,10 @@ const HotelsPage = () => {
       </main>
 
       <Footer />
-      <FloatingActionBar handleSocialClick={handleSocialClick} />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };

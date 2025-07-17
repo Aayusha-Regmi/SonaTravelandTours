@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const ContactUs = () => {
+  const { isVisible, socialActions } = useSocialActions();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -619,6 +622,10 @@ const ContactUs = () => {
       </section>
 
       <Footer />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };

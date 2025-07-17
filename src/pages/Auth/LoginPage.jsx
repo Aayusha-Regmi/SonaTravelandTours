@@ -3,7 +3,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
-import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 import { validateLoginInput, validateField, detectInputType } from '../../utils/authUtils';
 import { getAndClearReturnPath, getAndClearSearchData, getAndClearPageState } from '../../utils/authGuard';
@@ -14,7 +14,7 @@ import { setAuthToken, clearAuthToken } from '../../utils/authToken';
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { handleSocialClick } = useSocialActions();
+  const { isVisible, socialActions } = useSocialActions();
   
   const [formData, setFormData] = useState({
     emailOrPhone: '',
@@ -555,7 +555,10 @@ const LoginPage = () => {
           />
         </div>
       </div>
-      <FloatingActionBar handleSocialClick={handleSocialClick} />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };

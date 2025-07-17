@@ -1,8 +1,12 @@
 import React, { useEffect } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const Feed = () => {
+  const { isVisible, socialActions } = useSocialActions();
+  
   useEffect(() => {
     // Load Facebook SDK with correct configuration
     const loadFacebookSDK = () => {
@@ -712,6 +716,10 @@ const Feed = () => {
         }
       `}</style>
       <Footer />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </>
   );
 };

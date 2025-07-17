@@ -7,7 +7,7 @@ import Footer from '../../components/common/Footer';
 import BusListingHeader from '../../components/common/BusListingHeader';
 import ProgressBar from '../../components/common/BookingStepComponents/ProgressBar';
 import PaymentModal from '../../components/ui/PaymentModal';
-import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 import api from '../../services/api';
 import { getAuthToken, getAuthHeaders, isAuthenticated } from '../../utils/authToken';
@@ -16,7 +16,7 @@ import API_URLS from '../../config/api';
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { handleSocialClick } = useSocialActions();
+  const { isVisible, socialActions } = useSocialActions();
   
   // 🔥 FIX: Get complete data from passenger details
   const { 
@@ -1274,7 +1274,10 @@ const PaymentPage = () => {
           />
         );
       })()}
-      <FloatingActionBar handleSocialClick={handleSocialClick} />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };

@@ -1,8 +1,11 @@
 import React from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const VisitCounters = () => {
+  const { isVisible, socialActions } = useSocialActions();
   // Counter locations with embedded map URLs
   const counterLocations = [
     {
@@ -364,6 +367,10 @@ const VisitCounters = () => {
       </section>
 
       <Footer />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };
