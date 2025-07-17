@@ -1511,6 +1511,31 @@ if (typeof window !== 'undefined') {
 }
 
 /**
+ * Get applied coupons for the current user
+ * @returns {Promise<Array>} Array of applied coupons
+ */
+const getAppliedCoupons = async () => {
+  try {
+    const response = await authenticatedFetch(API_URLS.COUPONS.APPLIED_COUPONS);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch applied coupons: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.success && Array.isArray(data.data)) {
+      return data.data;
+    } else {
+      throw new Error('Invalid response format for applied coupons');
+    }
+  } catch (error) {
+    console.error('Error fetching applied coupons:', error);
+    throw error;
+  }
+};
+
+/**
  * Diagnostic function to test API endpoints
  */
 const testAPIEndpoints = async () => {
@@ -1593,6 +1618,9 @@ export default {
   // FonePay functions
   generateFonePayQR,
   checkFonePayStatus,
+
+  // Coupon functions
+  getAppliedCoupons,
 
   // Authentication utilities
   checkAuthentication,

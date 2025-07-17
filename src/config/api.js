@@ -28,6 +28,7 @@ export const API_URLS = {
   COUPONS:{
     GET_COUPONS: `${BUS_API_BASE_URL}${import.meta.env.VITE_GET_ALL_COUPONS}`,
     APPLY_DISCOUNT: `${BUS_API_BASE_URL}/coupon/discount`,
+    APPLIED_COUPONS: `${BUS_API_BASE_URL}/user/applied-coupons`,
   }
 };
 
