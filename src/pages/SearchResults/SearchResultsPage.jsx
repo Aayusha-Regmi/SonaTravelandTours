@@ -8,13 +8,8 @@ import BusListings from './ComponentSearch/BusListings';
 import DateSelector from './ComponentSearch/DateSelector';
 import Button from '../../components/ui/Button';
 import LocationDropdown from '../Home/ComponentHome/UI/LocationDropdown';
-<<<<<<< HEAD
-import DatePicker from '../Home/ComponentHome/UI/DatePickerNew';
-import FloatingActionBar from '../../components/common/FloatingActionBar';
-=======
 import DatePicker from '../Home/ComponentHome/UI/DatePicker';
-import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
->>>>>>> 4f3073f22f82d0db38d764f76ef2cab0d2191b8b
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 import api from '../../services/api';
 
