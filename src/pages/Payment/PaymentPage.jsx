@@ -264,7 +264,7 @@ const PaymentPage = () => {
         if (response.status === 404 && errorData && errorData.message) {
           if (errorData.message.includes('expired')) {
             // Show orange warning toast for expired coupons
-            toast.warn(`${promoCode} is Expired`, {
+            toast.warn(`${promoCode} is not available.`, {
               style: {
                 background: '#fed7aa',
                 color: '#ea580c',
@@ -377,7 +377,7 @@ const PaymentPage = () => {
 
   const handlePaymentSuccess = (paymentDetails) => {
     // Show success message
-    toast.success(`🎉 Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);
+    toast.success(` Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);
     
     // Close the modal
     setIsPaymentModalOpen(false);
