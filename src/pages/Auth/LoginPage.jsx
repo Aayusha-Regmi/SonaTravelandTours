@@ -15,12 +15,8 @@ import { setAuthToken, clearAuthToken } from '../../utils/authToken';
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-<<<<<<< HEAD
-  const { isVisible, socialActions } = useSocialActions();
-=======
   const { handleSocialClick } = useSocialActions();
   const { restoreUserActions } = useUserActionRestoration();
->>>>>>> 4f3073f22f82d0db38d764f76ef2cab0d2191b8b
   
   const [formData, setFormData] = useState({
     emailOrPhone: '',
