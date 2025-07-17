@@ -4,24 +4,7 @@
 
 import { API_URLS } from '../config/api';
 import { getAuthToken, getAuthHeaders, isAuthenticated } from '../utils/authToken';
-
-// Debug interceptor to log all fetch requests
-const originalFetch = window.fetch;
-window.fetch = function(...args) {
-  const [url, options] = args;
-  
-  // Only log payment API requests
-  if (url.includes('/payment/')) {
-    console.log('Payment API Request:', {
-      url,
-      method: options?.method || 'GET',
-      headers: options?.headers || {},
-      body: options?.body
-    });
-  }
-  
-  return originalFetch.apply(this, args);
-};
+import { authenticatedFetch, apiCall } from './httpInterceptor';
 
 /**
  * Get all available facilities for bus filtering
@@ -285,135 +268,53 @@ const searchBuses = async (searchParams) => {
       }
     }
     
-    // Add debug log to verify date conversion
-    console.log('Date conversion check:');
-    console.log('   Original date:', date);
-    console.log('   Formatted for API:', apiDate);
-    
+    console.log('🚌 Bus Search API Request:', {
+      fromCity,
+      toCity,
+      originalDate: date,
+      formattedDate: apiDate
+    });
+
     const requestBody = {
       destination: toCity,
       origin: fromCity,
-      date: apiDate  // Now correctly formatted
+      date: apiDate
     };
-    
-    console.log('Bus Search API Request:', requestBody);
-    console.log('API URL:', API_URLS.BUS.SEARCH);
-    console.log('Environment variables:', {
-      baseUrl: import.meta.env.VITE_API_BASE_URL,
-      endpoint: import.meta.env.VITE_BUS_SEARCH_ENDPOINT,
-      fullUrl: API_URLS.BUS.SEARCH
-    });
 
     // Check if URL is properly constructed
     if (!API_URLS.BUS.SEARCH || API_URLS.BUS.SEARCH.includes('undefined')) {
       throw new Error('Bus API URL is not properly configured. Check environment variables.');
     }
 
-    // Try different CORS configurations if the main one fails
-    const corsConfigs = [
-      {
-        name: 'Standard CORS',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        }
+    // Use HTTP interceptor for authentication and request handling
+    const response = await authenticatedFetch(API_URLS.BUS.SEARCH, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
-      {
-        name: 'CORS with Origin',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Origin': window.location.origin,
-        }
-      },
-      {
-        name: 'No-CORS (limited response)',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      }
-    ];
+      body: JSON.stringify(requestBody)
+    });
 
-    let lastError = null;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API returned ${response.status}: ${response.statusText}. Response: ${errorText}`);
+    }
 
-    for (let i = 0; i < corsConfigs.length; i++) {
-      const config = corsConfigs[i];
-      console.log(` Trying ${config.name}...`);
+    const result = await response.json();
+    console.log('🚌 Bus Search API Response:', result);
+    console.log('🚌 Number of buses returned:', result.data ? result.data.length : 0);
 
-      try {
-        // Add timeout and better error handling
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-          controller.abort();
-          console.error(` ${config.name} timeout after 30 seconds`);
-        }, 30000); // 30 second timeout
-
-        try {
-          console.log(` Making fetch request with ${config.name}...`);
-          const response = await fetch(API_URLS.BUS.SEARCH, {
-            method: 'POST',
-            headers: config.headers,
-            body: JSON.stringify(requestBody),
-            signal: controller.signal,
-            mode: config.mode,
-          });
-
-          clearTimeout(timeoutId);
-
-          console.log(`${config.name} completed successfully`);
-          console.log(' Response Status:', response.status, response.statusText);
-          console.log(' Response Headers:', Object.fromEntries(response.headers.entries()));
-          console.log('  Response URL:', response.url);
-          console.log('  Response Type:', response.type);
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error(' HTTP Error Response Body:', errorText);
-            throw new Error(`API returned ${response.status}: ${response.statusText}. Response: ${errorText}`);
-          }          // If we reach here, the request was successful
-          const result = await response.json();
-          console.log(' Bus Search API Response:', result);
-          console.log(' Number of buses returned:', result.data ? result.data.length : 0);
-
-          // Process the successful response and return
-          return processSuccessfulResponse(result, fromCity, toCity);
-
-        } catch (fetchError) {
-          clearTimeout(timeoutId);
-          lastError = fetchError;
-          console.error(`  ${config.name} failed:`, fetchError.message);
-          
-          if (i === corsConfigs.length - 1) {
-            // This was our last attempt, throw the error
-            if (fetchError.name === 'AbortError') {
-              throw new Error('Request timeout - API took too long to respond');
-            } else if (fetchError.message === 'Failed to fetch') {
-              throw new Error('Network error - Cannot connect to API. Check if API is running and CORS is configured.');
-            } else {
-              throw new Error(`Network request failed: ${fetchError.message}`);
-            }
-          } else {
-            console.log(`  Trying next configuration...`);
-            continue;
-          }
-        }
-      } catch (configError) {
-        lastError = configError;
-        console.error(`  Configuration ${config.name} failed:`, configError.message);
-        if (i === corsConfigs.length - 1) {
-          throw configError;
-        }
-        continue;
-      }    }
-
-    // If we get here, all CORS configurations failed
-    throw new Error('All CORS configuration attempts failed. Please check API server and CORS settings.');
+    // Process the successful response and return
+    return processSuccessfulResponse(result, fromCity, toCity);
     
   } catch (error) {
-    console.error('  Bus search API error:', error);
+    console.error('🚌 Bus search API error:', error);
+    
+    // HTTP interceptor will handle authentication errors automatically
+    if (error.message === 'AUTHENTICATION_REQUIRED') {
+      throw error; // Re-throw to be handled by calling code
+    }
     
     // Re-throw the error instead of falling back to sample data
     throw new Error(`Failed to fetch bus data from API: ${error.message}`);
@@ -438,86 +339,48 @@ const getRoutes = async () => {
  */
 const initiatePayment = async (amount) => {
   try {
-    console.log('Step 1: Initiating payment for amount:', amount);
+    console.log('💳 Step 1: Initiating payment for amount:', amount);
 
-    //delete this line later (just for testing)
-    console.log('Using API URL:', `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`);
+    const url = `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`;
+    console.log('💳 Using API URL:', url);
     
-    // Check for authentication token using the enhanced utility function
-    const authCheck = checkAuthentication();
-    
-    if (!authCheck.isAuthenticated) {
-      console.error('Authentication failed:', authCheck.error || 'No valid token found');
-      return {
-        success: false,
-        message: authCheck.error || 'Authentication required. Please log in.',
-        statusCode: 401,
-        details: { authCheck }
-      };
-    }
-    
-    console.log(`Authentication successful - using token from ${authCheck.source}`);
-    
-    // Log token validation details
-    if (authCheck.validation) {
-      console.log('Token validation details:', {
-        valid: authCheck.validation.isValid,
-        expiresAt: authCheck.validation.expiresAt,
-        payload: authCheck.validation.payload
-      });
-    }
-    
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${authCheck.token}`
-    };
-    
-    console.log('Request headers (token preview):', {
-      'Content-Type': headers['Content-Type'],
-      'Accept': headers['Accept'],
-      'Authorization': `Bearer ${authCheck.token.substring(0, 20)}...`//shows first 20 characters of token just for testing purpose again
-    });
-    
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`, {
-      //request body
+    // Use HTTP interceptor for authentication and request handling
+    const response = await authenticatedFetch(url, {
       method: 'POST',
-      headers: headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       body: JSON.stringify({ amount })
     });
 
-    console.log('Response status:', response.status, response.statusText);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('💳 Response status:', response.status, response.statusText);
+    console.log('💳 Response headers:', Object.fromEntries(response.headers.entries()));
     
     // Get response text first to see what the server is actually returning
-    //sometimes servers return HTML errors or malformed JSON, 
-    // and trying to response.json() directly would crash.
     const responseText = await response.text();
-    console.log('Raw response text:', responseText);
+    console.log('💳 Raw response text:', responseText);
     
     let result;
     try {
       if (responseText) {
-        //add response in json format to result
         result = JSON.parse(responseText);
       } else {
         result = { message: 'Empty response from server' };
       }
     } catch (parseError) {
-      console.error('Failed to parse JSON response:', parseError);
+      console.error('💳 Failed to parse JSON response:', parseError);
       result = { 
         message: 'Invalid JSON response from server',
         rawResponse: responseText 
       };
     }
-    //show exact error provided from server
-    console.log('Parsed payment initiation response:', result);
-     
+    
+    console.log('💳 Parsed payment initiation response:', result);
 
     if (response.ok) {
       return {
         success: true,
-        //data provided from server for payment-initiation
         data: {
           merchantId: result.data?.merchantId || result.merchantId,
           merchantName: result.data?.merchantName || result.merchantName,
@@ -525,17 +388,6 @@ const initiatePayment = async (amount) => {
           merchantTransactionId: result.data?.merchantTransactionId || result.merchantTransactionId,
           processId: result.data?.processId || result.processId
         }
-      };
-      //proper Error handling follows
-    } else if (response.status === 401) {
-      // Handle authentication error specifically
-      console.error('Authentication failed - 401 Unauthorized');
-      return {
-        success: false,
-        message: 'Authentication required. Please log in to continue with payment.',
-        details: result,
-        statusCode: response.status,
-        requiresAuth: true
       };
     } else {
       return {
@@ -546,7 +398,18 @@ const initiatePayment = async (amount) => {
       };
     }
   } catch (error) {
-    console.error('Payment initiation error:', error);
+    console.error('💳 Payment initiation error:', error);
+    
+    // HTTP interceptor will handle authentication errors automatically
+    if (error.message === 'AUTHENTICATION_REQUIRED') {
+      return {
+        success: false,
+        message: 'Authentication required. Please log in to continue with payment.',
+        statusCode: 401,
+        requiresAuth: true
+      };
+    }
+    
     return {
       success: false,
       message: error.message || 'Network error occurred',
@@ -561,39 +424,24 @@ const initiatePayment = async (amount) => {
  */
 const getPaymentInstruments = async () => {
   try {
-    console.log('Step 2: Getting payment instruments...');
+    console.log('💳 Step 2: Getting payment instruments...');
     
-    // Check for authentication token using the enhanced utility function
-    const authCheck = checkAuthentication();
+    const url = `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/get-all-payment-instruments`;
     
-    if (!authCheck.isAuthenticated) {
-      console.error('Authentication required for payment instruments');
-      return {
-        success: false,
-        message: authCheck.error || 'Authentication required to load payment options.',
-        statusCode: 401,
-        requiresAuth: true
-      };
-    }
-    
-    console.log(`Using authentication from ${authCheck.source}`);
-    
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${authCheck.token}`
-    };
-    
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/get-all-payment-instruments`, {
+    // Use HTTP interceptor for authentication and request handling
+    const response = await authenticatedFetch(url, {
       method: 'GET',
-      headers: headers
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
     });
 
-    console.log('Payment instruments response status:', response.status);
-    console.log('Payment instruments response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('💳 Payment instruments response status:', response.status);
+    console.log('💳 Payment instruments response headers:', Object.fromEntries(response.headers.entries()));
 
     const responseText = await response.text();
-    console.log('Payment instruments raw response:', responseText);
+    console.log('💳 Payment instruments raw response:', responseText);
 
     let result;
     try {
@@ -603,11 +451,11 @@ const getPaymentInstruments = async () => {
         result = { message: 'Empty response from payment instruments API' };
       }
     } catch (parseError) {
-      console.error('Failed to parse payment instruments JSON:', parseError);
+      console.error('💳 Failed to parse payment instruments JSON:', parseError);
       result = { message: 'Invalid JSON response', rawResponse: responseText };
     }
     
-    console.log('Payment instruments parsed response:', result);
+    console.log('💳 Payment instruments parsed response:', result);
 
     if (response.ok) {
       // Try different response formats
@@ -619,11 +467,16 @@ const getPaymentInstruments = async () => {
         rawInstruments = result.data;
       } else if (Array.isArray(result)) {
         rawInstruments = result;
-      } else if (result.data && Array.isArray(result.data)) {
-        rawInstruments = result.data;
+      } else {
+        console.log('💳 Unexpected response format, using fallback');
+        return {
+          success: true,
+          data: getFallbackPaymentInstruments(),
+          fallback: true
+        };
       }
       
-      console.log('Raw payment instruments from API:', rawInstruments);
+      console.log('💳 Raw payment instruments from API:', rawInstruments);
       
       // Map API response to our expected format
       const instruments = rawInstruments.map((instrument, index) => ({
@@ -638,15 +491,14 @@ const getPaymentInstruments = async () => {
         description: `Pay with ${instrument.InstrumentName || instrument.InstitutionName}`
       }));
       
-      console.log('Mapped payment instruments:', instruments);
+      console.log('💳 Mapped payment instruments:', instruments);
       
       // If no instruments found, use fallback
       if (!instruments || instruments.length === 0) {
-        console.log('No payment instruments from API, using fallback');
-        const fallbackInstruments = getFallbackPaymentInstruments();
+        console.log('💳 No payment instruments from API, using fallback');
         return {
           success: true,
-          data: fallbackInstruments,
+          data: getFallbackPaymentInstruments(),
           fallback: true
         };
       }
@@ -655,21 +507,11 @@ const getPaymentInstruments = async () => {
         success: true,
         data: instruments
       };
-    } else if (response.status === 401) {
-      // Handle authentication error specifically
-      console.error('Authentication failed - 401 Unauthorized for payment instruments');
-      return {
-        success: false,
-        message: 'Authentication required. Please log in to view payment options.',
-        details: result,
-        statusCode: response.status,
-        requiresAuth: true
-      };
     } else {
-      console.error('Payment instruments API failed:', response.status, result);
+      console.error('💳 Payment instruments API failed:', response.status, result);
       
       // Return fallback instruments on API failure
-      console.log('Using fallback payment instruments due to API failure');
+      console.log('💳 Using fallback payment instruments due to API failure');
       return {
         success: true,
         data: getFallbackPaymentInstruments(),
@@ -677,10 +519,20 @@ const getPaymentInstruments = async () => {
       };
     }
   } catch (error) {
-    console.error('Get payment instruments error:', error);
+    console.error('💳 Get payment instruments error:', error);
+    
+    // HTTP interceptor will handle authentication errors automatically
+    if (error.message === 'AUTHENTICATION_REQUIRED') {
+      return {
+        success: false,
+        message: 'Authentication required to load payment options.',
+        statusCode: 401,
+        requiresAuth: true
+      };
+    }
     
     // Return fallback instruments on network error
-    console.log('Using fallback payment instruments due to network error');
+    console.log('💳 Using fallback payment instruments due to network error');
     return {
       success: true,
       data: getFallbackPaymentInstruments(),

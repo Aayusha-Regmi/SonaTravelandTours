@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-import { isAuthenticated, clearAuthToken } from '../../utils/authToken';
+import { clearAuthToken } from '../../utils/authToken';
+import httpInterceptor, { setSessionExpiredCallback } from '../../services/httpInterceptor';
 
 const PaymentModal = ({ 
   isOpen, 
@@ -30,51 +31,56 @@ const PaymentModal = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   // Session expiry handler for payment modal
-  // const handleSessionExpiry = (message = 'Session expired. Please login again to continue payment.') => {
-  //   console.warn('PaymentModal: Session expired, redirecting to login');
+  const handleSessionExpiry = (message = 'Session expired. Please login again to continue payment.') => {
+    console.warn('PaymentModal: Session expired, redirecting to login');
     
-  //   // Clear all auth tokens
-  //   clearAuthToken();
+    // Clear all auth tokens
+    clearAuthToken();
     
-  //   // Close the payment modal
-  //   onClose();
+    // Close the payment modal
+    onClose();
     
-  //   // Show session expiry message and redirect
-  //   toast.error(message, {
-  //     position: "top-right",
-  //     autoClose: 5000,
-  //     hideProgressBar: false,
-  //     closeOnClick: true,
-  //     pauseOnHover: true,
-  //     draggable: true,
-  //     onClose: () => {
-  //       navigate('/login', { 
-  //         state: { 
-  //           sessionExpired: true,
-  //           message: message,
-  //           returnUrl: window.location.pathname + window.location.search 
-  //         }
-  //       });
-  //     }
-  //   });
-  // };
+    // Show session expiry message and redirect
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      onClose: () => {
+        navigate('/login', { 
+          state: { 
+            sessionExpired: true,
+            message: message,
+            returnUrl: window.location.pathname + window.location.search 
+          }
+        });
+      }
+    });
+  };
 
   // Initialize payment when modal opens
   useEffect(() => {
     if (isOpen) {
-      // Double-check authentication before initializing payment
-      if (!isAuthenticated()) {
-        console.warn('PaymentModal: Modal opened but user not authenticated, closing');
-        handleSessionExpiry('Please login to access payment options');
-        return;
-      }
+      // Set up session expiry handler for this modal
+      setSessionExpiredCallback(() => {
+        handleSessionExpiry('Please login to continue with payment');
+      });
+      
+      // Override global session handler while modal is open
+      window.sessionExpiredHandlerOverride = true;
       
       initializePayment();
     }
+    
+    // Cleanup
     return () => {
       if (webSocket) {
         webSocket.close();
       }
+      // Restore global session handler
+      window.sessionExpiredHandlerOverride = false;
     };
   }, [isOpen]);
 
@@ -121,25 +127,8 @@ const PaymentModal = ({
     try {
       console.log('PaymentModal: Initializing payment for amount:', totalPrice);
       
-      // Check authentication first using our centralized utility
-      if (!isAuthenticated()) {
-        console.error('PaymentModal: User not authenticated');
-        handleSessionExpiry('Please login to continue with payment');
-        return;
-      }
-      
-      // Check authentication through API service
-      const authCheck = api.checkAuthentication();
-      if (!authCheck.isAuthenticated) {
-        console.error('PaymentModal: API authentication check failed:', authCheck.error);
-        handleSessionExpiry(authCheck.error || 'Please log in to continue with payment');
-        return;
-      }
-      
-      console.log('PaymentModal: Authentication verified:', authCheck.source);
-      
-      // Migrate tokens for compatibility
-      api.migrateAuthTokens();
+      // HTTP interceptor will handle authentication automatically
+      // No need for manual auth checks here
       
       // Step 1: Initiate Payment
       const paymentInitiated = await api.initiatePayment(totalPrice);
@@ -159,9 +148,6 @@ const PaymentModal = ({
           } else {
             toast.success(`Payment methods loaded for ${selectedCategory?.name || 'selected category'}.`);
           }
-        } else if (instruments.requiresAuth) {
-          console.error('❌ Authentication required for payment instruments:', instruments.message);
-          handleSessionExpiry('Please log in again to view payment options');
         } else {
           console.error('❌ Failed to load payment instruments:', instruments.message);
           
@@ -173,16 +159,11 @@ const PaymentModal = ({
       } else {
         console.error('💳 Payment initiation failed:', paymentInitiated);
         
-        // Handle authentication errors specifically
-        if (paymentInitiated.requiresAuth || paymentInitiated.statusCode === 401) {
-          handleSessionExpiry('Authentication required. Please log in again.');
-        } else {
-          // Show detailed error message for debugging
-          const errorMsg = paymentInitiated.message || 'Unknown error';
-          const statusCode = paymentInitiated.statusCode || 'Unknown';
-          
-          toast.error(`Payment API Error (${statusCode}): ${errorMsg}`);
-        }
+        // Show detailed error message for debugging
+        const errorMsg = paymentInitiated.message || 'Unknown error';
+        const statusCode = paymentInitiated.statusCode || 'Unknown';
+        
+        toast.error(`Payment API Error (${statusCode}): ${errorMsg}`);
         
         // Show additional details in console for debugging
         if (paymentInitiated.details) {
@@ -193,6 +174,13 @@ const PaymentModal = ({
       }
     } catch (error) {
       console.error('Payment initialization error:', error);
+      
+      // HTTP interceptor will handle authentication errors automatically
+      if (error.message === 'AUTHENTICATION_REQUIRED') {
+        // Session expiry already handled by interceptor
+        return;
+      }
+      
       toast.error(`Payment system unavailable: ${error.message || 'Please try again later'}`);
       onClose();
     } finally {

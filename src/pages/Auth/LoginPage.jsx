@@ -7,6 +7,7 @@ import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 import { validateLoginInput, validateField, detectInputType } from '../../utils/authUtils';
 import { getAndClearReturnPath, getAndClearSearchData, getAndClearPageState } from '../../utils/authGuard';
+import { useUserActionRestoration } from '../../utils/userActionRestorer';
 import { API_URLS } from '../../config/api';
 import { logSessionStatus } from '../../utils/sessionDebug';
 import { setAuthToken, clearAuthToken } from '../../utils/authToken';
@@ -15,6 +16,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { handleSocialClick } = useSocialActions();
+  const { restoreUserActions } = useUserActionRestoration();
   
   const [formData, setFormData] = useState({
     emailOrPhone: '',
@@ -31,11 +33,37 @@ const LoginPage = () => {
   const [roleMessage, setRoleMessage] = useState(''); // Add role message state
   const [successMessage, setSuccessMessage] = useState(''); // Add success message state
   const [sessionMessage, setSessionMessage] = useState(''); // Add session expiry message state
+  const [restorationMessage, setRestorationMessage] = useState(''); // Add restoration message state
 
   // Check for messages from navigation state
   useEffect(() => {
     // Log session status when login page loads
     logSessionStatus('LoginPage Load');
+    
+    // Check for restoration data from HTTP interceptor
+    const checkRestorationData = () => {
+      try {
+        const authRedirectData = localStorage.getItem('authRedirectData');
+        if (authRedirectData) {
+          const restorationPayload = JSON.parse(authRedirectData);
+          console.log('📋 Found restoration data:', restorationPayload);
+          
+          // Set restoration message
+          if (restorationPayload.reason) {
+            setRestorationMessage(restorationPayload.reason);
+          }
+          
+          // Set session expiry message if it was due to session expiry
+          if (restorationPayload.reason.includes('session') || restorationPayload.reason.includes('expired')) {
+            setSessionMessage('Your session expired. Please log in to continue where you left off.');
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing restoration data:', error);
+      }
+    };
+    
+    checkRestorationData();
     
     if (location.state) {
       console.log('LoginPage: Navigation state received:', location.state);
@@ -229,7 +257,26 @@ const LoginPage = () => {
                 
                 setIsLoading(false);
                 
-                // Priority 1: If user was on a specific page (not home), return them there with all state
+                // First priority: Try to restore user actions
+                try {
+                  console.log('🔄 Attempting user action restoration...');
+                  const restorationSuccess = await restoreUserActions();
+                  
+                  if (restorationSuccess) {
+                    console.log('✅ User actions restored successfully');
+                    // Clear the restoration data after successful restoration
+                    localStorage.removeItem('authRedirectData');
+                    return; // Exit early if restoration was successful
+                  }
+                } catch (restorationError) {
+                  console.error('❌ User action restoration failed:', restorationError);
+                  // Continue with legacy restoration methods
+                }
+                
+                // Fallback to legacy restoration methods
+                console.log('🔄 Falling back to legacy restoration methods...');
+                
+                // Priority 2: If user was on a specific page (not home), return them there with all state
                 if (returnPath && returnPath !== '/' && returnPath !== '/login') {
                   console.log('Redirecting to return path:', returnPath);
                   
@@ -255,7 +302,7 @@ const LoginPage = () => {
                     });
                   }
                 } else if (searchData && (returnPath === '/' || !returnPath)) {
-                  // Priority 2: If user was on home page with search data, or has search data but no return path
+                  // Priority 3: If user was on home page with search data, or has search data but no return path
                   // This means user was in middle of searching on home page
                   console.log('Redirecting to home with search data:', searchData);
                   navigate('/', {
@@ -266,7 +313,7 @@ const LoginPage = () => {
                     }
                   });
                 } else {
-                  // Priority 3: Normal login or return to home page without search data
+                  // Priority 4: Normal login or return to home page without search data
                   console.log('Normal login, redirecting to home');
                   navigate('/', {
                     state: {
@@ -395,6 +442,27 @@ const LoginPage = () => {
           {successMessage && (
             <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
               {successMessage}
+            </div>
+          )}
+
+          {/* Restoration Message */}
+          {restorationMessage && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <div className="text-blue-800 text-sm font-medium">
+                    {restorationMessage}
+                  </div>
+                  <div className="text-blue-700 text-xs mt-1">
+                    Your progress will be restored after login
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

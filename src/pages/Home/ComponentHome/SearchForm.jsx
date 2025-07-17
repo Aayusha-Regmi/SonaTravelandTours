@@ -6,6 +6,7 @@ import DatePicker from './UI/DatePickerNew';
 import LocationDropdown from './UI/LocationDropdown';
 import api from '../../../services/api';
 import { isAuthenticated, storeSearchData, redirectToLogin } from '../../../utils/authGuard';
+import { useUserActionTracking, useStateRestoration, useFormTracking } from '../../../hooks/useUserActionTracking';
 
 // Mobile scroll lock utility
 const useMobileScrollLock = () => {
@@ -36,6 +37,11 @@ const SearchForm = () => {
   const navigate = useNavigate();
   const searchFormRef = useRef(null);
   const { setIsScrollLocked } = useMobileScrollLock();
+  
+  // Initialize user action tracking
+  const { trackSearchForm, trackAction } = useUserActionTracking();
+  const { shouldRestoreState, getSearchRestoration } = useStateRestoration();
+  
   const [tripType, setTripType] = useState('oneWay');
   const [formData, setFormData] = useState({
     from: '',
@@ -46,6 +52,32 @@ const SearchForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [routeOptions, setRouteOptions] = useState([]);
   const [error, setError] = useState(null);
+
+  // Auto-track form changes
+  useFormTracking('search_form', formData, { debounceMs: 2000 });
+
+  // Check for restoration data on component mount
+  useEffect(() => {
+    if (shouldRestoreState()) {
+      const searchRestoration = getSearchRestoration();
+      if (searchRestoration) {
+        console.log('🔄 Restoring search form data:', searchRestoration);
+        setFormData(prev => ({
+          ...prev,
+          ...searchRestoration
+        }));
+        
+        if (searchRestoration.tripType) {
+          setTripType(searchRestoration.tripType);
+        }
+        
+        // Track restoration
+        trackAction('SEARCH_FORM_RESTORED', {
+          restoredData: searchRestoration
+        });
+      }
+    }
+  }, [shouldRestoreState, getSearchRestoration, trackAction]);
 
   // Location options - limited to Kathmandu and Birgunj only
   const locationOptions = [
@@ -189,6 +221,17 @@ const SearchForm = () => {
   };
 
   const handleSearch = async () => {
+    // Track search attempt
+    trackSearchForm({
+      tripType,
+      from: formData.from,
+      to: formData.to,
+      date: formData.date,
+      returnDate: formData.returnDate,
+      fromCity: formData.from,
+      toCity: formData.to
+    });
+    
     // Validate form data
     if (!formData.from || !formData.to || !formData.date || (tripType === 'twoWay' && !formData.returnDate)) {
       setError('Please fill in all required fields');
@@ -214,6 +257,19 @@ const SearchForm = () => {
     // Check if user is authenticated before proceeding
     if (!isAuthenticated()) {
       console.log('User not authenticated, storing search data and redirecting to login');
+      
+      // Track authentication requirement
+      trackAction('AUTHENTICATION_REQUIRED', {
+        reason: 'search_initiation',
+        searchData: {
+          tripType,
+          from: formData.from,
+          to: formData.to,
+          date: formData.date,
+          returnDate: formData.returnDate
+        }
+      });
+      
       // Store search data for after login
       const searchData = {
         tripType,

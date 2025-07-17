@@ -350,9 +350,36 @@ const SearchResultsPage = () => {
   // UPDATED handleInputChange - IMMEDIATE API CALLS
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
     console.log(`📝 Input change: ${name} = ${value} (source: ${e.isTrusted ? 'user' : 'programmatic'})`);
-    
+
+    // Special logic for departure date in two-way trip
+    if (name === 'date' && tripType === 'twoWay' && formData.returnDate) {
+      // Compare new departure date and current return date
+      const newDeparture = new Date(value.split(' ').join(' '));
+      const currentReturn = new Date(formData.returnDate.split(' ').join(' '));
+      if (newDeparture >= currentReturn) {
+        // Reset return date if new departure is after or same as return
+        setFormData(prev => ({
+          ...prev,
+          date: value,
+          returnDate: ''
+        }));
+        setTravelDate(value);
+        setError(null);
+        // Optionally, show a toast
+        toast.info('Return date has been reset. Please select a new return date after the new departure date.', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        // No search triggered until new return date is selected
+        return;
+      }
+    }
+
     // Update form data immediately
     setFormData(prev => ({
       ...prev,
@@ -363,7 +390,6 @@ const SearchResultsPage = () => {
     if (name === 'from') {
       const selectedLocation = locationOptions.find(loc => loc.value === value);
       setFromLocation(selectedLocation?.label || value);
-      
       // Trigger search immediately for location change
       if (value && formData.to && (formData.date || travelDate)) {
         const searchParams = {
@@ -373,11 +399,9 @@ const SearchResultsPage = () => {
         };
         triggerSearch(searchParams, 'from-location-change', 100);
       }
-      
     } else if (name === 'to') {
       const selectedLocation = locationOptions.find(loc => loc.value === value);
       setToLocation(selectedLocation?.label || value);
-      
       // Trigger search immediately for location change
       if (formData.from && value && (formData.date || travelDate)) {
         const searchParams = {
@@ -387,14 +411,11 @@ const SearchResultsPage = () => {
         };
         triggerSearch(searchParams, 'to-location-change', 100);
       }
-      
     } else if (name === 'date') {
       setTravelDate(value);
-      
       console.log('🗓️ Date change detected:');
       console.log('   New date:', value);
       console.log('   Is user interaction:', e.isTrusted);
-      
       // Trigger search immediately for date change if we have locations
       if ((formData.from || fromLocation) && (formData.to || toLocation) && value) {
         const searchParams = {
@@ -404,7 +425,6 @@ const SearchResultsPage = () => {
         };
         triggerSearch(searchParams, 'date-change', 100);
       }
-      
     } else if (name === 'returnDate') {
       // Handle return date changes for two-way trips
       if (tripType === 'twoWay') {

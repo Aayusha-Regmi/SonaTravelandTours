@@ -9,6 +9,7 @@ import ProgressBar from '../../components/common/BookingStepComponents/ProgressB
 import PaymentModal from '../../components/ui/PaymentModal';
 import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
+import { useUserActionTracking, useStateRestoration } from '../../hooks/useUserActionTracking';
 import api from '../../services/api';
 import { getAuthToken, getAuthHeaders, isAuthenticated } from '../../utils/authToken';
 import API_URLS from '../../config/api';
@@ -18,7 +19,28 @@ const PaymentPage = () => {
   const navigate = useNavigate();
   const { handleSocialClick } = useSocialActions();
   
-  // 🔥 FIX: Get complete data from passenger details
+  // Initialize user action tracking
+  const { trackPaymentInitiation, trackAction } = useUserActionTracking();
+  const { shouldRestoreState, getRestorationData } = useStateRestoration();
+  
+  // 🔥 FIX: Get complete data from passenger details or restoration
+  const getLocationData = () => {
+    // First try to get from location state
+    let data = location.state || {};
+    
+    // If coming from login, check for restoration data
+    if (shouldRestoreState()) {
+      const restorationData = getRestorationData();
+      if (restorationData) {
+        data = { ...data, ...restorationData };
+      }
+    }
+    
+    return data;
+  };
+  
+  const locationData = getLocationData();
+  
   const { 
     passengers = [], 
     selectedSeats = [], 
@@ -36,10 +58,20 @@ const PaymentPage = () => {
     returnTravelDate = '',
     returnTotalPrice = 0,
     returnSeatPrice = 0
-  } = location.state || {};
+  } = locationData;
 
   // Check authentication immediately on component mount
   React.useEffect(() => {
+    // Track payment page access
+    trackAction('PAYMENT_PAGE_ACCESS', {
+      hasPassengers: passengers.length > 0,
+      hasSeats: selectedSeats.length > 0,
+      hasBusData: Object.keys(busData).length > 0,
+      tripType,
+      totalPrice,
+      fromLogin: shouldRestoreState()
+    });
+    
     const authCheck = api.checkAuthentication();
     if (!authCheck.isAuthenticated) {
       // Store current location state in localStorage to redirect back after login
@@ -73,7 +105,7 @@ const PaymentPage = () => {
         } 
       });
     }
-  }, [navigate, passengers, selectedSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails, tripType, returnPassengers, returnSeats, returnBusData, returnTravelDate, returnTotalPrice, returnSeatPrice]);  // Include all dependencies used in the effect
+  }, [navigate, passengers, selectedSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails, tripType, returnPassengers, returnSeats, returnBusData, returnTravelDate, returnTotalPrice, returnSeatPrice, trackAction, shouldRestoreState]);  // Include all dependencies used in the effect
   
   // Show error if no data
   if (!passengers.length || !selectedSeats.length) {
@@ -318,12 +350,32 @@ const PaymentPage = () => {
     toast.info('Coupon removed');
   };
   const handleCategorySelect = async (category) => {
+    // Track payment initiation attempt
+    trackPaymentInitiation({
+      amount: totalPrice,
+      currency: 'NPR',
+      paymentMethod: category,
+      passengers,
+      selectedSeats,
+      tripType,
+      busData,
+      travelDate
+    });
+    
     // Migrate tokens to ensure compatibility
     api.migrateAuthTokens();
     
     // Check authentication first
     const authCheck = api.checkAuthentication();
     if (!authCheck.isAuthenticated) {
+      // Track authentication requirement
+      trackAction('AUTHENTICATION_REQUIRED', {
+        reason: 'payment_initiation',
+        category,
+        amount: totalPrice,
+        redirectPath: '/payment'
+      });
+      
       // Instead of showing error, navigate directly to login page
       
       // Store current location state in localStorage to redirect back after login
