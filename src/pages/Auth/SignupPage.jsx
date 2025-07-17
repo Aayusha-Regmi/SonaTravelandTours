@@ -351,7 +351,7 @@ const SignupPage = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 onBlur={() => handleInputBlur('password')}
-                placeholder="Create a password (min. 6 characters)"
+                placeholder="Create a password"
                 className="w-full"
                 error={errors.password}
               />

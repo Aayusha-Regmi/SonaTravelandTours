@@ -59,8 +59,6 @@ export const validateLoginInput = (emailOrPhone, password) => {
   
   if (!password || password.trim() === '') {
     errors.password = 'Password is required';
-  } else if (password.length < 6) {
-    errors.password = 'Password must be at least 6 characters';
   }
   
   return {
@@ -88,10 +86,6 @@ export const validateSignupInput = (name, emailOrPhone, password, confirmPasswor
   
   if (!password || password.trim() === '') {
     errors.password = 'Password is required';
-  } else if (password.length < 6) {
-    errors.password = 'Password must be at least 6 characters';
-  } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-    errors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
   }
   
   if (!confirmPassword || confirmPassword.trim() === '') {
@@ -149,12 +143,6 @@ export const validateField = (fieldName, value, formData = {}) => {
     case 'password':
       if (!value || value.trim() === '') {
         return 'Password is required';
-      }
-      if (value.length < 6) {
-        return 'Password must be at least 6 characters';
-      }
-      if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
-        return 'Password must contain uppercase, lowercase, and number';
       }
       return '';
       
