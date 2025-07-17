@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import InputField from '../../../components/ui/InputField';
 import Button from '../../../components/ui/Button';
-import DatePicker from './UI/DatePickerNew';
+import DatePicker from './UI/DatePicker';
 import LocationDropdown from './UI/LocationDropdown';
 import api from '../../../services/api';
 import { isAuthenticated, storeSearchData, redirectToLogin } from '../../../utils/authGuard';
