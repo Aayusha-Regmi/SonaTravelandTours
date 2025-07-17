@@ -30,34 +30,34 @@ const PaymentModal = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   // Session expiry handler for payment modal
-  const handleSessionExpiry = (message = 'Session expired. Please login again to continue payment.') => {
-    console.warn('PaymentModal: Session expired, redirecting to login');
+  // const handleSessionExpiry = (message = 'Session expired. Please login again to continue payment.') => {
+  //   console.warn('PaymentModal: Session expired, redirecting to login');
     
-    // Clear all auth tokens
-    clearAuthToken();
+  //   // Clear all auth tokens
+  //   clearAuthToken();
     
-    // Close the payment modal
-    onClose();
+  //   // Close the payment modal
+  //   onClose();
     
-    // Show session expiry message and redirect
-    toast.error(message, {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      onClose: () => {
-        navigate('/login', { 
-          state: { 
-            sessionExpired: true,
-            message: message,
-            returnUrl: window.location.pathname + window.location.search 
-          }
-        });
-      }
-    });
-  };
+  //   // Show session expiry message and redirect
+  //   toast.error(message, {
+  //     position: "top-right",
+  //     autoClose: 5000,
+  //     hideProgressBar: false,
+  //     closeOnClick: true,
+  //     pauseOnHover: true,
+  //     draggable: true,
+  //     onClose: () => {
+  //       navigate('/login', { 
+  //         state: { 
+  //           sessionExpired: true,
+  //           message: message,
+  //           returnUrl: window.location.pathname + window.location.search 
+  //         }
+  //       });
+  //     }
+  //   });
+  // };
 
   // Initialize payment when modal opens
   useEffect(() => {
