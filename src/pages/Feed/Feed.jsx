@@ -35,7 +35,7 @@ const Feed = () => {
   return (
     <>
       <Header />
-      <main className="pt-[100px] min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      <main className="pt-[70px] sm:pt-[80px] min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
         {/* Cosmic Background Elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           {/* Animated Gradient Orbs */}

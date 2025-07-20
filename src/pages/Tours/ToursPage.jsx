@@ -116,7 +116,7 @@ const ToursPage = () => {
 
       <Header />
       
-      <main className="pt-[80px] relative z-10">
+      <main className="pt-[70px] sm:pt-[80px] relative z-10">
         {/* Hero Section */}
         <section className="relative overflow-hidden py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
