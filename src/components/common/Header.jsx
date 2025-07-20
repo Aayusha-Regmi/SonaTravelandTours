@@ -76,24 +76,13 @@ const Header = () => {
           </Link>
           <Link to="/faqs" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
             FAQs
-          </Link><div className="relative group">
-            <div className="flex items-center cursor-pointer text-sm xl:text-base font-medium text-[#5f5f5f] hover:text-[#0a639d] transition-colors">
-              Contact Us
-              <img 
-                src="/images/img_hicon_linear_down_2_gray_700.svg" 
-                alt="Down Arrow" 
-                className="w-3 h-3 xl:w-4 xl:h-4 ml-1 transition-transform duration-200 group-hover:rotate-180"
-              />
-            </div>
-            <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-gray-100">
-              <Link to="/about" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
-                About Us
-              </Link>
-              <Link to="/testimonials" className="block px-4 py-2 text-sm text-[#5f5f5f] hover:bg-[#0a639d]/10 hover:text-[#0a639d]">
-                Testimonials
-              </Link>
-            </div>
-          </div>          {/* Time and Weather Section */}
+          </Link>
+
+          <Link to="/contact" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
+            Contact Us
+          </Link>
+
+          {/* Time and Weather Section */}
           <div className="hidden md:flex items-center gap-2 lg:gap-3">
             {/* Time Section */}
             <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl px-2 lg:px-4 py-1.5 lg:py-2 shadow-lg hover:bg-white/30 transition-all duration-300">
@@ -335,25 +324,13 @@ const Header = () => {
               FAQs
             </Link>
             
-            {/* Contact Us Dropdown for Mobile */}
-            <div className="py-3 space-y-3 pl-3 border-l-2 border-[#ececec] bg-gray-50/50 rounded-r-lg">
-              <div className="text-[#5f5f5f] text-base sm:text-lg font-medium">
-                Contact Us
-              </div>
-              <Link 
-                to="/about-us" 
-                className="block text-sm sm:text-base text-[#5f5f5f] hover:text-[#0a639d] pl-3 py-1"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                About Us
-              </Link>
-              <Link 
-                to="/testimonials" 
-                className="block text-sm sm:text-base text-[#5f5f5f] hover:text-[#0a639d] pl-3 py-1"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Testimonials
-              </Link>            </div>
+            <Link 
+              to="/contact-us" 
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors py-2 border-b border-gray-100 last:border-b-0"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Contact Us
+            </Link>
             
             {/* Authentication options for Mobile */}
             <div className="pt-4 border-t border-[#ececec]/60">
