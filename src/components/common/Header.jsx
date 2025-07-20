@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
 import { isAuthenticated } from '@/utils/authGuard';
+import weatherService from '../../services/weatherService';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -22,117 +23,16 @@ const Header = () => {
 
     // Get weather information based on user's current location
     const getWeatherByLocation = async () => {
-      const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-      
       try {
-        // Get user's current position
-        const getCurrentPosition = () => {
-          return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-              reject(new Error('Geolocation is not supported'));
-              return;
-            }
-            
-            navigator.geolocation.getCurrentPosition(
-              (position) => resolve(position),
-              (error) => reject(error),
-              { 
-                enableHighAccuracy: true, 
-                timeout: 10000, 
-                maximumAge: 300000 // 5 minutes cache
-              }
-            );
-          });
-        };
-
-        const position = await getCurrentPosition();
-        const { latitude, longitude } = position.coords;
-
-        // Reverse geocode to get city name
-        const reverseGeoUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
-        const geoRes = await fetch(reverseGeoUrl);
-        const geoData = await geoRes.json();
-        
-        // Extract city name from address components
-        let cityName = 'Unknown Location';
-        if (geoData.results && geoData.results.length > 0) {
-          const addressComponents = geoData.results[0].address_components;
-          
-          // Look for locality (city) first, then administrative_area_level_2 (district)
-          const cityComponent = addressComponents.find(component => 
-            component.types.includes('locality') || 
-            component.types.includes('administrative_area_level_2')
-          );
-          
-          if (cityComponent) {
-            cityName = cityComponent.long_name;
-          }
-        }
-
-        // Get weather data from Open Meteo API using current coordinates
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`;
-        const weatherRes = await fetch(weatherUrl);
-        const weatherData = await weatherRes.json();
-        
-        // Weather condition mapping based on WMO weather codes
-        const getWeatherCondition = (code) => {
-          if (code === 0) return 'clear sky';
-          if (code <= 3) return 'partly cloudy';
-          if (code <= 48) return 'foggy';
-          if (code <= 67) return 'rainy';
-          if (code <= 77) return 'snowy';
-          if (code <= 82) return 'shower';
-          if (code <= 99) return 'thunderstorm';
-          return 'unknown';
-        };
-        
-        setWeather({
-          temperature: `${Math.round(weatherData.current_weather.temperature)}°C`,
-          location: cityName,
-          description: getWeatherCondition(weatherData.current_weather.weathercode)
-        });
-        
+        const weatherData = await weatherService.getWeatherByLocation();
+        setWeather(weatherData);
       } catch (error) {
-        console.error("Error getting location or weather:", error);
-        
-        // Fallback to Kathmandu if location access fails
-        try {
-          const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent('Kathmandu')}&key=${apiKey}`;
-          const geoRes = await fetch(geoUrl);
-          const geoData = await geoRes.json();
-          
-          if (geoData.results && geoData.results.length > 0) {
-            const location = geoData.results[0].geometry.location;
-            
-            const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lng}&current_weather=true&timezone=auto`;
-            const weatherRes = await fetch(weatherUrl);
-            const weatherData = await weatherRes.json();
-            
-            const getWeatherCondition = (code) => {
-              if (code === 0) return 'clear sky';
-              if (code <= 3) return 'partly cloudy';
-              if (code <= 48) return 'foggy';
-              if (code <= 67) return 'rainy';
-              if (code <= 77) return 'snowy';
-              if (code <= 82) return 'shower';
-              if (code <= 99) return 'thunderstorm';
-              return 'unknown';
-            };
-            
-            setWeather({
-              temperature: `${Math.round(weatherData.current_weather.temperature)}°C`,
-              location: 'Kathmandu',
-              description: getWeatherCondition(weatherData.current_weather.weathercode)
-            });
-          }
-        } catch (fallbackError) {
-          console.error("Fallback weather fetch failed:", fallbackError);
-          setWeather({
-            temperature: 'N/A',
-            location: 'Nepal',
-            description: 'Weather unavailable'
-          });
-        }
+        console.error("Error getting weather:", error);
+        setWeather({
+          temperature: 'N/A',
+          location: 'Nepal',
+          description: 'Weather unavailable'
+        });
       }
     };
 
