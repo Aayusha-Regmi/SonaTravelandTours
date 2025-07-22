@@ -35,23 +35,23 @@ const PaymentMethods = () => {
         
         {/* Enhanced 3D Payment Methods Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 max-w-7xl mx-auto perspective-1000">
-          {/* PayPal - Enhanced Card */}
+          {/* UPI Payments - GPay | PhonePe | Paytm */}
           <div className="group relative transform transition-all duration-700 hover:scale-110 hover:z-10">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-blue-800/30 rounded-3xl blur-2xl opacity-50 group-hover:opacity-75 transition-all duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-3xl blur-2xl opacity-50 group-hover:opacity-75 transition-all duration-500"></div>
             <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl group-hover:shadow-blue-500/20 group-hover:border-blue-200/20 transform transition-all duration-700 group-hover:-translate-y-2 group-hover:rotate-2">
               <div className="absolute -top-3 -right-3 w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white text-sm animate-bounce shadow-lg">
                 ✓
               </div>
               <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-6 mb-4 transform transition-all duration-500 group-hover:bg-white/20">
                 <img 
-                  src="/images/Paypal.png" 
-                  alt="PayPal" 
+                  src="/images/gpay.png" 
+                  alt="GPay" 
                   className="h-[85px] mx-auto filter drop-shadow-2xl group-hover:scale-110 transition-all duration-500"
                 />
               </div>
-              <div className="text-white/90 font-semibold mb-2 group-hover:text-white transition-colors duration-300">PayPal</div>
-              <div className="text-sm text-white/70 group-hover:text-white/90 transition-colors duration-300">Digital Wallet</div>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              <div className="text-white/90 font-semibold mb-2 group-hover:text-white transition-colors duration-300">UPI Payments</div>
+              <div className="text-sm text-white/70 group-hover:text-white/90 transition-colors duration-300">GPay | PhonePe | Paytm</div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             </div>
           </div>
 
