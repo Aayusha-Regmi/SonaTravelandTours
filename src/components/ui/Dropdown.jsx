@@ -17,6 +17,7 @@ const Dropdown = ({
   disabled = false,
   searchable = false,
   icon,
+  onKeyPress,
   ...props 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,6 +71,16 @@ const Dropdown = ({
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
+
+  // Handle keyboard events
+  const handleKeyDown = (e) => {
+    if (onKeyPress && e.key && e.key.length === 1) {
+      // Call the onKeyPress prop with the pressed key
+      onKeyPress(e.key);
+      e.preventDefault(); // Prevent default behavior
+    }
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -100,6 +111,7 @@ const Dropdown = ({
           type="button"
           id={inputId}
           onClick={toggleDropdown}
+          onKeyDown={handleKeyDown}
           disabled={disabled}
           className={`
             w-full px-3 py-2.5 rounded-lg bg-[#f5f5f5]
@@ -166,7 +178,7 @@ const Dropdown = ({
                       onClick={() => handleOptionSelect(option)}
                       className="w-full px-4 py-3 text-left hover:bg-[#f5f5f5] transition-colors cursor-pointer first:rounded-t-[12px] last:rounded-b-[12px]"
                     >
-                      <div className="text-[16px] font-bold font-opensans text-[#3d3d3d]">
+                      <div className="text-[16px] font-opensans text-[#3d3d3d]">
                         {option.label}
                       </div>
                       {option.description && (
@@ -222,7 +234,8 @@ Dropdown.propTypes = {
   required: PropTypes.bool,
   disabled: PropTypes.bool,
   searchable: PropTypes.bool,
-  icon: PropTypes.node
+  icon: PropTypes.node,
+  onKeyPress: PropTypes.func
 };
 
 export default Dropdown;
