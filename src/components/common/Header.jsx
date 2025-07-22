@@ -65,8 +65,8 @@ const Header = () => {
           <Link to="/bus-routes" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
             Bus Routes
           </Link>
-          <Link to="/profile?tab=mybookings" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
-            Bookings
+          <Link to="/trending-offers" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
+            Offers
           </Link>
           <Link to="/live-track" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
             Live Track
@@ -144,6 +144,12 @@ const Header = () => {
                     className="block px-3 lg:px-4 py-2 text-sm text-[#5f5f5f] hover:bg-gray-100 hover:text-[#0a639d] transition-colors"
                   >
                     My Dashboard
+                  </Link>
+                  <Link 
+                    to="/profile?tab=mybookings"
+                    className="block px-3 lg:px-4 py-2 text-sm text-[#5f5f5f] hover:bg-gray-100 hover:text-[#0a639d] transition-colors"
+                  >
+                    My Bookings
                   </Link>
                   <button
         onClick={() => {
@@ -296,11 +302,11 @@ const Header = () => {
               Bus Routes
             </Link>
             <Link 
-              to="/profile?tab=mybookings" 
+              to="/trending-offers" 
               className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors py-2 border-b border-gray-100 last:border-b-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              Bookings
+              Exclusive Offers
             </Link>
             <Link 
               to="/live-track" 
@@ -350,6 +356,13 @@ const Header = () => {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       My Dashboard
+                    </Link>
+                    <Link 
+                      to="/profile?tab=mybookings"
+                      className="block text-[#0a639d] font-medium text-base hover:text-[#07456e] transition-colors mt-1"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      My Bookings
                     </Link>
                     <button
                       onClick={() => {
