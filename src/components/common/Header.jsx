@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
 import { isAuthenticated } from '@/utils/authGuard';
+import { API_URLS } from '../../config/api';
 import weatherService from '../../services/weatherService';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [userName, setUserName] = useState('');
   const [weather, setWeather] = useState({
     temperature: 'Loading...',
     location: 'Loading...',
@@ -15,6 +17,97 @@ const Header = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Function to get user first name from profile API or storage
+  const getUserName = async () => {
+    try {
+      // If user is authenticated, always try to fetch fresh profile data
+      if (isAuthenticated()) {
+        try {
+          const profileData = await fetchUserProfile();
+          if (profileData && profileData.firstName) {
+            console.log('Retrieved firstName from API:', profileData.firstName);
+            // Cache the name for future use
+            localStorage.setItem('userFirstName', profileData.firstName);
+            return profileData.firstName;
+          }
+        } catch (error) {
+          console.warn('Failed to fetch profile from API:', error);
+        }
+      }
+
+      // Fallback to cached data if API call fails
+      const cachedName = getCachedUserName();
+      return cachedName;
+    } catch (error) {
+      console.error('Error getting user name:', error);
+      return '';
+    }
+  };
+
+  // Helper function to get cached user name from storage
+  const getCachedUserName = () => {
+    // Check for cached firstName first
+    let firstName = localStorage.getItem('userFirstName');
+    if (firstName && firstName !== 'User') {
+      console.log('Found cached firstName:', firstName);
+      return firstName;
+    }
+
+    // Try to get from user profile data in localStorage
+    const userProfile = localStorage.getItem('userProfile');
+    if (userProfile) {
+      try {
+        const profile = JSON.parse(userProfile);
+        console.log('userProfile data:', profile);
+        
+        if (profile.firstName) {
+          console.log('Found firstName in userProfile:', profile.firstName);
+          localStorage.setItem('userFirstName', profile.firstName);
+          return profile.firstName;
+        }
+      } catch (e) {
+        console.warn('Error parsing userProfile:', e);
+      }
+    }
+
+    console.log('No cached user name found');
+    return '';
+  };
+
+  // Function to fetch user profile from API
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No auth token found');
+      }
+
+      const response = await fetch(API_URLS.PROFILE.GET, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.success && result.data) {
+        // Store the profile data for future use
+        localStorage.setItem('userProfile', JSON.stringify(result.data));
+        return result.data;
+      }
+      
+      throw new Error(result.message || 'Failed to fetch profile');
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw error;
+    }
   };  useEffect(() => {
     // Update time every second
     const timeInterval = setInterval(() => {
@@ -36,10 +129,43 @@ const Header = () => {
       }
     };
 
+    // Get user name and set up listener for changes
+    const updateUserName = async () => {
+      // Debug: Log ALL available localStorage data
+      console.log('=== ALL localStorage Keys ===');
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        console.log(`${key}:`, value);
+      }
+      
+      console.log('=== ALL sessionStorage Keys ===');
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        const value = sessionStorage.getItem(key);
+        console.log(`${key}:`, value);
+      }
+      
+      try {
+        const name = await getUserName();
+        console.log('Final resolved name:', name);
+        setUserName(name);
+      } catch (error) {
+        console.error('Error updating user name:', error);
+        setUserName('');
+      }
+    };
+
+    // Initial load
+    updateUserName();
     getWeatherByLocation();
+
+    // Listen for storage changes (when user logs in/out)
+    window.addEventListener('storage', updateUserName);
 
     return () => {
       clearInterval(timeInterval);
+      window.removeEventListener('storage', updateUserName);
     };
   }, []);return (
     <header className="backdrop-blur-md bg-white/80 border-b border-[#ececec]/60 h-[70px] sm:h-[80px] w-full fixed top-0 left-0 right-0 shadow-md z-50 after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-r after:from-white/10 after:to-white/20 after:z-[-1]">
@@ -126,7 +252,17 @@ const Header = () => {
         </nav>       
         <div className="hidden md:flex items-center space-x-2 lg:space-x-3">
           {isAuthenticated() ? (
-            <div className="relative">
+            <div className="flex items-center space-x-2 lg:space-x-3">
+              {/* Greeting Text */}
+              {userName && (
+                <div className="text-[#5f5f5f] text-sm lg:text-base font-medium">
+                  Hi, <span className="text-[#0a639d] font-semibold">
+                    {userName}
+                  </span>
+                </div>
+              )}
+              
+              <div className="relative">
   {/* Profile Photo */}
               <div 
                 className="w-8 h-8 lg:w-10 lg:h-10 rounded-full overflow-hidden cursor-pointer border-2 border-gray-300 hover:border-[#0a639d] transition-all group"
@@ -165,6 +301,7 @@ const Header = () => {
       </button>
                 </div>
               </div>
+            </div>
             </div>
           ) : (
             <>
