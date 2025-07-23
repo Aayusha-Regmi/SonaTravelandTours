@@ -106,78 +106,78 @@ const HotelsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 relative overflow-hidden">
-      {/* Animated Background Elements */}
+      {/* Animated Background Elements - Responsive */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-100/30 to-cyan-100/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-100/30 to-pink-100/30 rounded-full blur-3xl animate-bounce" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-emerald-100/30 to-teal-100/30 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-1/3 right-1/3 w-64 h-64 bg-gradient-to-r from-orange-100/30 to-amber-100/30 rounded-full blur-3xl animate-bounce" style={{animationDelay: '3s'}}></div>
+        <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-r from-blue-100/30 to-cyan-100/30 rounded-full blur-2xl sm:blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/3 right-1/4 w-40 h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 bg-gradient-to-r from-purple-100/30 to-pink-100/30 rounded-full blur-2xl sm:blur-3xl animate-bounce" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-36 h-36 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-72 lg:h-72 bg-gradient-to-r from-emerald-100/30 to-teal-100/30 rounded-full blur-2xl sm:blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute bottom-1/3 right-1/3 w-32 h-32 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 bg-gradient-to-r from-orange-100/30 to-amber-100/30 rounded-full blur-2xl sm:blur-3xl animate-bounce" style={{animationDelay: '3s'}}></div>
       </div>
 
       <Header />
       
       <main className="pt-[70px] sm:pt-[80px] relative z-10">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden py-20">
+        {/* Hero Section - Fully Responsive */}
+        <section className="relative overflow-hidden py-12 sm:py-16 md:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <div className="inline-flex items-center px-6 py-3 rounded-full bg-white/60 backdrop-blur-xl border border-gray-200/60 text-blue-800 text-sm font-medium mb-8 shadow-2xl">
+              <div className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-white/60 backdrop-blur-xl border border-gray-200/60 text-blue-800 text-xs sm:text-sm font-medium mb-6 sm:mb-8 shadow-2xl">
                 <span className="animate-pulse mr-2">🚀</span>
                 Coming Soon
               </div>
               
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
                 Find Your Perfect
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                   Hotel Stay
                 </span>
               </h1>
               
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-12 leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-full sm:max-w-2xl md:max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 leading-relaxed px-4 sm:px-0">
                 We're working hard to bring you the best hotel booking experience in Nepal. 
                 Discover amazing accommodations at unbeatable prices.
               </p>
 
-              {/* Countdown Timer */}
-              <div className="flex justify-center items-center space-x-4 mb-12">
+              {/* Countdown Timer - Mobile Optimized */}
+              <div className="flex justify-center items-center gap-2 sm:gap-3 md:gap-4 mb-8 sm:mb-10 md:mb-12 px-2 sm:px-0">
                 <div className="text-center">
-                  <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-2xl p-6 min-w-[90px] border border-gray-200/40 hover:bg-white/80 transition-all duration-300">
-                    <div className="text-3xl font-bold text-blue-600">{timeLeft.days}</div>
-                    <div className="text-sm text-gray-500">Days</div>
+                  <div className="bg-white/60 backdrop-blur-xl rounded-xl sm:rounded-2xl shadow-2xl p-3 sm:p-4 md:p-6 min-w-[70px] sm:min-w-[80px] md:min-w-[90px] border border-gray-200/40 hover:bg-white/80 transition-all duration-300">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">{timeLeft.days}</div>
+                    <div className="text-xs sm:text-sm text-gray-500">Days</div>
                   </div>
                 </div>
-                <div className="text-2xl text-gray-400">:</div>
+                <div className="text-lg sm:text-xl md:text-2xl text-gray-400">:</div>
                 <div className="text-center">
-                  <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-2xl p-6 min-w-[90px] border border-gray-200/40 hover:bg-white/80 transition-all duration-300">
-                    <div className="text-3xl font-bold text-indigo-600">{timeLeft.hours}</div>
-                    <div className="text-sm text-gray-500">Hours</div>
+                  <div className="bg-white/60 backdrop-blur-xl rounded-xl sm:rounded-2xl shadow-2xl p-3 sm:p-4 md:p-6 min-w-[70px] sm:min-w-[80px] md:min-w-[90px] border border-gray-200/40 hover:bg-white/80 transition-all duration-300">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-indigo-600">{timeLeft.hours}</div>
+                    <div className="text-xs sm:text-sm text-gray-500">Hours</div>
                   </div>
                 </div>
-                <div className="text-2xl text-gray-400">:</div>
+                <div className="text-lg sm:text-xl md:text-2xl text-gray-400">:</div>
                 <div className="text-center">
-                  <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-2xl p-6 min-w-[90px] border border-gray-200/40 hover:bg-white/80 transition-all duration-300">
-                    <div className="text-3xl font-bold text-purple-600">{timeLeft.minutes}</div>
-                    <div className="text-sm text-gray-500">Minutes</div>
+                  <div className="bg-white/60 backdrop-blur-xl rounded-xl sm:rounded-2xl shadow-2xl p-3 sm:p-4 md:p-6 min-w-[70px] sm:min-w-[80px] md:min-w-[90px] border border-gray-200/40 hover:bg-white/80 transition-all duration-300">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-600">{timeLeft.minutes}</div>
+                    <div className="text-xs sm:text-sm text-gray-500">Minutes</div>
                   </div>
                 </div>
-                <div className="text-2xl text-gray-400">:</div>
+                <div className="text-lg sm:text-xl md:text-2xl text-gray-400">:</div>
                 <div className="text-center">
-                  <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-2xl p-6 min-w-[90px] border border-gray-200/40 hover:bg-white/80 transition-all duration-300">
-                    <div className="text-3xl font-bold text-pink-600">{timeLeft.seconds}</div>
-                    <div className="text-sm text-gray-500">Seconds</div>
+                  <div className="bg-white/60 backdrop-blur-xl rounded-xl sm:rounded-2xl shadow-2xl p-3 sm:p-4 md:p-6 min-w-[70px] sm:min-w-[80px] md:min-w-[90px] border border-gray-200/40 hover:bg-white/80 transition-all duration-300">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-pink-600">{timeLeft.seconds}</div>
+                    <div className="text-xs sm:text-sm text-gray-500">Seconds</div>
                   </div>
                 </div>
               </div>
 
-              {/* Notify Button */}
-              <div className="max-w-md mx-auto">
-                <div className="flex rounded-2xl shadow-2xl overflow-hidden bg-white/60 backdrop-blur-xl border border-gray-200/40">
+              {/* Notify Button - Mobile Optimized */}
+              <div className="w-full max-w-sm sm:max-w-md mx-auto px-4 sm:px-0">
+                <div className="flex flex-col sm:flex-row rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden bg-white/60 backdrop-blur-xl border border-gray-200/40">
                   <input
                     type="email"
                     placeholder="Enter your email for updates"
-                    className="flex-1 px-6 py-4 text-gray-900 placeholder-gray-500 bg-transparent border-0 focus:ring-0 focus:outline-none"
+                    className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-gray-900 placeholder-gray-500 bg-transparent border-0 focus:ring-0 focus:outline-none text-sm sm:text-base"
                   />
-                  <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                  <button className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-lg text-sm sm:text-base touch-manipulation">
                     Notify Me
                   </button>
                 </div>
@@ -186,39 +186,39 @@ const HotelsPage = () => {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-20 relative bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 overflow-hidden">
-          {/* Dark section animated background */}
+        {/* Features Section - Mobile Optimized */}
+        <section className="py-12 sm:py-16 md:py-20 relative bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 overflow-hidden">
+          {/* Dark section animated background - Responsive */}
           <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-bounce" style={{animationDelay: '1s'}}></div>
-            <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-            <div className="absolute bottom-1/3 right-1/3 w-64 h-64 bg-gradient-to-r from-orange-400/20 to-amber-400/20 rounded-full blur-3xl animate-bounce" style={{animationDelay: '3s'}}></div>
+            <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-full blur-2xl sm:blur-3xl animate-pulse"></div>
+            <div className="absolute top-1/3 right-1/4 w-40 h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-2xl sm:blur-3xl animate-bounce" style={{animationDelay: '1s'}}></div>
+            <div className="absolute bottom-1/4 left-1/3 w-36 h-36 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-72 lg:h-72 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-full blur-2xl sm:blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+            <div className="absolute bottom-1/3 right-1/3 w-32 h-32 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 bg-gradient-to-r from-orange-400/20 to-amber-400/20 rounded-full blur-2xl sm:blur-3xl animate-bounce" style={{animationDelay: '3s'}}></div>
           </div>
           
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <div className="text-center mb-10 sm:mb-12 md:mb-16">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
                 What to Expect
               </h2>
-              <p className="text-xl text-white/80">
+              <p className="text-lg sm:text-xl text-white/80">
                 Amazing features coming your way
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {hotelFeatures.map((feature, index) => (
                 <div
                   key={index}
-                  className="group bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 p-8 border border-white/20 hover:border-white/40 transform hover:-translate-y-2 hover:scale-105"
+                  className="group bg-white/10 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 p-6 sm:p-8 border border-white/20 hover:border-white/40 transform hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-[1.02] sm:hover:scale-105 touch-manipulation"
                 >
-                  <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <div className="text-3xl sm:text-4xl mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">
                     {feature.title}
                   </h3>
-                  <p className="text-white/70 leading-relaxed">
+                  <p className="text-white/70 leading-relaxed text-sm sm:text-base">
                     {feature.description}
                   </p>
                 </div>
@@ -227,40 +227,40 @@ const HotelsPage = () => {
           </div>
         </section>
 
-        {/* Popular Destinations Preview */}
-        <section className="py-20 relative bg-gray-50">
+        {/* Popular Destinations Preview - Mobile Optimized */}
+        <section className="py-12 sm:py-16 md:py-20 relative bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-10 sm:mb-12 md:mb-16">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
                 Popular Destinations
               </h2>
-              <p className="text-xl text-gray-600">
+              <p className="text-lg sm:text-xl text-gray-600 px-4 sm:px-0">
                 Discover amazing hotels in these beautiful locations
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {popularDestinations.map((destination, index) => (
                 <div
                   key={index}
-                  className="group bg-white/60 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 border border-gray-200/40 hover:border-gray-300/60"
+                  className="group bg-white/60 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-[1.02] sm:hover:scale-105 border border-gray-200/40 hover:border-gray-300/60 touch-manipulation"
                 >
-                  <div className="h-48 relative overflow-hidden">
+                  <div className="h-40 sm:h-48 relative overflow-hidden">
                     <img 
                       src={destination.image} 
                       alt={`Hotels in ${destination.name}`}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <div className="text-2xl font-bold drop-shadow-lg">{destination.name}</div>
+                    <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 text-white">
+                      <div className="text-xl sm:text-2xl font-bold drop-shadow-lg">{destination.name}</div>
                     </div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <div className="p-4 sm:p-6">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                       {destination.name}
                     </h3>
-                    <p className="text-blue-600 font-medium">
+                    <p className="text-blue-600 font-medium text-sm sm:text-base">
                       {destination.hotels}
                     </p>
                   </div>
@@ -270,48 +270,48 @@ const HotelsPage = () => {
           </div>
         </section>
 
-        {/* Newsletter Section */}
-        <section className="py-20 relative bg-gradient-to-r from-blue-600 to-purple-600">
+        {/* Newsletter Section - Mobile Optimized */}
+        <section className="py-12 sm:py-16 md:py-20 relative bg-gradient-to-r from-blue-600 to-purple-600">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 sm:mb-6">
                 Be the First to Know
               </h2>
-              <p className="text-xl text-white/80 mb-8">
+              <p className="text-lg sm:text-xl text-white/80 mb-6 sm:mb-8 px-2 sm:px-0">
                 Get exclusive early access, special discounts, and be notified when we launch!
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-full sm:max-w-md mx-auto">
                 <input
                   type="email"
                   placeholder="Your email address"
-                  className="flex-1 px-6 py-4 rounded-2xl text-white placeholder-white/60 bg-white/10 backdrop-blur-sm border border-white/20 focus:ring-2 focus:ring-cyan-400 focus:border-transparent focus:outline-none transition-all duration-300"
+                  className="flex-1 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-white placeholder-white/60 bg-white/10 backdrop-blur-sm border border-white/20 focus:ring-2 focus:ring-cyan-400 focus:border-transparent focus:outline-none transition-all duration-300 text-sm sm:text-base"
                 />
-                <button className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-2xl hover:from-cyan-600 hover:to-blue-600 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                <button className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl sm:rounded-2xl hover:from-cyan-600 hover:to-blue-600 transition-all duration-200 transform hover:scale-105 shadow-lg text-sm sm:text-base touch-manipulation">
                   Subscribe
                 </button>
               </div>
               
-              <p className="text-white/60 text-sm mt-4">
+              <p className="text-white/60 text-xs sm:text-sm mt-3 sm:mt-4 px-2 sm:px-0">
                 * We respect your privacy. No spam, unsubscribe anytime.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Progress Section */}
-        <section className="py-20 relative bg-white">
+        {/* Progress Section - Mobile Optimized */}
+        <section className="py-12 sm:py-16 md:py-20 relative bg-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-10 sm:mb-12 md:mb-16">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
                 Development Progress
               </h2>
-              <p className="text-xl text-gray-600">
+              <p className="text-lg sm:text-xl text-gray-600 px-4 sm:px-0">
                 We're working hard to bring you the best experience
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {[
                 { task: "Hotel Search & Filter System", progress: 85, color: "from-cyan-500 to-blue-500" },
                 { task: "Booking Management", progress: 70, color: "from-blue-500 to-indigo-500" },
@@ -319,18 +319,18 @@ const HotelsPage = () => {
                 { task: "User Reviews & Ratings", progress: 45, color: "from-purple-500 to-pink-500" },
                 { task: "Mobile App", progress: 30, color: "from-pink-500 to-rose-500" }
               ].map((item, index) => (
-                <div key={index} className="bg-white/60 backdrop-blur-xl rounded-3xl p-6 border border-gray-200/40 hover:border-gray-300/60 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                <div key={index} className="bg-white/60 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200/40 hover:border-gray-300/60 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-0">
                       {item.task}
                     </h3>
-                    <span className="text-blue-600 font-medium text-lg">
+                    <span className="text-blue-600 font-medium text-lg sm:text-xl">
                       {item.progress}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200/60 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-gray-200/60 rounded-full h-2 sm:h-3 overflow-hidden">
                     <div
-                      className={`bg-gradient-to-r ${item.color} h-3 rounded-full transition-all duration-1000 shadow-lg`}
+                      className={`bg-gradient-to-r ${item.color} h-2 sm:h-3 rounded-full transition-all duration-1000 shadow-lg`}
                       style={{ width: `${item.progress}%` }}
                     ></div>
                   </div>
