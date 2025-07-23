@@ -37,6 +37,16 @@ const apiConfig = {
       details: '/bookings/:id',
       cancel: '/bookings/:id/cancel',
     },
+    coupons:{
+      getcoupons:'/coupons',
+    },
+    
+    // Payment endpoints - NPS 3-step payment flow
+    payment: {
+      getInstruments: '/payment/instruments', // Step 1: Fetch payment methods
+      initiate: '/payment/initiate',          // Step 2: Initiate payment
+      complete: '/payment/complete',          // Step 3: Complete payment verification
+    },
     
     // Route endpoints
     routes: {

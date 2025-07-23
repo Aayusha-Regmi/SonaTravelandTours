@@ -419,6 +419,82 @@ const initiatePayment = async (amount) => {
 };
 
 /**
+ * Check payment status using onepg endpoint
+ * @param {string} merchantTxnId - Merchant Transaction ID
+ * @param {string} gatewayTxnId - Gateway Transaction ID (optional, defaults to merchantTxnId)
+ * @returns {Promise} - Promise resolving to payment status
+ */
+const checkPaymentStatusOnePG = async (merchantTxnId, gatewayTxnId) => {
+  try {
+    // Silent execution - console logging disabled
+
+    const baseUrl = import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV;
+    const endpoint = import.meta.env.VITE_PAYMENT_STATUS_ENDPOINT || '/payment/onepg';
+    const url = `${baseUrl}${endpoint}?MerchantTxnId=${encodeURIComponent(merchantTxnId)}&GatewayTxnId=${encodeURIComponent(gatewayTxnId || merchantTxnId)}`;
+    
+    // Use HTTP interceptor for authentication and request handling
+    const response = await authenticatedFetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    });
+    
+    // Get response text first to see what the server is actually returning
+    const responseText = await response.text();
+    
+    let result;
+    try {
+      if (responseText) {
+        result = JSON.parse(responseText);
+      } else {
+        result = { message: 'Empty response from server' };
+      }
+    } catch (parseError) {
+      // Silent error handling
+      result = { 
+        message: 'Invalid JSON response from server',
+        rawResponse: responseText 
+      };
+    }
+
+    if (response.ok) {
+      return {
+        success: true,
+        data: result.data || result,
+        statusMessage: result.message || 'Status check successful'
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || result.error || `HTTP ${response.status}: ${response.statusText}`,
+        details: result,
+        statusCode: response.status
+      };
+    }
+  } catch (error) {
+    // Silent error handling
+    
+    // HTTP interceptor will handle authentication errors automatically
+    if (error.message === 'AUTHENTICATION_REQUIRED') {
+      return {
+        success: false,
+        message: 'Authentication required for status check.',
+        statusCode: 401,
+        requiresAuth: true
+      };
+    }
+    
+    return {
+      success: false,
+      message: error.message || 'Network error occurred during status check',
+      error: error.name
+    };
+  }
+};
+
+/**
  * Step 2: Get all available payment instruments
  * @returns {Promise} - Promise resolving to payment instruments list
  */
@@ -539,6 +615,101 @@ const getPaymentInstruments = async () => {
       fallback: true
     };
   }
+};
+
+/**
+ * Debug NPS payment gateway request
+ * @param {HTMLFormElement} form - The form being submitted
+ * @param {string} gatewayUrl - The gateway URL
+ */
+const debugNpsPaymentRequest = (form, gatewayUrl) => {
+  console.group('💳 NPS PAYMENT GATEWAY REQUEST DETAILS');
+  console.log('🔹 Gateway URL:', gatewayUrl);
+  console.log('🔹 HTTP Method:', form.method);
+  console.log('🔹 Content Type:', form.enctype);
+  
+  const formData = Object.fromEntries(
+    Array.from(form.elements).map(el => [el.name, el.value])
+  );
+  console.log('🔹 Form Parameters:', formData);
+  
+  // Highlight the instrument code specifically
+  const instrumentCodeValue = formData.InstrumentCode;
+  if (instrumentCodeValue) {
+    console.log('🔹 ✅ InstrumentCode in form:', instrumentCodeValue);
+    const validation = validateInstrumentCode(instrumentCodeValue);
+    console.log('🔹 Validation:', validation);
+  } else {
+    console.log('🔹 ❌ InstrumentCode NOT found in form - NPS will show selection page');
+  }
+  
+  // Create a cURL command for debugging
+  const curlCommand = `curl -X POST "${gatewayUrl}" \\\n` + 
+    `  -H "Content-Type: application/x-www-form-urlencoded" \\\n` +
+    Array.from(form.elements)
+      .map(el => `  -d "${el.name}=${encodeURIComponent(el.value)}"`)
+      .join(' \\\n');
+  
+  console.log('🔹 Equivalent cURL command:');
+  console.log(curlCommand);
+  console.groupEnd();
+};
+
+/**
+ * Validate instrument code for NPS gateway
+ * @param {string} instrumentCode - The instrument code to validate
+ * @returns {Object} - Validation result with recommendations
+ */
+const validateInstrumentCode = (instrumentCode) => {
+  const validCodes = {
+    // Digital Wallets / Checkout Gateways
+    'IMEPAYG': 'IME Pay Digital Wallet',
+    'HAMROPAYG': 'Hamro Pay Digital Wallet',
+    'PRABHUPAYG': 'Prabhu Pay Digital Wallet',
+    'MYPAYG': 'MyPay Digital Wallet',
+    'ESEWAG': 'eSewa Digital Wallet',
+    'KHALTIG': 'Khalti Digital Wallet',
+    
+    // E-Banking
+    'NICENPKA': 'NIC ASIA Bank E-Banking',
+    'MBLNNPKA': 'Machhapuchchhre Bank E-Banking',
+    'RBBLNPKA': 'Rastriya Banijya Bank E-Banking',
+    'NABILNPKA': 'NABIL Bank E-Banking',
+    'SCBLNPKA': 'Standard Chartered Bank E-Banking',
+    'HBLNPKA': 'Himalayan Bank E-Banking',
+    'NCCNPKA': 'Nepal Credit & Commerce Bank E-Banking',
+    'NBBLNPKA': 'Nepal Bangladesh Bank E-Banking',
+    'ADBLNPKA': 'Agriculture Development Bank E-Banking',
+    'GBIMENPKA': 'Global IME Bank E-Banking',
+    
+    // Mobile Banking
+    'NICMBNPKA': 'NIC ASIA Mobile Banking',
+    'MBLMBNPKA': 'Machhapuchchhre Mobile Banking',
+    'NABILMBNPKA': 'NABIL Mobile Banking'
+  };
+  
+  if (!instrumentCode) {
+    return {
+      isValid: false,
+      message: 'No instrument code provided',
+      recommendation: 'Provide a valid instrument code to bypass NPS selection page'
+    };
+  }
+  
+  if (validCodes[instrumentCode]) {
+    return {
+      isValid: true,
+      message: `Valid instrument code for ${validCodes[instrumentCode]}`,
+      bankName: validCodes[instrumentCode]
+    };
+  }
+  
+  return {
+    isValid: false,
+    message: `Unknown instrument code: ${instrumentCode}`,
+    recommendation: `Try one of these common codes: ${Object.keys(validCodes).slice(0, 5).join(', ')}`,
+    validCodes: Object.keys(validCodes)
+  };
 };
 
 /**
@@ -724,196 +895,9 @@ const getServiceCharge = async (amount, instrumentCode) => {
 };
 
 /**
- * Step 4: Generate QR code for payment
- * @param {number} amount - Total amount including service charge
- * @param {string} travelDate - Travel date (remarks1)
- * @param {string} seatNumbers - Comma-separated seat numbers (remarks2)
- * @returns {Promise} - Promise resolving to QR code data
- */
-/**
- * Enhanced QR Code generation with multiple authentication strategies
- * @param {number} amount - Payment amount
- * @param {string} travelDate - Travel date
- * @param {string} seatNumbers - Comma-separated seat numbers
- * @returns {Promise} - Promise resolving to QR generation result
- */
-const generateQRCode = async (amount, travelDate, seatNumbers) => {
-  try {
-    console.log('Step 4: Generating QR code...');
-    console.log('QR Code parameters:', { amount, travelDate, seatNumbers });
-    
-    // Check for authentication token first
-    const authCheck = checkAuthentication();
-    
-    if (!authCheck.isAuthenticated) {
-      console.error('Authentication required for QR generation');
-      return {
-        success: false,
-        message: authCheck.error || 'Authentication required to generate QR code.',
-        statusCode: 401,
-        requiresAuth: true
-      };
-    }
-    
-    console.log(`Using authentication from ${authCheck.source}`);
-    console.log(`Token preview: ${authCheck.token.substring(0, 30)}...`);
-    
-    // Prepare request body
-    const requestBody = {
-      amount: amount,
-      remarks1: travelDate,
-      remarks2: seatNumbers
-    };
-    
-    console.log('QR Generation request:', requestBody);
-    
-    // Strategy 1: Try with Bearer token (current approach)
-    console.log('Attempting QR generation with Bearer token...');
-    
-    const bearerHeaders = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${authCheck.token}`
-    };
-    
-    let response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/qr/generate`, {
-      method: 'POST',
-      headers: bearerHeaders,
-      body: JSON.stringify(requestBody)
-    });
-
-    console.log('QR generation (Bearer) response status:', response.status, response.statusText);
-
-    let responseText = await response.text();
-    console.log('QR generation (Bearer) raw response:', responseText);
-
-    // If Bearer token fails with authentication error, try alternative strategies
-    if (response.status === 401 || response.status === 500) {
-      console.log('Bearer token failed, trying alternative authentication...');
-      
-      // Strategy 2: Try without authentication (some QR APIs might be public)
-      console.log('Attempting QR generation without authentication...');
-      
-      const publicHeaders = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      };
-      
-      response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/qr/generate`, {
-        method: 'POST',
-        headers: publicHeaders,
-        body: JSON.stringify(requestBody)
-      });
-
-      console.log('QR generation (Public) response status:', response.status, response.statusText);
-      responseText = await response.text();
-      console.log('QR generation (Public) raw response:', responseText);
-      
-      // Strategy 3: Try with API key if public also fails
-      if (response.status === 401 || response.status === 500) {
-        console.log('Attempting QR generation with API key pattern...');
-        
-        // Try with token as API key in different header formats
-        const apiKeyHeaders = {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-API-Key': authCheck.token,
-          'API-Key': authCheck.token,
-          'Authorization': authCheck.token // Without Bearer prefix
-        };
-        
-        response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/qr/generate`, {
-          method: 'POST',
-          headers: apiKeyHeaders,
-          body: JSON.stringify(requestBody)
-        });
-
-        console.log('QR generation (API-Key) response status:', response.status, response.statusText);
-        responseText = await response.text();
-        console.log('QR generation (API-Key) raw response:', responseText);
-      }
-    }
-
-    let result;
-    try {
-      if (responseText) {
-        result = JSON.parse(responseText);
-      } else {
-        result = { message: 'Empty response from QR generation API' };
-      }
-    } catch (parseError) {
-      console.error('Failed to parse QR generation JSON:', parseError);
-      result = { 
-        message: 'Invalid JSON response from QR generation API',
-        rawResponse: responseText 
-      };
-    }
-    
-    console.log('QR generation final parsed response:', result);
-
-    if (response.ok) {
-      // Check for different response formats
-      if (result.success && result.data) {
-        return {
-          success: true,
-          data: {
-            qrMessage: result.data.qrMessage || result.data.qrCode,
-            thirdpartyQrWebSocketUrl: result.data.thirdpartyQrWebSocketUrl || result.data.webSocketUrl,
-            prn: result.data.prn || result.data.paymentReferenceNumber
-          }
-        };
-      } else if (result.qrMessage || result.qrCode) {
-        return {
-          success: true,
-          data: {
-            qrMessage: result.qrMessage || result.qrCode,
-            thirdpartyQrWebSocketUrl: result.thirdpartyQrWebSocketUrl || result.webSocketUrl,
-            prn: result.prn || result.paymentReferenceNumber
-          }
-        };
-      } else {
-        console.error('QR generation successful but missing qrMessage/qrCode in response');
-        return {
-          success: false,
-          message: 'QR code generation failed - missing QR data in response',
-          details: result
-        };
-      }
-    } else {
-      console.error('QR generation API failed with all strategies:', response.status, result);
-      
-      // Provide specific error messages based on the error
-      let errorMessage = 'Failed to generate QR code';
-      
-      if (response.status === 401) {
-        errorMessage = 'Authentication failed. Please log in again.';
-      } else if (response.status === 500 && result.message?.includes('USERNAME OR PASSWORD')) {
-        errorMessage = 'Payment service authentication error. Please contact support.';
-      } else if (result.message) {
-        errorMessage = result.message;
-      }
-      
-      return {
-        success: false,
-        message: errorMessage,
-        details: result,
-        statusCode: response.status
-      };
-    }
-  } catch (error) {
-    console.error('QR generation error:', error);
-    return {
-      success: false,
-      message: error.message || 'Network error occurred during QR generation',
-      error: error.name
-    };
-  }
-};
-
-/**
- * Step 5: Check payment status and complete booking
+ * NPS Payment Status Check
  * @param {Object} seatInfo - Complete seat and passenger information
- * @param {Object} paymentInfo - Payment information with PRN
+ * @param {Object} paymentInfo - Payment information with transaction ID
  * @returns {Promise} - Promise resolving to payment verification result
  */
 const checkPaymentStatus = async (seatInfo, paymentInfo) => {
@@ -949,7 +933,8 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
     
     console.log('Payment status check request:', requestBody);
     
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/qr/check-payment`, {
+    // Payment status check removed - using NPS flow instead
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/check-status`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(requestBody)
@@ -1025,139 +1010,188 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
 };
 
 /**
- * FonePay API Functions
+ * NPS Payment Redirect Functions
  */
 
 /**
- * Generate FonePay QR code for payment
- * @param {number} amount - Payment amount
- * @param {string} remarks1 - First remark (travel date)
- * @param {string} remarks2 - Second remark (seat numbers)
- * @param {string} prn - Payment reference number
- * @returns {Promise} - Promise resolving to FonePay QR data
+ * Make a direct POST request to the Nepal Payment Gateway
+ * This function creates a hidden form and submits it programmatically to redirect the user
+ * @param {Object} paymentData - Payment data from initiate-payment API
+ * @param {string} successUrl - Success callback URL
+ * @param {string} failureUrl - Failure callback URL
+ * @param {Object} additionalParams - Any additional parameters required by the gateway
  */
-const generateFonePayQR = async (amount, remarks1, remarks2, prn) => {
+const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additionalParams = {}) => {
   try {
-    console.log('FonePay: Generating QR code...');
+    console.log('💳 Redirecting to Nepal Payment Gateway with data:', paymentData);
     
-    // Generate data validation hash (you may need to implement the actual hash logic)
-    const dataValidation = generateFonePayHash(amount, remarks1, remarks2, prn);
+    // Gateway URL
+    const gatewayUrl = "https://gateway.nepalpayment.com/payment/index";
     
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/fonepay/qr-generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        amount: amount,
-        remarks1: remarks1,
-        remarks2: remarks2,
-        prn: prn,
-        merchantCode: "0012345076",
-        dataValidation: dataValidation,
-        username: "SONATRAVELANDTOURSPVTLTD",
-        password: "Sona@2024"
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`FonePay QR API failed: HTTP ${response.status} - ${errorText}`);
+    // Create form element
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = gatewayUrl;
+    form.style.display = 'none'; // Hidden form
+    form.enctype = 'application/x-www-form-urlencoded'; // Use the correct content type
+    form.enctype = 'application/x-www-form-urlencoded'; // Use the correct content type
+    
+    // Check for authentication token
+    const authCheck = checkAuthentication();
+    const authToken = authCheck.isAuthenticated ? authCheck.token : '';
+    
+    if (authCheck.isAuthenticated) {
+      console.log('💳 Using authentication token from', authCheck.source);
+    } else {
+      console.warn('💳 No authentication token found! Payment might fail.');
     }
+    
+    // Add required parameters from initiate-payment response
+    // Using the EXACT field names required by Nepal Payment Gateway (case sensitive)
+    const params = {
+      MerchantId: paymentData.merchantId, // Capital M
+      MerchantName: paymentData.merchantName || 'sonatravelapi', // Capital M
+      MerchantTxnId: paymentData.merchantTransactionId, // Capital M, Txn
+      Amount: paymentData.amount, // Capital A
+      ProcessId: paymentData.processId, // Capital P
+      InstrumentCode: paymentData.instrumentCode || additionalParams.instrumentCode || '', // Capital I, C - Use selected instrument
+      TransactionRemarks: additionalParams.remarks || 'Bus ticket booking', // Capital T, R
+      
+      // Don't include ReturnUrl, CancelUrl, or AuthToken as NPS doesn't support these
+      
+      // Include any other required additional parameters (except auth token)
+      ...Object.fromEntries(
+        Object.entries(additionalParams).filter(([key]) => 
+          !['authToken', 'returnUrl', 'cancelUrl', 'AuthToken', 'ReturnUrl', 'CancelUrl'].includes(key)
+        )
+      )
+    };
 
-    const result = await response.json();
-    console.log('FonePay QR generation response:', result);
-
-    if (!result.qrCode && !result.qrMessage) {
-      throw new Error('FonePay API did not return a valid QR code');
+    // Log the instrument code being used for debugging
+    console.log('💳 Using InstrumentCode:', params.InstrumentCode);
+    console.log('💳 All payment parameters:', params);
+    
+    // Validate the instrument code
+    const validation = validateInstrumentCode(params.InstrumentCode);
+    console.log('💳 Instrument code validation:', validation);
+    
+    // If no instrument code is provided, warn about potential redirect to selection page
+    if (!params.InstrumentCode) {
+      console.warn('💳 No InstrumentCode provided - NPS gateway will show payment method selection page');
+      console.warn('💳 To bypass selection page, pass instrumentCode in paymentData or additionalParams');
+    } else if (validation.isValid) {
+      console.log('💳 Valid InstrumentCode provided:', params.InstrumentCode, '-', validation.bankName);
+      console.log('💳 Should proceed directly to payment method');
+    } else {
+      console.warn('💳 Invalid InstrumentCode:', validation.message);
+      console.warn('💳 Recommendation:', validation.recommendation);
     }
-
-    return {
-      success: true,
-      data: {
-        qrMessage: result.qrCode || result.qrMessage,
-        prn: prn,
-        amount: amount
+    
+    // Add all parameters to form
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = params[key];
+        form.appendChild(input);
       }
-    };
-  } catch (error) {
-    console.error('FonePay QR generation error:', error);
-    return {
-      success: false,
-      message: `FonePay QR generation failed: ${error.message}`
-    };
-  }
-};
-
-/**
- * Check FonePay payment status
- * @param {string} prn - Payment reference number
- * @returns {Promise} - Promise resolving to payment status
- */
-const checkFonePayStatus = async (prn) => {
-  try {
-    console.log('FonePay: Checking payment status for PRN:', prn);
-    
-    // Generate data validation hash for status check
-    const dataValidation = generateFonePayStatusHash(prn);
-    
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/fonepay/check-status`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prn: prn,
-        merchantCode: "0012345076",
-        dataValidation: dataValidation,
-        username: "SONATRAVELANDTOURSPVTLTD",
-        password: "Sona@2024"
-      })
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`FonePay status API failed: HTTP ${response.status} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log('FonePay status response:', result);
-
-    return {
-      success: true,
-      paymentStatus: result.status || result.paymentStatus,
-      data: result
-    };
+    
+    // Create a detailed debugging log for the payment gateway request
+    console.group('💳 NPS PAYMENT GATEWAY REQUEST DETAILS');
+    console.log('🔹 Gateway URL:', gatewayUrl);
+    console.log('🔹 HTTP Method:', form.method);
+    console.log('� Form Parameters:', 
+      Object.fromEntries(
+        Array.from(form.elements).map(el => [el.name, el.value])
+      )
+    );
+    
+    // Debug the payment request
+    debugNpsPaymentRequest(form, gatewayUrl);
+    
+    // Add form to body and submit
+    document.body.appendChild(form);
+    console.log('💳 Submitting payment form to gateway:', gatewayUrl);
+    form.submit();
+    
+    // Return true to indicate the redirect is in progress
+    return true;
   } catch (error) {
-    console.error('FonePay status check error:', error);
-    return {
-      success: false,
-      message: `FonePay status check failed: ${error.message}`
-    };
+    console.error('💳 Failed to redirect to payment gateway:', error);
+    
+      // Attempt to use direct fetch with correct content type as fallback
+      try {
+        console.log('💳 Attempting fallback redirect method with correct content type...');
+        
+        // Get authentication token for fallback method
+        const authCheck = checkAuthentication();
+        const authToken = authCheck.isAuthenticated ? authCheck.token : '';
+        
+        // Try using fetch with application/x-www-form-urlencoded format
+        const formData = new URLSearchParams();
+        formData.append('MerchantId', paymentData.merchantId);
+        formData.append('MerchantName', paymentData.merchantName || 'sonatravelapi');
+        formData.append('MerchantTxnId', paymentData.merchantTransactionId);
+        formData.append('Amount', paymentData.amount);
+        formData.append('ProcessId', paymentData.processId || '');
+        formData.append('InstrumentCode', paymentData.instrumentCode || additionalParams.instrumentCode || '');
+        formData.append('TransactionRemarks', additionalParams.remarks || 'Bus ticket booking');
+        
+        console.log('💳 Fallback using InstrumentCode:', paymentData.instrumentCode || additionalParams.instrumentCode || 'None');
+        console.log('💳 Attempting direct fetch with x-www-form-urlencoded...');
+        
+        // Create a new hidden form for manual submission
+        const manualForm = document.createElement('form');
+        manualForm.method = 'POST';
+        manualForm.action = gatewayUrl;
+        manualForm.enctype = 'application/x-www-form-urlencoded';
+        manualForm.style.display = 'none';
+        
+        // Add form fields with correct parameter names for NPS gateway
+        Object.entries({
+          'MerchantId': paymentData.merchantId,
+          'MerchantName': paymentData.merchantName || 'sonatravelapi',
+          'MerchantTxnId': paymentData.merchantTransactionId,
+          'Amount': paymentData.amount,
+          'ProcessId': paymentData.processId || '',
+          'InstrumentCode': paymentData.instrumentCode || additionalParams.instrumentCode || '',
+          'TransactionRemarks': additionalParams.remarks || 'Bus ticket booking'
+        }).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          manualForm.appendChild(input);
+        });
+        
+        // Add form to body and submit
+        document.body.appendChild(manualForm);
+        console.log('💳 Submitting form with content type: application/x-www-form-urlencoded');
+        
+        // Debug the form data being sent
+        const formDataObj = {};
+        for (let i = 0; i < manualForm.elements.length; i++) {
+          const input = manualForm.elements[i];
+          if (input.name) {
+            formDataObj[input.name] = input.value;
+          }
+        }
+        console.log('Form data being submitted:', formDataObj);
+        
+        // Submit the form
+        manualForm.submit();
+        return true;
+    } catch (fallbackError) {
+      console.error('💳 Fallback redirect also failed:', fallbackError);
+      return false;
+    }
   }
 };
 
 /**
- * Generate data validation hash for FonePay QR
- * Note: This is a placeholder - implement actual hash logic based on FonePay documentation
- */
-const generateFonePayHash = (amount, remarks1, remarks2, prn) => {
-  // This should implement the actual hash generation logic as per FonePay documentation
-  // For now, returning a placeholder hash
-  return "a66a0088c21d87c43aed67bed19aeccc8f32673399976adb1c64007c999f8acc19a052c3a8c0b815c96b8827831c6800eae69686d8857885faa42685d7fab1ff";
-};
-
-/**
- * Generate data validation hash for FonePay status check
- */
-const generateFonePayStatusHash = (prn) => {
-  // This should implement the actual hash generation logic as per FonePay documentation
-  // For now, returning a placeholder hash
-  return "cc3ec18d77af04adafead9c7822d72a1cf35367a2e2390c27a402c27ab87bd874665019b551adcef486e71b817cfd95d11b62a4e027dd246551b7ca6afc0afe0";
-};
-
-/**
- * Get payment redirect URL for non-QR payments (EBanking, Wallets)
+ * Get payment redirect URL for non-direct payments (EBanking, Wallets)
  * @param {string} merchantTransactionId - Transaction ID from initiate payment
  * @param {string} processId - Process ID from initiate payment
  * @param {string} instrumentCode - Selected payment instrument code
@@ -1610,14 +1644,16 @@ export default {
   initiatePayment,
   getPaymentInstruments,
   getServiceCharge,
-  generateQRCode,
+  // generateQRCode, // Removed - using NPS payment flow
   checkPaymentStatus,
+  checkPaymentStatusOnePG,
+  redirectToPaymentGateway,
   getPaymentRedirectUrl,
   confirmSeatBooking,
 
-  // FonePay functions
-  generateFonePayQR,
-  checkFonePayStatus,
+  // FonePay functions (Removed - using NPS payment flow)
+  // generateFonePayQR,
+  // checkFonePayStatus,
 
   // Coupon functions
   getAppliedCoupons,
@@ -1628,6 +1664,10 @@ export default {
   
   // Fallback utilities
   getFallbackPaymentInstruments,
+  
+  // Debug utilities
+  validateInstrumentCode,
+  debugNpsPaymentRequest,
 
   // Diagnostic function
   testAPIEndpoints

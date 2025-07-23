@@ -19,15 +19,15 @@ const PaymentModal = ({
   onPaymentSuccess 
 }) => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); // 1: instruments, 2: qr, 3: success
+  const [step, setStep] = useState(1); // 1: instruments, 2: success
   const [isLoading, setIsLoading] = useState(false);
   const [paymentTransaction, setPaymentTransaction] = useState(null);
   const [paymentInstruments, setPaymentInstruments] = useState([]);
   const [filteredInstruments, setFilteredInstruments] = useState([]);
   const [selectedInstrument, setSelectedInstrument] = useState(null);
   const [serviceCharge, setServiceCharge] = useState(0);
-  const [qrData, setQrData] = useState(null);
-  const [webSocket, setWebSocket] = useState(null);
+  // const [qrData, setQrData] = useState(null); // Removed QR functionality
+  // const [webSocket, setWebSocket] = useState(null); // Removed - QR WebSocket not needed
   const [searchQuery, setSearchQuery] = useState('');
 
   // Session expiry handler for payment modal
@@ -60,7 +60,7 @@ const PaymentModal = ({
     });
   };
 
-  // Initialize payment when modal opens
+  // Initialize payment modal when opened
   useEffect(() => {
     if (isOpen) {
       // Set up session expiry handler for this modal
@@ -71,14 +71,12 @@ const PaymentModal = ({
       // Override global session handler while modal is open
       window.sessionExpiredHandlerOverride = true;
       
-      initializePayment();
+      // Load payment instruments only
+      loadPaymentInstruments();
     }
     
     // Cleanup
     return () => {
-      if (webSocket) {
-        webSocket.close();
-      }
       // Restore global session handler
       window.sessionExpiredHandlerOverride = false;
     };
@@ -122,58 +120,30 @@ const PaymentModal = ({
     setFilteredInstruments(filtered);
   }, [paymentInstruments, selectedCategory, searchQuery]);
 
-  const initializePayment = async () => {
+  const loadPaymentInstruments = async () => {
     setIsLoading(true);
     try {
-      console.log('PaymentModal: Initializing payment for amount:', totalPrice);
+      // Step 2: Get Payment Instruments
+      const instruments = await api.getPaymentInstruments();
       
-      // HTTP interceptor will handle authentication automatically
-      // No need for manual auth checks here
-      
-      // Step 1: Initiate Payment
-      const paymentInitiated = await api.initiatePayment(totalPrice);
-      
-      if (paymentInitiated.success) {
-        setPaymentTransaction(paymentInitiated.data);
-        console.log('Payment initiated successfully:', paymentInitiated.data);
+      if (instruments.success) {
+        setPaymentInstruments(instruments.data);
         
-        // Step 2: Get Payment Instruments
-        const instruments = await api.getPaymentInstruments();
-        
-        if (instruments.success) {
-          setPaymentInstruments(instruments.data);
-          
-          if (instruments.fallback) {
-            toast.info('Using offline payment methods. Some options may be limited.');
-          } else {
-            toast.success(`Payment methods loaded for ${selectedCategory?.name || 'selected category'}.`);
-          }
+        if (instruments.fallback) {
+          toast.info('Using offline payment methods. Some options may be limited.');
         } else {
-          console.error('❌ Failed to load payment instruments:', instruments.message);
-          
-          // Try to use fallback instruments
-          const fallbackInstruments = api.getFallbackPaymentInstruments();
-          setPaymentInstruments(fallbackInstruments);
-          toast.warn('Payment service temporarily unavailable. Using offline payment methods.');
+          toast.success(`Payment methods loaded for ${selectedCategory?.name || 'selected category'}.`);
         }
       } else {
-        console.error('💳 Payment initiation failed:', paymentInitiated);
+        console.error('❌ Failed to load payment instruments:', instruments.message);
         
-        // Show detailed error message for debugging
-        const errorMsg = paymentInitiated.message || 'Unknown error';
-        const statusCode = paymentInitiated.statusCode || 'Unknown';
-        
-        toast.error(`Payment API Error (${statusCode}): ${errorMsg}`);
-        
-        // Show additional details in console for debugging
-        if (paymentInitiated.details) {
-          console.error('🔍 Payment API Error Details:', paymentInitiated.details);
-        }
-        
-        onClose();
+        // Try to use fallback instruments
+        const fallbackInstruments = api.getFallbackPaymentInstruments();
+        setPaymentInstruments(fallbackInstruments);
+        toast.warn('Payment service temporarily unavailable. Using offline payment methods.');
       }
     } catch (error) {
-      console.error('Payment initialization error:', error);
+      console.error('Payment instruments loading error:', error);
       
       // HTTP interceptor will handle authentication errors automatically
       if (error.message === 'AUTHENTICATION_REQUIRED') {
@@ -182,202 +152,176 @@ const PaymentModal = ({
       }
       
       toast.error(`Payment system unavailable: ${error.message || 'Please try again later'}`);
-      onClose();
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleInstrumentSelect = async (instrument) => {
+    if (!instrument) {
+      toast.error('Please select a valid payment method');
+      return;
+    }
+    
+    console.log('🔄 Payment instrument selected:', instrument.name);
+    console.log('💰 Initiating payment for amount:', totalPrice);
+    
     setSelectedInstrument(instrument);
     setIsLoading(true);
+    setStep(2); // Show processing screen
     
     try {
-      // Get service charge for selected instrument
-      const serviceChargeResult = await api.getServiceCharge(totalPrice, instrument.instrumentCode);
+      // Store booking details in session storage for callback handling
+      const bookingData = {
+        totalPrice: totalPrice,
+        passengers: passengers,
+        selectedSeats: selectedSeats,
+        travelDate: travelDate,
+        bookingDetails: bookingDetails,
+        searchParams: searchParams,
+        selectedInstrument: instrument
+      };
+      sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
       
-      if (serviceChargeResult.success) {
-        setServiceCharge(serviceChargeResult.serviceCharge);
-        toast.success(`Service charge: Rs. ${serviceChargeResult.serviceCharge}`);
+      console.log('📞 Calling initiate-payment API...');
+      
+      // Call initiate-payment API directly
+      const paymentInitiated = await api.initiatePayment(totalPrice);
+      
+      console.log('📞 Payment initiation response:', paymentInitiated);
+      
+      if (paymentInitiated.success) {
+        setPaymentTransaction(paymentInitiated.data);
+        // CONSOLE LOGGING STOPPED HERE - No more detailed logs after initiate-payment
+        
+        toast.success('Payment initiated successfully!');
+        
+        // Prepare success and failure URLs
+        const successUrl = `${window.location.origin}/payment/success`;
+        const failureUrl = `${window.location.origin}/payment/failure`;
+        
+        // Redirect to Nepal Payment Gateway with the data from initiate-payment
+        const redirected = api.redirectToPaymentGateway(
+          paymentInitiated.data,
+          successUrl,
+          failureUrl,
+          {
+            // Additional parameters if needed
+            callbackUrl: `${window.location.origin}/payment/callback`,
+            remarks: `Booking for ${selectedSeats.join(', ')} on ${travelDate}`,
+            customerEmail: bookingDetails?.contactInfo?.email || '',
+            customerPhone: bookingDetails?.contactInfo?.phone || ''
+          }
+        );
+        
+        if (redirected) {
+          console.log('Redirecting to payment gateway...');
+        } else {
+          console.error('Failed to redirect to payment gateway');
+          // Fallback to polling as before
+          pollPaymentStatus(paymentInitiated.data);
+        }
+        
       } else {
-        console.warn('⚠️ Service charge API failed, using default charge');
-        // Use a default service charge if API fails
-        const defaultServiceCharge = Math.round(totalPrice * 0.02); // 2% default
-        setServiceCharge(defaultServiceCharge);
-        toast.info(`Using default service charge: Rs. ${defaultServiceCharge}`);
+        const errorMsg = paymentInitiated.message || 'Payment initiation failed';
+        toast.error(`Payment Error: ${errorMsg}`);
+        setStep(1);
+        setSelectedInstrument(null);
       }
+      
     } catch (error) {
-      console.error('Service charge error:', error);
-      toast.error(`Failed to get service charge: ${error.message}`);
+      toast.error(`Payment Error: ${error.message || 'Payment initiation failed'}`);
+      setStep(1);
       setSelectedInstrument(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleProceedToQR = async () => {
+  // OnePG polling functionality - Console logging disabled
+  const pollPaymentStatus = async (transactionData) => {
+    const maxAttempts = 30; // Poll for 5 minutes (30 * 10 seconds)
+    let attempts = 0;
+    
+    const checkStatus = async () => {
+      try {
+        attempts++;
+        // Silent polling - no console logs
+        
+        // Call the onepg API to check status
+        const statusResponse = await api.checkPaymentStatusOnePG(
+          transactionData.merchantTransactionId,
+          transactionData.processId
+        );
+        
+        if (statusResponse && statusResponse.success) {
+          const statusData = statusResponse.data;
+          
+          // Check if payment is successful
+          if (statusData && (statusData.status === 'SUCCESS' || statusData.paymentStatus === 'SUCCESS' || statusData === 'already received')) {
+            toast.success('Payment completed successfully!');
+            setStep(3);
+            
+            // Call success callback after a delay
+            setTimeout(() => {
+              onPaymentSuccess && onPaymentSuccess(statusData);
+              onClose();
+            }, 3000);
+            
+            return; // Stop polling
+            
+          } else if (statusData && (statusData.status === 'FAILED' || statusData.paymentStatus === 'FAILED')) {
+            toast.error('Payment failed. Please try again.');
+            setStep(1);
+            setSelectedInstrument(null);
+            return; // Stop polling
+          }
+          
+          // Payment still pending, continue polling silently
+        }
+        
+        // Continue polling if not complete and attempts remaining
+        if (attempts < maxAttempts) {
+          setTimeout(checkStatus, 10000); // Check every 10 seconds
+        } else {
+          toast.error('Payment status check timeout. Please verify your payment manually.');
+          setStep(1);
+          setSelectedInstrument(null);
+        }
+        
+      } catch (error) {
+        // Silent error handling - no console logs
+        
+        // Retry if attempts remaining
+        if (attempts < maxAttempts) {
+          setTimeout(checkStatus, 10000);
+        } else {
+          toast.error('Unable to verify payment status. Please check manually.');
+          setStep(1);
+          setSelectedInstrument(null);
+        }
+      }
+    };
+    
+    // Start status checking after a brief delay - silently
+    setTimeout(checkStatus, 5000); // Wait 5 seconds before first check
+  };
+
+  // QR generation removed - using NPS payment flow instead
+  const handleProceedToNPS = async () => {
     if (!selectedInstrument) {
       toast.error('Please select a payment method');
       return;
     }
     
-    setIsLoading(true);
-    
-    try {
-      const totalWithServiceCharge = totalPrice + serviceCharge;
-      const seatNumbers = selectedSeats.join(',');
-      
-      // Check if this is FonePay
-      if (selectedInstrument.instrumentCode === 'FONEPAYG' || selectedInstrument.name?.toLowerCase().includes('fonepay')) {
-        // Generate a unique PRN for FonePay
-        const prn = `prn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        
-        toast.info('Connecting to FonePay...');
-        const fonePayResult = await api.generateFonePayQR(totalWithServiceCharge, travelDate, seatNumbers, prn);
-        
-        if (fonePayResult.success) {
-          setQrData(fonePayResult.data);
-          setStep(2);
-          toast.success('FonePay QR generated successfully!');
-          
-          // For FonePay, we'll poll for status instead of WebSocket
-          startFonePayStatusPolling(prn);
-        } else {
-          toast.error(fonePayResult.message || 'Failed to generate FonePay QR code');
-        }
-      } else {
-        // Original QR generation for other payment methods
-        const qrResult = await api.generateQRCode(totalWithServiceCharge, travelDate, seatNumbers);
-        
-        if (qrResult.success) {
-          setQrData(qrResult.data);
-          setStep(2);
-          
-          // Setup WebSocket for payment status
-          if (qrResult.data.thirdpartyQrWebSocketUrl) {
-            setupWebSocket(qrResult.data.thirdpartyQrWebSocketUrl);
-          }
-        } else {
-          toast.error(qrResult.message || 'Failed to generate QR code');
-        }
-      }
-    } catch (error) {
-      console.error('QR generation error:', error);
-      toast.error('Failed to generate QR code. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    toast.info('Proceeding with NPS payment flow...');
+    // TODO: Implement NPS payment integration
+    setStep(2); // Skip to success for now
   };
 
-  // FonePay status polling
-  const startFonePayStatusPolling = (prn) => {
-    const pollInterval = setInterval(async () => {
-      try {
-        const statusResult = await api.checkFonePayStatus(prn);
-        
-        if (statusResult.success && statusResult.paymentStatus === 'success') {
-          clearInterval(pollInterval);
-          checkPaymentStatus();
-        }
-      } catch (error) {
-        console.error('FonePay status polling error:', error);
-      }
-    }, 3000); // Poll every 3 seconds
-    
-    // Clear polling after 10 minutes
-    setTimeout(() => {
-      clearInterval(pollInterval);
-    }, 600000);
-  };
+  // FonePay status polling removed - using NPS payment flow
 
-  const setupWebSocket = (wsUrl) => {
-    try {
-      const ws = new WebSocket(wsUrl);
-      
-      ws.onopen = () => {
-        console.log('WebSocket connected');
-      };
-      
-      ws.onmessage = (event) => {
-        console.log('WebSocket message:', event.data);
-        try {
-          const data = JSON.parse(event.data);
-          if (data.status === 'success' || data.paymentStatus === 'success') {
-            checkPaymentStatus();
-          }
-        } catch (e) {
-          console.log('Non-JSON WebSocket message:', event.data);
-        }
-      };
-      
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-      
-      ws.onclose = () => {
-        console.log('WebSocket disconnected');
-      };
-      
-      setWebSocket(ws);
-    } catch (error) {
-      console.error('WebSocket setup error:', error);
-    }
-  };
-
-  const checkPaymentStatus = async () => {
-    try {
-      if (!qrData?.prn) {
-        throw new Error('No PRN available for payment verification');
-      }
-      
-      const seatInfo = {
-        dateOfTravel: travelDate || new Date().toISOString().split('T')[0],
-        paymentAmount: totalPrice,
-        payment_status: "Completed",
-        paymentMode: "qr",
-        passengersList: passengers.map(passenger => ({
-          passengerName: passenger.fullName,
-          contactNumber: parseInt(passenger.phoneNumber),
-          seatNo: passenger.id,
-          origin: bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu',
-          destination: bookingDetails?.destination || searchParams?.toCity || 'Birgunj',
-          gender: passenger.gender.toLowerCase(),
-          boardingLocation: passenger.boardingPlace || 'Bus Park',
-          deboardingLocation: passenger.droppingPlace || 'Kalanki',
-          residence: passenger.cityOfResidence,
-          email: passenger.email
-        }))
-      };
-      
-      const result = await api.checkPaymentStatus(seatInfo, { prn: qrData.prn });
-      
-      if (result.success) {
-        setStep(3);
-        toast.success(`Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);
-        
-        // Close WebSocket
-        if (webSocket) {
-          webSocket.close();
-        }
-        
-        // Call success callback with booking details
-        setTimeout(() => {
-          onPaymentSuccess({
-            bookingId: paymentTransaction?.merchantTransactionId,
-            prn: qrData.prn,
-            amount: totalPrice + serviceCharge,
-            passengers: passengers.length,
-            seats: selectedSeats
-          });
-        }, 2000);
-      } else {
-        toast.error(result.message || 'Payment verification failed');
-      }
-    } catch (error) {
-      console.error('Payment status check error:', error);
-      toast.error('Failed to verify payment. Please try again.');
-    }
-  };
+  // Payment status checking removed - using NPS payment flow
 
   if (!isOpen) return null;
 
@@ -389,7 +333,7 @@ const PaymentModal = ({
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-gray-800">
               {step === 1 && `${selectedCategory?.name || 'Payment'} Methods`}
-              {step === 2 && 'Scan QR Code'}
+              {step === 2 && 'Processing Payment'}
               {step === 3 && 'Payment Successful!'}
             </h2>
             <button 
@@ -510,65 +454,36 @@ const PaymentModal = ({
                 </div>
               )}
 
-              {serviceCharge > 0 && (
-                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-yellow-800">Service Charge:</span>
-                    <span className="text-sm font-bold text-yellow-800">Rs. {serviceCharge}</span>
-                  </div>
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-base font-bold text-yellow-900">Total Amount:</span>
-                    <span className="text-base font-bold text-yellow-900">Rs. {totalPrice + serviceCharge}</span>
-                  </div>
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <span className="text-base font-bold text-blue-900">Total Amount:</span>
+                  <span className="text-base font-bold text-blue-900">Rs. {totalPrice}</span>
                 </div>
-              )}
-
-              <button 
-                onClick={handleProceedToQR}
-                disabled={!selectedInstrument}
-                className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                Proceed to Payment
-              </button>
+                <p className="text-sm text-blue-600 mt-2">
+                  Click on any payment method above to proceed with payment
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Step 2: QR Code */}
-          {step === 2 && qrData && (
+          {/* Step 2: NPS Payment Processing */}
+          {step === 2 && (
             <div className="text-center">
               <p className="text-gray-600 mb-6">
-                Use your {selectedInstrument?.name} app to scan and complete payment
+                Processing your payment with {selectedInstrument?.name}...
               </p>
 
               <div className="flex flex-col items-center mb-6">
-                <div className="p-4 bg-white border-2 border-gray-300 rounded-lg mb-4">
-                  <img 
-                    src={`data:image/png;base64,${qrData.qrMessage}`} 
-                    alt="Payment QR Code" 
-                    className="w-64 h-64"
-                    onError={(e) => {
-                      // Show error message for broken QR images
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                  
-                  {/* Error message for broken QR */}
-                  <div className="w-64 h-64 bg-red-50 border border-red-200 flex items-center justify-center text-center p-4" style={{display: 'none'}}>
-                    <div>
-                      <p className="text-sm font-bold text-red-700 mb-2">QR Code Error</p>
-                      <p className="text-xs text-red-600">Failed to load QR code</p>
-                      <p className="text-xs text-red-600">Please try again or contact support</p>
-                    </div>
-                  </div>
+                <div className="w-32 h-32 bg-blue-50 border-2 border-blue-200 rounded-full flex items-center justify-center mb-4">
+                  <div className="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"></div>
                 </div>
                 
                 <div className="text-center">
                   <p className="text-lg font-bold text-blue-600 mb-2">
-                    Amount: Rs. {totalPrice + serviceCharge}
+                    Amount: Rs. {totalPrice}
                   </p>
                   <p className="text-sm text-gray-600">
-                    PRN: {qrData.prn}
+                    Transaction ID: {paymentTransaction?.merchantTransactionId || 'Generating...'}
                   </p>
                 </div>
               </div>
@@ -577,7 +492,7 @@ const PaymentModal = ({
                 <div className="animate-pulse flex items-center text-blue-600">
                   <div className="w-4 h-4 bg-blue-600 rounded-full mr-2"></div>
                   <span className="text-sm font-medium">
-                    Waiting for payment...
+                    Processing payment...
                   </span>
                 </div>
               </div>
@@ -588,13 +503,6 @@ const PaymentModal = ({
                   className="flex-1 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   ← Back
-                </button>
-                
-                <button 
-                  onClick={checkPaymentStatus}
-                  className="flex-1 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Check Payment Status
                 </button>
               </div>
             </div>
@@ -625,11 +533,11 @@ const PaymentModal = ({
                   </div>
                   <div>
                     <span className="font-medium text-gray-700">PRN:</span>
-                    <p className="text-green-700 font-mono text-xs">{qrData?.prn}</p>
+                    <p className="text-green-700 font-mono text-xs">{paymentTransaction?.merchantTransactionId || 'Transaction Complete'}</p>
                   </div>
                   <div>
                     <span className="font-medium text-gray-700">Amount Paid:</span>
-                    <p className="text-green-700 font-bold">Rs. {totalPrice + serviceCharge}</p>
+                    <p className="text-green-700 font-bold">Rs. {totalPrice}</p>
                   </div>
                   <div>
                     <span className="font-medium text-gray-700">Passengers:</span>

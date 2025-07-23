@@ -373,11 +373,24 @@ class HttpInterceptor {
 // Create singleton instance
 const httpInterceptor = new HttpInterceptor();
 
-// Export both the instance and the class
-export default httpInterceptor;
-export { HttpInterceptor };
+// Create explicit helper functions
+function authenticatedFetch(url, options) {
+  return httpInterceptor.authenticatedFetch(url, options);
+}
 
-// Helper functions for backward compatibility
-export const authenticatedFetch = (url, options) => httpInterceptor.authenticatedFetch(url, options);
-export const apiCall = (endpoint, options) => httpInterceptor.apiCall(endpoint, options);
-export const setSessionExpiredCallback = (callback) => httpInterceptor.setSessionExpiredCallback(callback);
+function apiCall(endpoint, options) {
+  return httpInterceptor.apiCall(endpoint, options);
+}
+
+function setSessionExpiredCallback(callback) {
+  return httpInterceptor.setSessionExpiredCallback(callback);
+}
+
+// Export both the instance, the class and helper functions
+export default httpInterceptor;
+export { 
+  HttpInterceptor,
+  authenticatedFetch,
+  apiCall,
+  setSessionExpiredCallback
+};
