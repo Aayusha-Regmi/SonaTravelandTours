@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const TravelInsurance = () => {
+  const { handleSocialClick } = useSocialActions();
   const [activeSection, setActiveSection] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState('premium');
 
@@ -557,6 +560,7 @@ const TravelInsurance = () => {
       </section>
 
       <Footer />
+      <FloatingActionBar handleSocialClick={handleSocialClick} />
     </div>
   );
 };

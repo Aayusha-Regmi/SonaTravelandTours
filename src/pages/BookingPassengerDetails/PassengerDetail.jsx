@@ -92,7 +92,11 @@ const PassengerDetail = () => {
     }
   }
 
-  const genderOptions = ['Male', 'Female', 'Other'];
+  const genderOptions = [
+    { key: 'M', value: 'Male', label: 'Male' },
+    { key: 'F', value: 'Female', label: 'Female' },
+    { key: 'O', value: 'Other', label: 'Other' }
+  ];
 
   const cityOptions = [
 // 🏙 Metropolises (6)
@@ -724,6 +728,13 @@ const PassengerDetail = () => {
                             required
                             error={currentErrors[`${index}-gender`]}
                             searchable={true}
+                            onKeyPress={(key) => {
+                              const keyUpper = key.toUpperCase();
+                              const option = genderOptions.find(opt => opt.key === keyUpper);
+                              if (option) {
+                                handlePassengerChange(index, 'gender', option.value);
+                              }
+                            }}
                           />
                         </div>
                       </div>

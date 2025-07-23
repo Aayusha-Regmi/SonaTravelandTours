@@ -122,13 +122,13 @@ const ProfileImageHeader = () => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-100 p-6 mb-6">
+      <div className="bg-white rounded-lg border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
         <div className="flex flex-col items-center">
           <div className="animate-pulse">
-            <div className="w-32 h-32 rounded-full bg-gray-200 mb-4"></div>
-            <div className="h-6 bg-gray-200 rounded w-48 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-40 mb-4"></div>
-            <div className="h-3 bg-gray-200 rounded w-56"></div>
+            <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full bg-gray-200 mb-3 sm:mb-4"></div>
+            <div className="h-5 sm:h-6 bg-gray-200 rounded w-36 sm:w-48 mb-2"></div>
+            <div className="h-3 sm:h-4 bg-gray-200 rounded w-32 sm:w-40 mb-3 sm:mb-4"></div>
+            <div className="h-2 sm:h-3 bg-gray-200 rounded w-44 sm:w-56"></div>
           </div>
         </div>
       </div>
@@ -138,11 +138,11 @@ const ProfileImageHeader = () => {
   if (error) {
     // Don't show error, just show minimal profile
     return (
-      <div className="bg-white rounded-lg border border-gray-100 p-6 mb-6">
+      <div className="bg-white rounded-lg border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
         <div className="flex flex-col items-center">
-          <div className="relative mb-4">
-            <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center">
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="relative mb-3 sm:mb-4">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-2 sm:border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
@@ -174,14 +174,14 @@ const ProfileImageHeader = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 p-6 mb-6">
+    <div className="bg-white rounded-lg border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
       <div className="flex flex-col items-center">
-        <div className="relative mb-4">
+        <div className="relative mb-3 sm:mb-4">
           {profile?.avatarUrl ? (
             <img
               src={profile.avatarUrl}
               alt={`${profile?.firstName || ''} ${profile?.lastName || ''}`}
-              className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover bg-gray-100"
+              className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-2 sm:border-4 border-white shadow-lg object-cover bg-gray-100"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextSibling.style.display = 'flex';
@@ -190,47 +190,47 @@ const ProfileImageHeader = () => {
           ) : null}
           
           {!profile?.avatarUrl && (
-            <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center">
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-2 sm:border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
           )}
           
           {/* Hidden fallback div for image error */}
-          <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center" style={{display: 'none'}}>
-            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-2 sm:border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center" style={{display: 'none'}}>
+            <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
           
           {isUploadingImage && (
             <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-white"></div>
             </div>
           )}
           <button 
             onClick={triggerImageUpload}
             disabled={isUploadingImage}
-            className="absolute bottom-2 right-2 bg-blue-600 text-white rounded-full p-2 shadow hover:bg-blue-700 transition disabled:bg-gray-400" 
+            className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-blue-600 text-white rounded-full p-1.5 sm:p-2 shadow hover:bg-blue-700 transition disabled:bg-gray-400" 
             title="Upload new photo"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </button>
         </div>
-        <h3 className="text-xl font-bold text-gray-800 mb-1">
+        <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1 text-center">
           {profile?.firstName && profile?.lastName 
             ? `${profile.firstName} ${profile.lastName}` 
             : 'Name not available'
           }
         </h3>
-        <p className="text-gray-500 text-sm mb-4">
+        <p className="text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4 text-center px-2">
           {profile?.email || 'Email not available'}
         </p>
-        <p className="text-xs text-gray-400">Click the camera icon to update your photo</p>
+        <p className="text-xs text-gray-400 text-center px-2">Click the camera icon to update your photo</p>
       </div>
       
       {/* Hidden file input */}

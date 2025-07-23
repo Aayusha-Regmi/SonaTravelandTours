@@ -7,7 +7,7 @@ import Footer from '../../components/common/Footer';
 import BusListingHeader from '../../components/common/BusListingHeader';
 import ProgressBar from '../../components/common/BookingStepComponents/ProgressBar';
 import PaymentModal from '../../components/ui/PaymentModal';
-import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 import { useUserActionTracking, useStateRestoration } from '../../hooks/useUserActionTracking';
 import api from '../../services/api';
@@ -17,7 +17,7 @@ import API_URLS from '../../config/api';
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { handleSocialClick } = useSocialActions();
+  const { isVisible, socialActions } = useSocialActions();
   
   // Initialize user action tracking
   const { trackPaymentInitiation, trackAction } = useUserActionTracking();
@@ -127,6 +127,7 @@ const PaymentPage = () => {
   const [promoCode, setPromoCode] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [showPromoAnimation, setShowPromoAnimation] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -328,7 +329,13 @@ const PaymentPage = () => {
         const rebateAmount = data.data.rebate || data.data.discountAmount || 0;
         if (rebateAmount > 0) {
           setDiscountAmount(rebateAmount);
+          setShowPromoAnimation(true);
           toast.success(`Coupon "${promoCode}" applied successfully! Rs. ${rebateAmount.toLocaleString()} discount`);
+          
+          // Hide animation after 3 seconds
+          setTimeout(() => {
+            setShowPromoAnimation(false);
+          }, 3000);
         } else {
           toast.warning('Coupon applied but no discount amount available');
         }
@@ -347,6 +354,7 @@ const PaymentPage = () => {
   const handleClearCoupon = () => {
     setPromoCode('');
     setDiscountAmount(0);
+    setShowPromoAnimation(false);
     toast.info('Coupon removed');
   };
   const handleCategorySelect = async (category) => {
@@ -1144,16 +1152,44 @@ const PaymentPage = () => {
                     <button 
                       onClick={handleApplyPromo}
                       disabled={isApplyingCoupon}
-                      className={`px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm font-opensans shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 hover:scale-105 ${isApplyingCoupon ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`relative overflow-hidden px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm font-opensans shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 hover:scale-105 ${isApplyingCoupon ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      {isApplyingCoupon ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Applying...</span>
+                      {/* Sparkle Animation Container - Only show during animation */}
+                      {showPromoAnimation && (
+                        <div className="absolute inset-0 pointer-events-none">
+                          {/* Animated Stars/Sparkles */}
+                          <div className="absolute top-1 left-2 w-1 h-1 bg-yellow-300 rounded-full animate-ping" style={{ animationDelay: '0s', animationDuration: '1.5s' }}></div>
+                          <div className="absolute top-2 right-3 w-1.5 h-1.5 bg-yellow-200 rounded-full animate-ping" style={{ animationDelay: '0.3s', animationDuration: '1.8s' }}></div>
+                          <div className="absolute bottom-2 left-4 w-1 h-1 bg-yellow-400 rounded-full animate-ping" style={{ animationDelay: '0.6s', animationDuration: '1.2s' }}></div>
+                          <div className="absolute bottom-1 right-2 w-1 h-1 bg-yellow-300 rounded-full animate-ping" style={{ animationDelay: '0.9s', animationDuration: '1.6s' }}></div>
+                          <div className="absolute top-3 left-1/2 w-1.5 h-1.5 bg-yellow-200 rounded-full animate-ping" style={{ animationDelay: '1.2s', animationDuration: '1.4s' }}></div>
+                          
+                          {/* Star-shaped sparkles */}
+                          <div className="absolute top-1 right-1 text-yellow-300 text-xs animate-pulse" style={{ animationDelay: '0.2s' }}>✨</div>
+                          <div className="absolute bottom-1 left-1 text-yellow-400 text-xs animate-pulse" style={{ animationDelay: '0.8s' }}>⭐</div>
+                          <div className="absolute top-1/2 left-1 text-yellow-200 text-xs animate-pulse" style={{ animationDelay: '1.1s' }}>✦</div>
+                          
+                          {/* Glowing overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-yellow-300/30 to-yellow-400/20 opacity-60 animate-pulse"></div>
                         </div>
-                      ) : (
-                        'Apply'
                       )}
+                      
+                      {/* Button Content */}
+                      <div className="relative z-10">
+                        {isApplyingCoupon ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Applying...</span>
+                          </div>
+                        ) : discountAmount > 0 ? (
+                          <div className="flex items-center space-x-2">
+                            <span>✓ Applied</span>
+                            <span className="text-yellow-300">✨</span>
+                          </div>
+                        ) : (
+                          'Apply'
+                        )}
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -1326,7 +1362,10 @@ const PaymentPage = () => {
           />
         );
       })()}
-      <FloatingActionBar handleSocialClick={handleSocialClick} />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };

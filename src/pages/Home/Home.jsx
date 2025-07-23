@@ -64,7 +64,7 @@ const HomePage = () => {
     <div className="bg-[#f5f5f5] min-h-screen overflow-x-hidden lg:scroll-smooth">
       <Header />
       
-      <main className="pt-[80px]">
+      <main className="pt-[70px] sm:pt-[80px]">
         <HeroSection />
         <SearchForm />
         <NowBookingSection />

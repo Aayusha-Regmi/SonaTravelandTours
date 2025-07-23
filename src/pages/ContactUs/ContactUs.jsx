@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const ContactUs = () => {
+  const { isVisible, socialActions } = useSocialActions();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -26,21 +29,38 @@ const ContactUs = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      setSubmitStatus('success');
-      setIsSubmitting(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
-      });
+    try {
+      const formElement = e.target;
+      const formData = new FormData(formElement);
       
-      // Reset status after 3 seconds
-      setTimeout(() => setSubmitStatus(null), 3000);
-    }, 1500);
+      const response = await fetch('https://formsubmit.co/sonatravelstours@gmail.com', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+        
+        // Reset status after 5 seconds
+        setTimeout(() => setSubmitStatus(null), 5000);
+      } else {
+        setSubmitStatus('error');
+        setTimeout(() => setSubmitStatus(null), 5000);
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setSubmitStatus('error');
+      setTimeout(() => setSubmitStatus(null), 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   return (
     <div className="min-h-screen">
@@ -250,7 +270,17 @@ const ContactUs = () => {
                       Fill out the form below and we'll get back to you within 24 hours.
                     </p>
                   </div>                  {/* Contact Form */}
-                  <form onSubmit={handleSubmit} className="space-y-6 flex-grow">
+                  <form 
+                    onSubmit={handleSubmit} 
+                    action="https://formsubmit.co/sonatravelstours@gmail.com" 
+                    method="POST"
+                    className="space-y-6 flex-grow"
+                  >
+                    {/* FormSubmit Configuration - Hidden Fields */}
+                    <input type="hidden" name="_subject" value="New Contact Form Submission from Sona Travel & Tours Website" />
+                    <input type="hidden" name="_next" value={window.location.href} />
+                    <input type="hidden" name="_captcha" value="false" />
+                    <input type="hidden" name="_template" value="table" />
                     {/* Name Field */}
                     <div className="relative group">
                       {/* Field Label */}
@@ -426,7 +456,7 @@ const ContactUs = () => {
                         {/* 3D Button Shadow */}
                         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-full h-3 bg-indigo-500/30 rounded-full blur-lg group-hover:scale-110 transition-transform duration-300"></div>
                       </button>
-                    </div>                    {/* Success Message */}
+                    </div>                    {/* Success/Error Messages */}
                     {submitStatus === 'success' && (
                       <div className="relative p-6 bg-gradient-to-r from-green-50 to-emerald-50 backdrop-blur-sm border border-green-200/60 rounded-2xl shadow-lg animate-fade-in">
                         {/* Success Icon */}
@@ -458,6 +488,38 @@ const ContactUs = () => {
                         </div>
                         <div className="absolute bottom-2 left-2 opacity-10">
                           <div className="w-6 h-6 bg-emerald-500 rounded-full animate-pulse"></div>
+                        </div>
+                      </div>
+                    )}
+
+                    {submitStatus === 'error' && (
+                      <div className="relative p-6 bg-gradient-to-r from-red-50 to-rose-50 backdrop-blur-sm border border-red-200/60 rounded-2xl shadow-lg animate-fade-in">
+                        {/* Error Icon */}
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-rose-600 rounded-full flex items-center justify-center shadow-lg">
+                              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-red-800 font-bold text-lg mb-1">Message Failed to Send</h4>
+                            <p className="text-red-700 font-medium mb-2">
+                              We're sorry, but there was an error sending your message. Please try again or contact us directly.
+                            </p>
+                            <div className="mt-3 flex items-center space-x-2 text-red-600 text-sm">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              <span>Alternative: sonatravelstours@gmail.com</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Decorative Elements */}
+                        <div className="absolute top-2 right-2 opacity-20">
+                          <div className="w-8 h-8 bg-red-400 rounded-full animate-pulse"></div>
                         </div>
                       </div>
                     )}
@@ -619,6 +681,10 @@ const ContactUs = () => {
       </section>
 
       <Footer />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };

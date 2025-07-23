@@ -502,9 +502,10 @@ const UnifiedSections = () => {
                       </div>
                     </div>
                       {/* Weather Content */}
-                    <div className="relative z-10 p-6 pt-12">                    <div className="flex items-center gap-3 mb-4">
+                    <div className="relative z-10 p-6 pt-12">                    
+                      <div className="flex items-center gap-3 mb-4">
                         <div className="text-4xl">{weatherData.kathmandu.icon}</div>
-                        <div className="text-4xl font-bold text-white">{weatherData.kathmandu.temperature}</div>
+                        <div className="text-2xl font-bold text-white">{weatherData.kathmandu.temperature}</div>
                       </div>
 
                       <h3 className="text-xl font-bold text-white mb-2">Kathmandu</h3>
@@ -608,7 +609,7 @@ const UnifiedSections = () => {
                       {/* Weather Content */}
                     <div className="relative z-10 p-6 pt-12">                    <div className="flex items-center gap-3 mb-4">
                         <div className="text-4xl">{weatherData.pokhara.icon}</div>
-                        <div className="text-4xl font-bold text-white">{weatherData.pokhara.temperature}</div>
+                        <div className="text-2xl font-bold text-white">{weatherData.pokhara.temperature}</div>
                       </div>
 
                       <h3 className="text-xl font-bold text-white mb-2">Pokhara</h3>
@@ -710,7 +711,7 @@ const UnifiedSections = () => {
                       {/* Weather Content */}
                     <div className="relative z-10 p-6 pt-12">                    <div className="flex items-center gap-3 mb-4">
                         <div className="text-4xl">{weatherData.birgunj.icon}</div>
-                        <div className="text-4xl font-bold text-white">{weatherData.birgunj.temperature}</div>
+                        <div className="text-2xl font-bold text-white">{weatherData.birgunj.temperature}</div>
                       </div>
 
                       <h3 className="text-xl font-bold text-white mb-2">Birgunj</h3>
@@ -809,7 +810,7 @@ const UnifiedSections = () => {
                       {/* Weather Content */}
                     <div className="relative z-10 p-6 pt-12">                    <div className="flex items-center gap-3 mb-4">
                         <div className="text-4xl">{weatherData.chitwan.icon}</div>
-                        <div className="text-4xl font-bold text-white">{weatherData.chitwan.temperature}</div>
+                        <div className="text-2xl font-bold text-white">{weatherData.chitwan.temperature}</div>
                       </div>
 
                       <h3 className="text-xl font-bold text-white mb-2">Chitwan</h3>

@@ -162,6 +162,19 @@ class HttpInterceptor {
    * @returns {boolean} True if API call
    */
   isApiCall(url) {
+    // Exclude third-party APIs that don't need authentication
+    const excludedApis = [
+      'maps.googleapis.com',
+      'api.open-meteo.com',
+      'openweathermap.org',
+      'formsubmit.co'
+    ];
+    
+    // Don't intercept excluded APIs
+    if (excludedApis.some(api => url.includes(api))) {
+      return false;
+    }
+    
     // Check if it's a relative API call or matches our API base URLs
     return (
       url.startsWith('/api/') ||

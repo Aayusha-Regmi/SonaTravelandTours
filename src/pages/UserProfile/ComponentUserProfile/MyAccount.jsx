@@ -477,11 +477,11 @@ const MyAccount = () => {
       </div>
     );
   }  return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Account Information Section */}
-      <div className="bg-white rounded-lg border border-gray-100 p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
-          <h2 className="text-lg font-semibold text-gray-900 font-opensans">
+      <div className="bg-white rounded-lg border border-gray-100 p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-5 gap-3">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 font-opensans">
             Account Information
           </h2>
           <div className="flex gap-2">
@@ -490,7 +490,7 @@ const MyAccount = () => {
                 variant="outline"
                 onClick={handleProfileCancel}
                 disabled={loading}
-                className="text-sm h-8 px-4"
+                className="text-xs sm:text-sm h-8 px-3 sm:px-4"
               >
                 Cancel
               </Button>
@@ -499,14 +499,14 @@ const MyAccount = () => {
               variant={isEditingProfile ? "primary" : "outline"}
               onClick={handleProfileEdit}
               disabled={loading}
-              className="text-sm h-8 px-4"
+              className="text-xs sm:text-sm h-8 px-3 sm:px-4"
             >
               {loading ? 'Saving...' : (isEditingProfile ? 'Save Changes' : 'Edit Profile')}
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <div className="flex flex-col space-y-1.5">
             <label className="text-sm font-medium text-gray-700 font-opensans">
               First Name

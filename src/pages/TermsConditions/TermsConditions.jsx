@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const TermsConditions = () => {
   const [activeSection, setActiveSection] = useState(null);
+  const { handleSocialClick } = useSocialActions();
 
   const toggleSection = (section) => {
     setActiveSection(activeSection === section ? null : section);
@@ -288,6 +291,7 @@ const TermsConditions = () => {
       </section>
 
       <Footer />
+      <FloatingActionBar handleSocialClick={handleSocialClick} />
     </div>
   );
 };

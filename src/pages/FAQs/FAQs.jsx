@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const FAQs = () => {
+  const { isVisible, socialActions } = useSocialActions();
   const [activeSection, setActiveSection] = useState(null);
 
   const toggleSection = (section) => {
@@ -294,6 +297,10 @@ const FAQs = () => {
       </section>
 
       <Footer />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };

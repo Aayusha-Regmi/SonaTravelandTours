@@ -1,8 +1,13 @@
 import React from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
-const Testimonials = () => {  const testimonials = [    {
+const Testimonials = () => {
+  const { handleSocialClick } = useSocialActions();
+  
+  const testimonials = [    {
       id: 1,
       name: "Mr. Jaleshwar Pandit",
       position: "Founder of Sona Group of Companies",
@@ -279,6 +284,7 @@ const Testimonials = () => {  const testimonials = [    {
           animation-duration: 2s;
         }
       `}</style>
+      <FloatingActionBar handleSocialClick={handleSocialClick} />
     </div>
   );
 };

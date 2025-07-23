@@ -3,8 +3,11 @@ import { toast } from 'react-toastify';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import API_URLS from '../../config/api';
+import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const TrendingOffers = () => {
+	const { handleSocialClick } = useSocialActions();
 	const [offers, setOffers] = useState([]);
 	const [firstBookingOffer, setFirstBookingOffer] = useState(null);
 	const [isLoadingOffers, setIsLoadingOffers] = useState(true);
@@ -351,6 +354,7 @@ const TrendingOffers = () => {
 					</div>
 				</div>
 				<Footer />
+				<FloatingActionBar handleSocialClick={handleSocialClick} />
 			</section>
 		</>
 	);

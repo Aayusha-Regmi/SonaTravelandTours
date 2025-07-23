@@ -10,9 +10,12 @@ import Cancellations from './ComponentUserProfile/Cancellations.jsx';
 import MyReviews from './ComponentUserProfile/MyReviews.jsx';
 import MyFavorites from './ComponentUserProfile/MyFavorites.jsx';
 import Discounts from './ComponentUserProfile/Discounts.jsx';
+import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import { useSocialActions } from '../../hooks/useSocialActions';
 
 const UserProfile = () => {
   const location = useLocation();
+  const { handleSocialClick } = useSocialActions();
   
   // Tab configuration
   const tabsData = [
@@ -57,7 +60,7 @@ const UserProfile = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="max-w-6xl mt-10 mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+      <main className="max-w-6xl pt-[70px] sm:pt-[80px] mt-6 sm:mt-8 md:mt-10 lg:mt-12 mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
         {/* Profile Image Header - Always visible above tabs */}
         <ProfileImageHeader />
         
@@ -72,6 +75,7 @@ const UserProfile = () => {
       </main>
 
       <Footer />
+      <FloatingActionBar handleSocialClick={handleSocialClick} />
     </div>
   );
 };

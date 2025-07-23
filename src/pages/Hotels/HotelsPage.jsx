@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
-import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 
 const HotelsPage = () => {
-  const { handleSocialClick } = useSocialActions();
+  const { isVisible, socialActions } = useSocialActions();
   
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -116,7 +116,7 @@ const HotelsPage = () => {
 
       <Header />
       
-      <main className="pt-[80px] relative z-10">
+      <main className="pt-[70px] sm:pt-[80px] relative z-10">
         {/* Hero Section */}
         <section className="relative overflow-hidden py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -342,7 +342,10 @@ const HotelsPage = () => {
       </main>
 
       <Footer />
-      <FloatingActionBar handleSocialClick={handleSocialClick} />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };
