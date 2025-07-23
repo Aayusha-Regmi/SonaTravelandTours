@@ -596,7 +596,7 @@ const SearchResultsPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
       
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12 max-w-7xl mt-12 sm:mt-6 lg:mt-0">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12 max-w-7xl mt-20 sm:mt-12 md:mt-8 lg:mt-0">
         {/* Breadcrumb */}
         <div className="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
           <span className="text-xs sm:text-sm font-medium text-gray-400">Home</span>

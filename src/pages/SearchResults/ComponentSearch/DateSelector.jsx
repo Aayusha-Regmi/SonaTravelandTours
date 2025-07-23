@@ -295,28 +295,28 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-base font-medium text-gray-800">Select Travel Date</h3>
+    <div className="bg-white rounded-lg shadow-sm p-3 sm:p-5 mb-4 sm:mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 space-y-2 sm:space-y-0">
+        <h3 className="text-sm sm:text-base font-medium text-gray-800">Select Travel Date</h3>
         {showReturnMessage && (
-          <div className="bg-green-100 border border-green-300 text-green-800 px-3 py-1 rounded-md text-sm font-medium animate-pulse">
+          <div className="bg-green-100 border border-green-300 text-green-800 px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm font-medium animate-pulse">
             Please select return date
           </div>
         )}
       </div>
       
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-2 sm:space-x-4">
         {/* Left Arrow */}
         <button 
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="p-1 sm:p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 shrink-0"
           onClick={handlePrevious}
           aria-label="Previous dates"
         >
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>        {/* Date Cards */}
-        <div className="relative mt-2">
+        <div className="relative mt-2 flex-1 min-w-0">
           {/* Departure and Return Tags */}
           {(visibleDates.some(dateItem => {
             const isoDeparture = toISODate(departureDate);
@@ -326,7 +326,7 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
             const isoReturn = toISODate(returnDate);
             return isoReturn === dateItem.iso;
           })) && (
-            <div className="absolute -top-10 left-0 right-0 flex mb-4">
+            <div className="absolute -top-8 sm:-top-10 left-0 right-0 flex mb-4">
               {visibleDates.map((dateItem, tagIndex) => {
                 const isoDeparture = toISODate(departureDate);
                 const isoSelected = selectedDate;
@@ -335,14 +335,14 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
                 const isReturn = isoReturn === dateItem.iso;
                 
                 return (
-                  <div key={tagIndex} className="min-w-[80px] mx-[6px] flex justify-center">
+                  <div key={tagIndex} className="min-w-[60px] sm:min-w-[80px] mx-[3px] sm:mx-[6px] flex justify-center">
                     {isDeparture && (
-                      <span className="bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
+                      <span className="bg-blue-600 text-white text-xs font-medium px-1 sm:px-2 py-1 rounded-md">
                         Departure
                       </span>
                     )}
                     {isReturn && (
-                      <span className="bg-green-600 text-white text-xs font-medium px-2 py-1 rounded-md">
+                      <span className="bg-green-600 text-white text-xs font-medium px-1 sm:px-2 py-1 rounded-md">
                         Return
                       </span>
                     )}
@@ -354,7 +354,12 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
           
           <div 
             ref={dateCardsContainerRef}
-            className="flex overflow-x-auto space-x-3 pb-2 no-scrollbar"
+            className="flex overflow-x-auto space-x-2 sm:space-x-3 pb-2 no-scrollbar"
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitScrollbar: { display: 'none' }
+            }}
           >
             {visibleDates.map((dateItem, index) => {
             const isoDeparture = toISODate(departureDate);
@@ -406,17 +411,17 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
                 disabled={dateItem.isDisabled}
                 id={isDeparture ? 'selected-date-card' : ''}
                 className={`
-                  rounded-lg p-2 min-w-[80px] h-[58px] flex flex-col items-center justify-center
-                  transition-all font-medium
+                  rounded-lg p-1 sm:p-2 min-w-[60px] sm:min-w-[80px] h-[48px] sm:h-[58px] flex flex-col items-center justify-center
+                  transition-all font-medium text-xs sm:text-sm shrink-0
                   ${dateItem.isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
                   ${buttonClass}
                 `}
                 aria-pressed={isDeparture}
               >
-                <span className="text-sm font-semibold">
+                <span className="text-xs sm:text-sm font-semibold leading-tight">
                   {dateItem.day}
                 </span>
-                <span className="text-sm mt-1">
+                <span className="text-xs sm:text-sm mt-0.5 sm:mt-1 leading-tight">
                   {dateItem.date}
                 </span>
               </button>
@@ -427,11 +432,11 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
 
         {/* Right Arrow */}
         <button 
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="p-1 sm:p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 shrink-0"
           onClick={handleNext}
           aria-label="Next dates"
         >
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
