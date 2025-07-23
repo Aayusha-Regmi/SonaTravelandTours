@@ -185,8 +185,8 @@ const PaymentModal = ({
       
       console.log('📞 Calling initiate-payment API...');
       
-      // Call initiate-payment API directly
-      const paymentInitiated = await api.initiatePayment(totalPrice);
+      // Call initiate-payment API with instrument code
+      const paymentInitiated = await api.initiatePayment(totalPrice, instrument.instrumentCode);
       
       console.log('📞 Payment initiation response:', paymentInitiated);
       
@@ -207,6 +207,7 @@ const PaymentModal = ({
           failureUrl,
           {
             // Additional parameters if needed
+            instrumentCode: instrument.instrumentCode, // Pass the selected instrument code
             callbackUrl: `${window.location.origin}/payment/callback`,
             remarks: `Booking for ${selectedSeats.join(', ')} on ${travelDate}`,
             customerEmail: bookingDetails?.contactInfo?.email || '',

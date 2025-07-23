@@ -335,14 +335,24 @@ const getRoutes = async () => {
 /**
  * Step 1: Initiate payment process
  * @param {number} amount - Payment amount
+ * @param {string} instrumentCode - Optional instrument code for direct payment method selection
  * @returns {Promise} - Promise resolving to payment initiation data
  */
-const initiatePayment = async (amount) => {
+const initiatePayment = async (amount, instrumentCode) => {
   try {
     console.log('💳 Step 1: Initiating payment for amount:', amount);
+    if (instrumentCode) {
+      console.log('💳 Using instrument code:', instrumentCode);
+    }
 
     const url = `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`;
     console.log('💳 Using API URL:', url);
+    
+    // Prepare request body with optional instrument code
+    const requestBody = { amount };
+    if (instrumentCode) {
+      requestBody.instrumentCode = instrumentCode;
+    }
     
     // Use HTTP interceptor for authentication and request handling
     const response = await authenticatedFetch(url, {
@@ -351,7 +361,7 @@ const initiatePayment = async (amount) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({ amount })
+      body: JSON.stringify(requestBody)
     });
 
     console.log('💳 Response status:', response.status, response.statusText);
@@ -386,7 +396,9 @@ const initiatePayment = async (amount) => {
           merchantName: result.data?.merchantName || result.merchantName,
           amount: result.data?.amount || result.amount,
           merchantTransactionId: result.data?.merchantTransactionId || result.merchantTransactionId,
-          processId: result.data?.processId || result.processId
+          processId: result.data?.processId || result.processId,
+          instrumentCode: instrumentCode // Include the instrument code if provided
+          
         }
       };
     } else {
@@ -1054,15 +1066,15 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
       MerchantTxnId: paymentData.merchantTransactionId, // Capital M, Txn
       Amount: paymentData.amount, // Capital A
       ProcessId: paymentData.processId, // Capital P
-      InstrumentCode: paymentData.instrumentCode || additionalParams.instrumentCode || '', // Capital I, C - Use selected instrument
+      InstrumentCode: paymentData.instrumentCode || additionalParams.instrumentCode || '', // Use instrument code from payment data first, then additional params
       TransactionRemarks: additionalParams.remarks || 'Bus ticket booking', // Capital T, R
       
       // Don't include ReturnUrl, CancelUrl, or AuthToken as NPS doesn't support these
       
-      // Include any other required additional parameters (except auth token)
+      // Include any other required additional parameters (except auth token and instrument code since it's already handled above)
       ...Object.fromEntries(
         Object.entries(additionalParams).filter(([key]) => 
-          !['authToken', 'returnUrl', 'cancelUrl', 'AuthToken', 'ReturnUrl', 'CancelUrl'].includes(key)
+          !['authToken', 'returnUrl', 'cancelUrl', 'AuthToken', 'ReturnUrl', 'CancelUrl', 'instrumentCode'].includes(key)
         )
       )
     };
