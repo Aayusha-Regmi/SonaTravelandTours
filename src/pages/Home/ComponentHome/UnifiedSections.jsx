@@ -1083,37 +1083,37 @@ const UnifiedSections = () => {
           {/* Right Side - Content */}
           <div className="lg:w-1/2">
             {/* Main Title */}
-            <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl p-8 mb-8 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 group relative">
-              <div className="absolute -top-4 -right-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2 rounded-2xl text-sm font-bold shadow-lg animate-pulse">
+            <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl p-7 mb-7 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 group relative">
+              <div className="absolute -top-3 -right-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1.5 rounded-xl text-sm font-bold shadow-lg animate-pulse">
                 EXCELLENCE
               </div>
               
-              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4 group-hover:scale-105 transition-transform duration-500">
+              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-3 group-hover:scale-105 transition-transform duration-500">
                 Experience the Difference with Our Service!
               </h2>
             </div>
 
             {/* Service Cards */}
-            <div className="space-y-8">
+            <div className="space-y-7">
               {/* Service 1 - Exceptional Service */}
-              <div className="group bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+              <div className="group bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
                 <div className="flex items-center">
                   <div className="relative">
-                    <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-3xl flex items-center justify-center shadow-xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-3xl flex items-center justify-center shadow-xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                       <img 
                         src="/images/img_eosiconsserviceoutlined.svg" 
                         alt="Service Icon" 
-                        className="w-14 h-14 filter brightness-0 invert opacity-100"
+                        className="w-12 h-12 filter brightness-0 invert opacity-100"
                       />
                     </div>
                     <div className="absolute inset-0 bg-blue-400/50 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
                   </div>
                   
-                  <div className="ml-8">
-                    <h3 className="text-3xl font-bold text-white mb-3 group-hover:text-white/90 transition-all duration-300">
+                  <div className="ml-7">
+                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-white/90 transition-all duration-300">
                       Exceptional Service
                     </h3>
-                    <p className="text-xl text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300">
+                    <p className="text-lg text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300">
                       Experience unparalleled customer support and a seamless booking process every time.
                     </p>
                   </div>
@@ -1121,24 +1121,24 @@ const UnifiedSections = () => {
               </div>
 
               {/* Service 2 - Affordable Prices */}
-              <div className="group bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+              <div className="group bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
                 <div className="flex items-center">
                   <div className="relative">
-                    <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center shadow-xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                    <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center shadow-xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                       <img 
                         src="/images/img_solartagpricelinear.svg" 
                         alt="Price Icon" 
-                        className="w-14 h-14 filter brightness-0 invert opacity-100"
+                        className="w-12 h-12 filter brightness-0 invert opacity-100"
                       />
                     </div>
                     <div className="absolute inset-0 bg-emerald-400/50 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
                   </div>
                   
-                  <div className="ml-8">
-                    <h3 className="text-3xl font-bold text-white mb-3 group-hover:text-white/90 transition-all duration-300">
+                  <div className="ml-7">
+                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-white/90 transition-all duration-300">
                       Affordable Prices
                     </h3>
-                    <p className="text-xl text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300">
+                    <p className="text-lg text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300">
                       Enjoy competitive rates and exclusive discounts on all your travel needs.
                     </p>
                   </div>
@@ -1146,24 +1146,24 @@ const UnifiedSections = () => {
               </div>
 
               {/* Service 3 - Comfortable Travel */}
-              <div className="group bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+              <div className="group bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
                 <div className="flex items-center">
                   <div className="relative">
-                    <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                       <img 
                         src="/images/img_tdesignsleep.svg" 
                         alt="Comfort Icon" 
-                        className="w-14 h-14 filter brightness-0 invert opacity-100"
+                        className="w-12 h-12 filter brightness-0 invert opacity-100"
                       />
                     </div>
                     <div className="absolute inset-0 bg-purple-400/50 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
                   </div>
                   
-                  <div className="ml-8">
-                    <h3 className="text-3xl font-bold text-white mb-3 group-hover:text-white/90 transition-all duration-300">
+                  <div className="ml-7">
+                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-white/90 transition-all duration-300">
                       Comfortable Travel
                     </h3>
-                    <p className="text-xl text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300">
+                    <p className="text-lg text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300">
                       Travel in comfort with our modern and well-maintained fleet of buses.
                     </p>
                   </div>
