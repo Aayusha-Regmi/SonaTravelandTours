@@ -468,11 +468,11 @@ const SearchForm = () => {
               </div>
 
               {/* Return Date */}
-              <div className="lg:col-span-1 relative z-[2147483647]">
+              <div className="lg:col-span-1 relative z-[2147483646]">
                 <div className="backdrop-blur-lg bg-white/50 rounded-2xl p-5 border border-white/60 h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
                   <label className="text-gray-800 text-xs font-bold mb-2 uppercase tracking-wider">RETURN</label>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center flex-1 relative z-[2147483647]">
+                    <div className="flex items-center flex-1 relative z-[2147483646]">
                       <DatePicker
                         name="returnDate"
                         value={formData.returnDate}
@@ -487,10 +487,10 @@ const SearchForm = () => {
                         })() : new Date()}
                         disabled={!formData.date}
                         className="border-0 bg-transparent text-gray-800 font-medium focus:outline-none flex-1 placeholder-gray-500 text-sm date-picker"
-                        containerClassName="relative z-[2147483647]"
-                        popperClassName="z-[2147483647]"
-                        wrapperClassName="w-full relative z-[2147483647]"
-                        style={{ zIndex: 2147483647 }}
+                        containerClassName="relative z-[2147483646]"
+                        popperClassName="z-[2147483646]"
+                        wrapperClassName="w-full relative z-[2147483646]"
+                        style={{ zIndex: 2147483646 }}
                       />
                     </div>
                   </div>
