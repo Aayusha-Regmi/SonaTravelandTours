@@ -61,6 +61,8 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
   const [visibleDates, setVisibleDates] = useState([]);
   const [currentStartDate, setCurrentStartDate] = useState(new Date(yesterday));
   const [isSearching, setIsSearching] = useState(false);
+  const [selectionMode, setSelectionMode] = useState('departure'); // 'departure' or 'return'
+  const [showReturnMessage, setShowReturnMessage] = useState(false);
   
   // Format date for display
   function formatDateForDisplay(date) {
@@ -177,8 +179,90 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
   };  // Handle date selection
   const handleDateSelect = (dateItem) => {
     if (!dateItem.isDisabled) {
+      const isoDeparture = toISODate(departureDate);
+      const isoReturn = toISODate(returnDate);
+      
+      // Determine selection type based on current state and proximity
+      let isReturnSelection = false;
+      let isDepartureSelection = false;
+      let needsReturnReset = false;
+      
+      // If both departure and return dates exist, determine which one to change based on proximity
+      if (isoDeparture && isoReturn) {
+        const selectedDate = new Date(dateItem.iso);
+        const departureDate_obj = new Date(isoDeparture);
+        const returnDate_obj = new Date(isoReturn);
+        
+        // Calculate days difference from selected date to departure and return
+        const daysToDeparture = Math.abs((selectedDate - departureDate_obj) / (1000 * 60 * 60 * 24));
+        const daysToReturn = Math.abs((selectedDate - returnDate_obj) / (1000 * 60 * 60 * 24));
+        
+        console.log('📅 Date proximity analysis:', {
+          selectedDate: dateItem.iso,
+          departure: isoDeparture,
+          return: isoReturn,
+          daysToDeparture,
+          daysToReturn
+        });
+        
+        // If the selected date is closer to return date, or equal distance but after departure
+        if (daysToReturn < daysToDeparture || (daysToReturn === daysToDeparture && dateItem.iso > isoDeparture)) {
+          // Change return date, but only if it's after departure
+          if (dateItem.iso > isoDeparture) {
+            isReturnSelection = true;
+          } else {
+            // If trying to set return date before departure, change departure instead and reset return
+            isDepartureSelection = true;
+            needsReturnReset = true;
+          }
+        } else {
+          // Change departure date
+          isDepartureSelection = true;
+          // If new departure is at or after current return, reset return
+          if (dateItem.iso >= isoReturn) {
+            needsReturnReset = true;
+          }
+        }
+      } 
+      // If we're in return selection mode or no return date exists and departure exists
+      else if (selectionMode === 'return' || (isoDeparture && !isoReturn)) {
+        // Check if selected date is after departure date
+        if (dateItem.iso > isoDeparture) {
+          isReturnSelection = true;
+        } else {
+          // Prevent selecting return date before or same as departure
+          console.log('Cannot select return date before or same as departure date');
+          return;
+        }
+      } else {
+        isDepartureSelection = true;
+        // Check if departure date is being changed and it's beyond current return date
+        if (isoDeparture && isoReturn && dateItem.iso >= isoReturn) {
+          needsReturnReset = true;
+        }
+      }
+      
       setSelectedDate(dateItem.iso);
       setIsSearching(true);
+      
+      // If we need to reset return date
+      if (needsReturnReset) {
+        // Reset return date and show message
+        setShowReturnMessage(true);
+        setSelectionMode('return');
+        
+        // Hide message after 3 seconds
+        setTimeout(() => {
+          setShowReturnMessage(false);
+        }, 3000);
+      }
+      
+      // If this is a return date selection, switch back to departure mode
+      if (isReturnSelection) {
+        setSelectionMode('departure');
+        setShowReturnMessage(false);
+      }
+      
       if (dateCardsContainerRef.current) {
         const index = visibleDates.findIndex(d => d.iso === dateItem.iso);
         if (index !== -1) {
@@ -189,6 +273,7 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
           });
         }
       }
+      
       // Format date in a format the parent component can use
       const formattedDate = dateItem.fullDate.toLocaleDateString('en-US', {
         weekday: 'short',
@@ -196,8 +281,12 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
         day: 'numeric',
         year: 'numeric'
       });
+      
       if (onDateChange) {
-        onDateChange(formattedDate, dateItem.fullDate);
+        // Pass additional info about selection type
+        const action = needsReturnReset ? 'resetReturn' : (isReturnSelection ? 'returnDate' : 'departureDate');
+        console.log('📅 DateSelector action:', action, 'for date:', formattedDate);
+        onDateChange(formattedDate, dateItem.fullDate, action);
         setTimeout(() => {
           setIsSearching(false);
         }, 1200);
@@ -209,6 +298,11 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
     <div className="bg-white rounded-lg shadow-sm p-5 mb-6">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-base font-medium text-gray-800">Select Travel Date</h3>
+        {showReturnMessage && (
+          <div className="bg-green-100 border border-green-300 text-green-800 px-3 py-1 rounded-md text-sm font-medium animate-pulse">
+            Please select return date
+          </div>
+        )}
       </div>
       
       <div className="flex items-center space-x-4">
@@ -222,11 +316,47 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>        {/* Date Cards */}
-        <div 
-          ref={dateCardsContainerRef}
-          className="flex overflow-x-auto space-x-3 pb-2 no-scrollbar"
-        >
-          {visibleDates.map((dateItem, index) => {
+        <div className="relative mt-2">
+          {/* Departure and Return Tags */}
+          {(visibleDates.some(dateItem => {
+            const isoDeparture = toISODate(departureDate);
+            const isoSelected = selectedDate;
+            return (isoDeparture ? isoDeparture : isoSelected) === dateItem.iso;
+          }) || visibleDates.some(dateItem => {
+            const isoReturn = toISODate(returnDate);
+            return isoReturn === dateItem.iso;
+          })) && (
+            <div className="absolute -top-10 left-0 right-0 flex mb-4">
+              {visibleDates.map((dateItem, tagIndex) => {
+                const isoDeparture = toISODate(departureDate);
+                const isoSelected = selectedDate;
+                const isoReturn = toISODate(returnDate);
+                const isDeparture = (isoDeparture ? isoDeparture : isoSelected) === dateItem.iso;
+                const isReturn = isoReturn === dateItem.iso;
+                
+                return (
+                  <div key={tagIndex} className="min-w-[80px] mx-[6px] flex justify-center">
+                    {isDeparture && (
+                      <span className="bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-md">
+                        Departure
+                      </span>
+                    )}
+                    {isReturn && (
+                      <span className="bg-green-600 text-white text-xs font-medium px-2 py-1 rounded-md">
+                        Return
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
+          <div 
+            ref={dateCardsContainerRef}
+            className="flex overflow-x-auto space-x-3 pb-2 no-scrollbar"
+          >
+            {visibleDates.map((dateItem, index) => {
             const isoDeparture = toISODate(departureDate);
             const isoSelected = selectedDate;
             const isoReturn = toISODate(returnDate);
@@ -252,12 +382,18 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
               }
               return false;
             })();
+            
+            // Check if date is selectable for return (only if in return selection mode)
+            const isSelectableForReturn = selectionMode === 'return' && isoDeparture && dateItem.iso > isoDeparture;
+            
             if (isDeparture) {
               buttonClass = 'bg-blue-600 text-white shadow-sm';
             } else if (isReturn) {
               buttonClass = 'bg-green-600 text-white shadow-sm';
             } else if (isBetween) {
               buttonClass = 'bg-gray-300 text-gray-700';
+            } else if (isSelectableForReturn) {
+              buttonClass = 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200';
             } else if (dateItem.isToday) {
               buttonClass = 'bg-blue-100 text-blue-700 border border-blue-200';
             } else {
@@ -286,6 +422,7 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
               </button>
             );
           })}
+          </div>
         </div>
 
         {/* Right Arrow */}
