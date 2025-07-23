@@ -776,13 +776,13 @@ const SearchResultsPage = () => {
         {/* Date Selector - UPDATED TO USE NEW APPROACH */}
         <DateSelector 
           initialDate={formData.date || travelDate}
+          departureDate={formData.date}
+          returnDate={formData.returnDate}
           onDateChange={(dateString, dateObj) => {
             console.log('📅 DateSelector change:', dateString);
-            
             // Update states immediately
             setTravelDate(dateString);
             setFormData(prev => ({ ...prev, date: dateString }));
-            
             // Trigger immediate search
             if ((formData.from || fromLocation) && (formData.to || toLocation)) {
               const searchParams = {

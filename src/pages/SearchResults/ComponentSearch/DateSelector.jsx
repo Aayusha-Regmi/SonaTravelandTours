@@ -1,19 +1,63 @@
 import React, { useState, useEffect } from 'react';
 
-const DateSelector = ({ onDateChange, initialDate }) => {
+const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) => {
   const today = new Date();  
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-  
+
   // Create a ref for the date cards container
   const dateCardsContainerRef = React.useRef(null);
-  
+
+  // Always use ISO date string for internal logic
+  // Parse date as local date and return YYYY-MM-DD
+  const toISODate = (date) => {
+    if (!date) return null;
+    if (typeof date === 'string') {
+      // Try ISO first (YYYY-MM-DD)
+      const ymd = /^\d{4}-\d{2}-\d{2}$/;
+      if (ymd.test(date)) {
+        const [year, month, day] = date.split('-');
+        return `${year}-${month}-${day}`;
+      }
+      // Try "25 Jul 2025" format
+      const dmy = /^\d{1,2} [A-Za-z]{3} \d{4}$/;
+      if (dmy.test(date)) {
+        const parts = date.split(' ');
+        // Parse as local date
+        const localDate = new Date(Number(parts[2]),
+          ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].indexOf(parts[1]),
+          Number(parts[0]));
+        const year = localDate.getFullYear();
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const day = String(localDate.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+      // Fallback: parse as local date
+      const parsed = new Date(date);
+      if (!isNaN(parsed)) {
+        const year = parsed.getFullYear();
+        const month = String(parsed.getMonth() + 1).padStart(2, '0');
+        const day = String(parsed.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+      return null;
+    }
+    if (date instanceof Date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    return null;
+  };
+
   // Current date for the demo - use June 6, 2025 as specified in context
   // If initialDate is provided, use it instead
   const currentDate = initialDate ? new Date(initialDate) : new Date('2025-06-06');
-  const [selectedDate, setSelectedDate] = useState(formatMonthDateOnly(currentDate));
+  // Use departureDate as selected if provided, else fallback to initialDate
+  const [selectedDate, setSelectedDate] = useState(toISODate(departureDate || currentDate));
   const [visibleDates, setVisibleDates] = useState([]);
   const [currentStartDate, setCurrentStartDate] = useState(new Date(yesterday));
   const [isSearching, setIsSearching] = useState(false);
@@ -23,12 +67,12 @@ const DateSelector = ({ onDateChange, initialDate }) => {
     const options = { weekday: 'short', month: 'short', day: 'numeric' };
     return date.toLocaleDateString('en-US', options);
   }
-  
+
   // Format day only
   function formatDayOnly(date) {
     return date.toLocaleDateString('en-US', { weekday: 'short' });
   }
-  
+
   // Format month and date only
   function formatMonthDateOnly(date) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -36,63 +80,51 @@ const DateSelector = ({ onDateChange, initialDate }) => {
   
   // Check if date is today
   function isToday(date) {
-    return date.toDateString() === today.toDateString();
-  }  // Update selectedDate when initialDate changes and adjust the current view
+    return toISODate(date) === toISODate(today);
+  }
+
   useEffect(() => {
-    if (initialDate) {
-      const date = new Date(initialDate);
-      const formattedDate = formatMonthDateOnly(date);
-      setSelectedDate(formattedDate);
-      
-      // Adjust the current view to make the selected date visible
-      // We need to shift the currentStartDate to include this date
+    // Use departureDate as selected if provided, else fallback to initialDate
+    const isoDate = toISODate(departureDate || initialDate);
+    setSelectedDate(isoDate);
+
+    // Adjust the current view to make the selected date visible
+    const date = isoDate ? new Date(isoDate) : null;
+    if (date) {
       const targetDate = new Date(date);
-      
-      // Check if the date is within the currently visible range
       const endOfCurrentRange = new Date(currentStartDate);
       endOfCurrentRange.setDate(currentStartDate.getDate() + 10);
-      
-      // If the selected date is outside the current view range, adjust the view
       if (targetDate < currentStartDate || targetDate > endOfCurrentRange) {
-        // Set the start date 3 days before the target to center it in view
         const newStartDate = new Date(targetDate);
         newStartDate.setDate(targetDate.getDate() - 3);
-        
-        // But don't go earlier than today
         const todayDate = new Date();
         if (newStartDate < todayDate) {
           newStartDate.setDate(todayDate.getDate());
         }
-        
         setCurrentStartDate(newStartDate);
       }
     }
-  }, [initialDate]);
+  }, [departureDate, initialDate]);
   // Generate dates for display
   useEffect(() => {
     const generateDates = () => {
       const dates = [];
       const startDate = new Date(currentStartDate);
-      
       for (let i = 0; i < 11; i++) {
         const newDate = new Date(startDate);
         newDate.setDate(startDate.getDate() + i);
-        
-        // Only disable exactly yesterday's date, not all past dates
-        const isYesterday = newDate.toDateString() === yesterday.toDateString();
-        
+        const isYesterday = toISODate(newDate) === toISODate(yesterday);
         dates.push({
           fullDate: newDate,
+          iso: toISODate(newDate),
           day: formatDayOnly(newDate),
           date: formatMonthDateOnly(newDate),
           isDisabled: isYesterday,
           isToday: isToday(newDate)
         });
       }
-      
       setVisibleDates(dates);
     };
-    
     generateDates();
   }, [currentStartDate]);
   
@@ -145,22 +177,18 @@ const DateSelector = ({ onDateChange, initialDate }) => {
   };  // Handle date selection
   const handleDateSelect = (dateItem) => {
     if (!dateItem.isDisabled) {
-      // Set the selected date immediately
-      setSelectedDate(dateItem.date);
+      setSelectedDate(dateItem.iso);
       setIsSearching(true);
-      
-      // Scroll to the selected date immediately for better feedback
       if (dateCardsContainerRef.current) {
-        const index = visibleDates.findIndex(d => d.date === dateItem.date);
+        const index = visibleDates.findIndex(d => d.iso === dateItem.iso);
         if (index !== -1) {
-          const scrollAmount = index * 83; // Approximate width of each date card + margin
+          const scrollAmount = index * 83;
           dateCardsContainerRef.current.scrollTo({
             left: scrollAmount,
             behavior: 'smooth'
           });
         }
       }
-      
       // Format date in a format the parent component can use
       const formattedDate = dateItem.fullDate.toLocaleDateString('en-US', {
         weekday: 'short',
@@ -168,12 +196,8 @@ const DateSelector = ({ onDateChange, initialDate }) => {
         day: 'numeric',
         year: 'numeric'
       });
-      
-      // Notify parent component about date change
       if (onDateChange) {
         onDateChange(formattedDate, dateItem.fullDate);
-        
-        // Reset searching state after a bit
         setTimeout(() => {
           setIsSearching(false);
         }, 1200);
@@ -202,33 +226,66 @@ const DateSelector = ({ onDateChange, initialDate }) => {
           ref={dateCardsContainerRef}
           className="flex overflow-x-auto space-x-3 pb-2 no-scrollbar"
         >
-          {visibleDates.map((dateItem, index) => (
-            <button
-              key={index}
-              onClick={() => handleDateSelect(dateItem)}
-              disabled={dateItem.isDisabled}
-              id={selectedDate === dateItem.date ? 'selected-date-card' : ''}
-              className={`
-                rounded-lg p-2 min-w-[80px] h-[58px] flex flex-col items-center justify-center
-                transition-all font-medium
-                ${dateItem.isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                ${selectedDate === dateItem.date 
-                  ? 'bg-blue-600 text-white shadow-sm' 
-                  : dateItem.isToday
-                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }
-              `}
-              aria-pressed={selectedDate === dateItem.date}
-            >
-              <span className="text-sm font-semibold">
-                {dateItem.day}
-              </span>
-              <span className="text-sm mt-1">
-                {dateItem.date}
-              </span>
-            </button>
-          ))}
+          {visibleDates.map((dateItem, index) => {
+            const isoDeparture = toISODate(departureDate);
+            const isoSelected = selectedDate;
+            const isoReturn = toISODate(returnDate);
+            const isDeparture = (isoDeparture ? isoDeparture : isoSelected) === dateItem.iso;
+            const isReturn = isoReturn === dateItem.iso;
+            // Debug log
+            if (index === 0) {
+              console.log('DEBUG DateSelector:', {
+                isoDeparture,
+                isoSelected,
+                isoReturn,
+                dateItemIso: dateItem.iso,
+                departureDate,
+                returnDate,
+                selectedDate
+              });
+            }
+            // Highlight between departure and return
+            let buttonClass = '';
+            const isBetween = (() => {
+              if (isoDeparture && isoReturn && isoDeparture !== isoReturn) {
+                return dateItem.iso > isoDeparture && dateItem.iso < isoReturn;
+              }
+              return false;
+            })();
+            if (isDeparture) {
+              buttonClass = 'bg-blue-600 text-white shadow-sm';
+            } else if (isReturn) {
+              buttonClass = 'bg-green-600 text-white shadow-sm';
+            } else if (isBetween) {
+              buttonClass = 'bg-gray-300 text-gray-700';
+            } else if (dateItem.isToday) {
+              buttonClass = 'bg-blue-100 text-blue-700 border border-blue-200';
+            } else {
+              buttonClass = 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+            }
+            return (
+              <button
+                key={index}
+                onClick={() => handleDateSelect(dateItem)}
+                disabled={dateItem.isDisabled}
+                id={isDeparture ? 'selected-date-card' : ''}
+                className={`
+                  rounded-lg p-2 min-w-[80px] h-[58px] flex flex-col items-center justify-center
+                  transition-all font-medium
+                  ${dateItem.isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                  ${buttonClass}
+                `}
+                aria-pressed={isDeparture}
+              >
+                <span className="text-sm font-semibold">
+                  {dateItem.day}
+                </span>
+                <span className="text-sm mt-1">
+                  {dateItem.date}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Right Arrow */}
