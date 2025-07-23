@@ -97,18 +97,88 @@ const TrendingOffers = () => {
 		fetchOffers();
 	}, []);
 
-	const handleCopy = (code, idx) => {
-		navigator.clipboard.writeText(code);
-		setCopiedIdx(idx);
-		setTimeout(() => setCopiedIdx(null), 1200);
-		toast.success(`Copied "${code}" to clipboard!`, {
-			position: "top-right",
-			autoClose: 2000,
-			hideProgressBar: false,
-			closeOnClick: true,
-			pauseOnHover: true,
-			draggable: true,
-		});
+	const handleCopy = async (code, idx) => {
+		try {
+			// Check if the modern Clipboard API is available
+			if (navigator.clipboard && window.isSecureContext) {
+				await navigator.clipboard.writeText(code);
+			} else {
+				// Fallback method for older browsers or non-secure contexts
+				const textArea = document.createElement('textarea');
+				textArea.value = code;
+				textArea.style.position = 'fixed';
+				textArea.style.left = '-999999px';
+				textArea.style.top = '-999999px';
+				document.body.appendChild(textArea);
+				textArea.focus();
+				textArea.select();
+				
+				// For mobile devices, ensure the text is selected
+				if (textArea.setSelectionRange) {
+					textArea.setSelectionRange(0, code.length);
+				}
+				
+				document.execCommand('copy');
+				document.body.removeChild(textArea);
+			}
+			
+			setCopiedIdx(idx);
+			setTimeout(() => setCopiedIdx(null), 1200);
+			
+			toast.success(`Copied "${code}" to clipboard!`, {
+				position: "top-right",
+				autoClose: 2000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+			});
+		} catch (error) {
+			console.error('Failed to copy text: ', error);
+			
+			// Additional fallback - create a temporary input element
+			try {
+				const input = document.createElement('input');
+				input.type = 'text';
+				input.value = code;
+				input.style.position = 'absolute';
+				input.style.left = '-9999px';
+				input.style.opacity = '0';
+				document.body.appendChild(input);
+				
+				input.focus();
+				input.select();
+				input.setSelectionRange(0, code.length);
+				
+				const successful = document.execCommand('copy');
+				document.body.removeChild(input);
+				
+				if (successful) {
+					setCopiedIdx(idx);
+					setTimeout(() => setCopiedIdx(null), 1200);
+					toast.success(`Copied "${code}" to clipboard!`, {
+						position: "top-right",
+						autoClose: 2000,
+						hideProgressBar: false,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+					});
+				} else {
+					throw new Error('Copy command failed');
+				}
+			} catch (fallbackError) {
+				console.error('Fallback copy also failed: ', fallbackError);
+				toast.error('Unable to copy. Please copy manually: ' + code, {
+					position: "top-right",
+					autoClose: 4000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+				});
+			}
+		}
 	};
 
 	return (
@@ -207,7 +277,7 @@ const TrendingOffers = () => {
 
 											<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
 												<div className="flex items-center bg-gray-100 rounded-xl sm:rounded-2xl px-3 sm:px-6 py-2 sm:py-4 border-2 border-dashed border-gray-300 flex-1 sm:flex-none">
-													<span className="text-lg sm:text-xl md:text-2xl font-black text-gray-800 tracking-wider break-all">
+													<span className="text-lg sm:text-xl md:text-2xl font-black text-gray-800 tracking-wider break-all select-all">
 														{firstBookingOffer.couponCode}
 													</span>
 													{copiedIdx === -1 && (
@@ -218,7 +288,8 @@ const TrendingOffers = () => {
 												</div>
 												<button
 													onClick={() => handleCopy(firstBookingOffer.couponCode, -1)}
-													className="bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-xl sm:rounded-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
+													className="bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white px-4 sm:px-6 md:px-8 py-3 sm:py-3 md:py-4 rounded-xl sm:rounded-2xl font-bold shadow-lg hover:shadow-xl transform active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base touch-manipulation"
+													type="button"
 												>
 													{copiedIdx === -1 ? (
 														<>
@@ -343,7 +414,7 @@ const TrendingOffers = () => {
 														<div className="flex-1 min-w-0">
 															<span className="text-xs text-gray-500 font-medium">Promo Code</span>
 															<div className="flex items-center gap-1 mt-0.5 sm:mt-1">
-																<span className="text-xs sm:text-sm font-black text-gray-900 tracking-wider truncate">
+																<span className="text-xs sm:text-sm font-black text-gray-900 tracking-wider truncate select-all">
 																	{displayOffer.promo}
 																</span>
 																{copiedIdx === idx && (
@@ -355,11 +426,12 @@ const TrendingOffers = () => {
 														</div>
 														<button
 															onClick={() => handleCopy(displayOffer.promo, idx)}
-															className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg font-bold transition-all duration-200 transform hover:scale-105 text-xs flex-shrink-0 ${
+															className={`px-2 sm:px-3 py-2 sm:py-1.5 rounded-md sm:rounded-lg font-bold transition-all duration-200 transform active:scale-95 text-xs flex-shrink-0 touch-manipulation min-h-[32px] sm:min-h-[28px] ${
 																copiedIdx === idx 
 																	? 'bg-green-500 text-white shadow-lg' 
 																	: 'bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg'
 															}`}
+															type="button"
 														>
 															{copiedIdx === idx ? 'Copied!' : 'Copy'}
 														</button>
