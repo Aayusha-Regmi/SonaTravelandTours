@@ -176,35 +176,62 @@ const Header = () => {
         <div className="absolute -bottom-10 left-1/3 w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-full bg-[#ff8f1f]/10 blur-2xl animate-pulse" style={{ animationDelay: '0.7s' }}></div>
         
         <div className="flex items-center relative z-10">
-          <Link to="/">
+          <Link to="/" className="flex items-center gap-3">
             <img 
               src="/images/img_logo_with_name_png_1.png" 
               alt="Sona Travel & Tours Logo" 
               className="h-8 sm:h-9 lg:h-10 w-auto"
             />
+            
+            {/* Static Decorative Ava Section with Lines */}
+            <div className="flex items-center gap-2">
+              {/* Left decorative line */}
+              <div className="flex items-center gap-1">
+                <div className="w-8 h-0.5 bg-gradient-to-r from-transparent via-[#ff8f1f] to-[#0a639d] rounded-full opacity-60"></div>
+                <div className="w-1 h-1 bg-[#ff8f1f] rounded-full animate-pulse"></div>
+              </div>
+              
+              {/* Static Ava Image */}
+              <div className="relative">
+                <img 
+                  src="/images/ava.png" 
+                  alt="Ava AI Assistant" 
+                  className="h-6 sm:h-7 lg:h-8 w-auto drop-shadow-lg"
+                />
+                {/* Active indicator */}
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-ping opacity-75"></div>
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full"></div>
+              </div>
+              
+              {/* Right decorative line */}
+              <div className="flex items-center gap-1">
+                <div className="w-1 h-1 bg-[#0a639d] rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                <div className="w-8 h-0.5 bg-gradient-to-r from-[#0a639d] via-[#ff8f1f] to-transparent rounded-full opacity-60"></div>
+              </div>
+            </div>
           </Link>
         </div>        {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center space-x-5 xl:space-x-7 relative z-10">
-          <Link to="/" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
+          <Link to="/" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-all duration-300 cursor-pointer hover:scale-105 hover:font-semibold">
             Home
           </Link>
-          <Link to="/bus-routes" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
+          <Link to="/bus-routes" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-all duration-300 cursor-pointer hover:scale-105 hover:font-semibold">
             Bus Routes
           </Link>
-          <Link to="/trending-offers" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
+          <Link to="/trending-offers" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-all duration-300 cursor-pointer hover:scale-105 hover:font-semibold">
             Offers
           </Link>
-          <Link to="/live-track" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
+          <Link to="/live-track" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-all duration-300 cursor-pointer hover:scale-105 hover:font-semibold">
             Live Track
           </Link>
-          <Link to="/feed" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
+          <Link to="/feed" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-all duration-300 cursor-pointer hover:scale-105 hover:font-semibold">
             Feeds
           </Link>
-          <Link to="/faqs" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
+          <Link to="/faqs" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-all duration-300 cursor-pointer hover:scale-105 hover:font-semibold">
             FAQs
           </Link>
 
-          <Link to="/contact" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-colors">
+          <Link to="/contact" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-all duration-300 cursor-pointer hover:scale-105 hover:font-semibold">
             Contact Us
           </Link>
 
@@ -426,42 +453,42 @@ const Header = () => {
           </div>          <nav className="flex flex-col space-y-4 sm:space-y-5">
             <Link 
               to="/" 
-              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors py-2 border-b border-gray-100 last:border-b-0"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-all duration-300 py-2 border-b border-gray-100 last:border-b-0 cursor-pointer hover:scale-105 hover:font-semibold hover:pl-2"
               onClick={() => setIsMenuOpen(false)}
             >
               Home
             </Link>
             <Link 
               to="/bus-routes" 
-              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors py-2 border-b border-gray-100 last:border-b-0"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-all duration-300 py-2 border-b border-gray-100 last:border-b-0 cursor-pointer hover:scale-105 hover:font-semibold hover:pl-2"
               onClick={() => setIsMenuOpen(false)}
             >
               Bus Routes
             </Link>
             <Link 
               to="/trending-offers" 
-              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors py-2 border-b border-gray-100 last:border-b-0"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-all duration-300 py-2 border-b border-gray-100 last:border-b-0 cursor-pointer hover:scale-105 hover:font-semibold hover:pl-2"
               onClick={() => setIsMenuOpen(false)}
             >
               Exclusive Offers
             </Link>
             <Link 
               to="/live-track" 
-              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors py-2 border-b border-gray-100 last:border-b-0"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-all duration-300 py-2 border-b border-gray-100 last:border-b-0 cursor-pointer hover:scale-105 hover:font-semibold hover:pl-2"
               onClick={() => setIsMenuOpen(false)}
             >
               Live Track
             </Link>
             <Link 
               to="/feed" 
-              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors py-2 border-b border-gray-100 last:border-b-0"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-all duration-300 py-2 border-b border-gray-100 last:border-b-0 cursor-pointer hover:scale-105 hover:font-semibold hover:pl-2"
               onClick={() => setIsMenuOpen(false)}
             >
               Feeds
             </Link>
             <Link 
               to="/faqs" 
-              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors py-2 border-b border-gray-100 last:border-b-0"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-all duration-300 py-2 border-b border-gray-100 last:border-b-0 cursor-pointer hover:scale-105 hover:font-semibold hover:pl-2"
               onClick={() => setIsMenuOpen(false)}
             >
               FAQs
@@ -469,7 +496,7 @@ const Header = () => {
             
             <Link 
               to="/contact-us" 
-              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-colors py-2 border-b border-gray-100 last:border-b-0"
+              className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-all duration-300 py-2 border-b border-gray-100 last:border-b-0 cursor-pointer hover:scale-105 hover:font-semibold hover:pl-2"
               onClick={() => setIsMenuOpen(false)}
             >
               Contact Us

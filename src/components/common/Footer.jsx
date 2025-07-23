@@ -451,25 +451,9 @@ const Footer = () => {
         
         /* Redesigned Certifications & Awards Styles */
         .certifications-awards-redesigned {
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(240, 245, 251, 0.3));
-          backdrop-filter: blur(10px);
-          border-top: 1px solid rgba(255, 255, 255, 0.2);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-          padding: 60px 0;
-          margin-top: 40px;
+          padding: 24px 0;
+          margin-top: 16px;
           position: relative;
-          overflow: hidden;
-        }
-        
-        .certifications-awards-redesigned::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(135deg, rgba(10, 99, 157, 0.02), rgba(255, 143, 31, 0.02));
-          z-index: 0;
         }
         
         .certifications-awards-redesigned .container {
@@ -780,75 +764,75 @@ const Footer = () => {
             <div className="certifications-awards-redesigned">
               <div className="container mx-auto px-4 max-w-6xl">
                 {/* Section Header */}
-                <div className="text-center mb-8">
-                  <h4 className="text-2xl font-bold bg-gradient-to-r from-[#0a639d] via-[#ff8f1f] to-[#0a639d] bg-clip-text text-transparent mb-3">
+                <div className="text-center mb-4">
+                  <h4 className="text-xl font-bold bg-gradient-to-r from-[#0a639d] via-[#ff8f1f] to-[#0a639d] bg-clip-text text-transparent mb-1">
                     Certifications & Awards
                   </h4>
                 </div>
                 {/* Trust Indicators with Award Images */}
-                <div className="mt-8 text-center">
-                  <div className="inline-flex items-center gap-4 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-5 shadow-lg border border-gray-200 flex-wrap justify-center">
+                <div className="text-center">
+                  <div className="inline-flex items-center gap-4 bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-3 shadow-lg border border-gray-200 flex-wrap justify-center">
                     
                     {/* ISO Certification */}
                     <div className="flex items-center gap-3 group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl flex items-center justify-center border border-green-200 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-12 h-12 lg:w-16 lg:h-16 xl:w-18 xl:h-18 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl flex items-center justify-center border border-green-200 group-hover:scale-110 transition-transform duration-300">
                         <img 
                           src="/images/iso-1-1-702x351-removebg-preview.png" 
                           alt="ISO Certified" 
-                          className="h-8 w-auto object-contain"
+                          className="h-8 lg:h-10 xl:h-12 w-auto object-contain"
                         />
                       </div>
                       
                     </div>
                     
-                    <div className="w-px h-12 bg-gray-300 hidden sm:block"></div>
+                    <div className="w-px h-12 lg:h-16 xl:h-18 bg-gray-300 hidden sm:block"></div>
                     
                     {/* Award 1 */}
                     <div className="flex items-center gap-3 group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl flex items-center justify-center border border-blue-200 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-12 h-12 lg:w-16 lg:h-16 xl:w-18 xl:h-18 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl flex items-center justify-center border border-blue-200 group-hover:scale-110 transition-transform duration-300">
                         <img 
                           src="/images/Award1.png" 
                           alt="Excellence Award" 
-                          className="h-8 w-auto object-contain"
+                          className="h-8 lg:h-10 xl:h-12 w-auto object-contain"
                         />
                       </div>
                     </div>
                     
-                    <div className="w-px h-12 bg-gray-300 hidden md:block"></div>
+                    <div className="w-px h-12 lg:h-16 xl:h-18 bg-gray-300 hidden md:block"></div>
                     
                     {/* Award 2 */}
                     <div className="flex items-center gap-3 group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl flex items-center justify-center border border-orange-200 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-12 h-12 lg:w-16 lg:h-16 xl:w-18 xl:h-18 bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl flex items-center justify-center border border-orange-200 group-hover:scale-110 transition-transform duration-300">
                         <img 
                           src="/images/Award2.png" 
                           alt="Quality Service Award" 
-                          className="h-8 w-auto object-contain"
+                          className="h-8 lg:h-10 xl:h-12 w-auto object-contain"
                         />
                       </div>
                     </div>
                     
-                    <div className="w-px h-12 bg-gray-300 hidden lg:block"></div>
+                    <div className="w-px h-12 lg:h-16 xl:h-18 bg-gray-300 hidden lg:block"></div>
                     
                     {/* Award 3 */}
                     <div className="flex items-center gap-3 group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl flex items-center justify-center border border-purple-200 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-12 h-12 lg:w-16 lg:h-16 xl:w-18 xl:h-18 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl flex items-center justify-center border border-purple-200 group-hover:scale-110 transition-transform duration-300">
                         <img 
                           src="/images/Award3.png" 
                           alt="Customer Choice Award" 
-                          className="h-8 w-auto object-contain"
+                          className="h-8 lg:h-10 xl:h-12 w-auto object-contain"
                         />
                       </div>
                     </div>
                     
-                    <div className="w-px h-12 bg-gray-300 hidden xl:block"></div>
+                    <div className="w-px h-12 lg:h-16 xl:h-18 bg-gray-300 hidden xl:block"></div>
                     
                     {/* Award 4 */}
                     <div className="flex items-center gap-3 group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl flex items-center justify-center border border-emerald-200 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-12 h-12 lg:w-16 lg:h-16 xl:w-18 xl:h-18 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl flex items-center justify-center border border-emerald-200 group-hover:scale-110 transition-transform duration-300">
                         <img 
                           src="/images/Award4.png" 
                           alt="Innovation Award" 
-                          className="h-8 w-auto object-contain"
+                          className="h-8 lg:h-10 xl:h-12 w-auto object-contain"
                         />
                       </div>
                     </div>

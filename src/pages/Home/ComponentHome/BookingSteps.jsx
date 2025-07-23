@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const BookingSteps = () => {
   return (
@@ -286,9 +287,12 @@ const BookingSteps = () => {
               Join thousands of happy travelers who choose our comfortable bus service
             </p>
             
-            <button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1">
+            <Link 
+              to="/search-results" 
+              className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 text-center"
+            >
               Book Your Ticket Now
-            </button>
+            </Link>
           </div>
         </div>
       </div>
