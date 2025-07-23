@@ -6,7 +6,7 @@ import L from 'leaflet';
 import loconavService from '../../services/loconavService';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
-import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 
 // Fix for default markers in react-leaflet
@@ -26,7 +26,7 @@ const busIcon = new L.Icon({
 });
 
 const LiveTrack = () => {
-  const { handleSocialClick } = useSocialActions();
+  const { isVisible, socialActions } = useSocialActions();
   const [vehicleData, setVehicleData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -647,7 +647,10 @@ const LiveTrack = () => {
       
       {/* Existing Footer Component */}
       <Footer />
-      <FloatingActionBar handleSocialClick={handleSocialClick} />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };

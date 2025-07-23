@@ -3,11 +3,11 @@ import { toast } from 'react-toastify';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import API_URLS from '../../config/api';
-import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 
 const TrendingOffers = () => {
-	const { handleSocialClick } = useSocialActions();
+	const { isVisible, socialActions } = useSocialActions();
 	const [offers, setOffers] = useState([]);
 	const [firstBookingOffer, setFirstBookingOffer] = useState(null);
 	const [isLoadingOffers, setIsLoadingOffers] = useState(true);
@@ -114,248 +114,290 @@ const TrendingOffers = () => {
 	return (
 		<>
 			<Header />
-			{/* Hero Section with Animated Pastel Blobs (same as About Us) */}
-			<section className="relative pt-32 pb-4 overflow-hidden min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/40">
-				{/* Animated Background Elements */}
+			{/* Hero Section with Modern Gradient */}
+			<section className="relative pt-20 sm:pt-24 md:pt-32 pb-10 sm:pb-16 md:pb-20 overflow-hidden min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/50 to-purple-50/30">
+				{/* Animated Background Elements - Responsive */}
 				<div className="absolute inset-0">
-					<div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-blue-100/30 to-indigo-200/30 rounded-full blur-3xl animate-pulse"></div>
-					<div className="absolute top-1/3 right-20 w-64 h-64 bg-gradient-to-r from-orange-100/40 to-amber-200/40 rounded-full blur-3xl animate-bounce" style={{animationDelay: '1s'}}></div>
-					<div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-r from-emerald-100/25 to-teal-200/25 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-					<div className="absolute bottom-20 right-1/3 w-56 h-56 bg-gradient-to-r from-purple-100/30 to-pink-200/30 rounded-full blur-3xl animate-bounce" style={{animationDelay: '3s'}}></div>
+					<div className="absolute top-10 sm:top-20 left-4 sm:left-20 w-48 h-48 sm:w-96 sm:h-96 bg-gradient-to-r from-blue-200/20 to-indigo-300/20 rounded-full blur-3xl animate-pulse"></div>
+					<div className="absolute top-1/4 sm:top-1/3 right-4 sm:right-20 w-40 h-40 sm:w-80 sm:h-80 bg-gradient-to-r from-purple-200/30 to-pink-300/30 rounded-full blur-3xl animate-bounce" style={{animationDelay: '1s'}}></div>
+					<div className="absolute bottom-1/3 sm:bottom-1/4 left-1/6 sm:left-1/4 w-32 h-32 sm:w-64 sm:h-64 bg-gradient-to-r from-emerald-200/25 to-teal-300/25 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+					<div className="absolute bottom-10 sm:bottom-20 right-1/4 sm:right-1/3 w-36 h-36 sm:w-72 sm:h-72 bg-gradient-to-r from-orange-200/20 to-amber-300/20 rounded-full blur-3xl animate-bounce" style={{animationDelay: '3s'}}></div>
 				</div>
-				<div className="relative z-10 p-4 md:p-8 max-w-7xl mx-auto">
-					{/* Section Header */}
-					<div className="text-center mb-14 relative">
-						<h2 className="text-5xl font-black bg-gradient-to-r from-gray-800 via-blue-600 to-orange-600 bg-clip-text text-transparent mb-2 drop-shadow-lg tracking-tight font-display">
-							Trending Offers for You
-						</h2>
-						<p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto font-medium flex items-center justify-center gap-2 mt-2">
-							Explore the Latest Discounts and Special Deals Tailored Just for You. Don&apos;t Miss Out on Amazing Savings for Your Next Journey!
+
+				<div className="relative z-10 container mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
+					{/* Section Header - Responsive */}
+					<div className="text-center mb-10 sm:mb-16 md:mb-20 relative">
+						<div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 px-4 sm:px-6 py-2 sm:py-3 rounded-full mb-6 sm:mb-8 border border-blue-200/50 backdrop-blur-sm">
+							<span className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"></span>
+							<span className="text-blue-600 font-semibold text-xs sm:text-sm uppercase tracking-wide">Special Offers</span>
+						</div>
+						<h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black bg-gradient-to-r from-gray-900 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 sm:mb-6 tracking-tight leading-tight px-2">
+							Trending Offers
+						</h1>
+						<p className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto font-medium px-4">
+							Discover exclusive deals and special discounts crafted just for you. 
+							<span className="block mt-2 text-sm sm:text-base md:text-lg text-gray-500">Save more on your next adventure with our limited-time offers!</span>
 						</p>
 					</div>
-					{/* 1st Time Booking Big Card */}
-					<div className="mb-12">
+
+					{/* First Booking Premium Card - Responsive */}
+					<div className="mb-12 sm:mb-16 md:mb-20">
 						{isLoadingOffers ? (
-							// Loading skeleton for first booking card
-							<div className="relative flex flex-col md:flex-row items-center justify-between bg-gradient-to-br from-green-200 via-emerald-100 to-yellow-100 rounded-3xl shadow-2xl border-4 border-green-300/60 px-8 py-10 md:py-14 md:px-16 overflow-visible animate-pulse">
-								<div className="flex flex-col items-center md:items-start z-10">
-									<div className="mb-4 md:mb-6 flex items-center gap-3 relative">
-										<div className="w-16 h-16 bg-green-300 rounded-full"></div>
-										<div className="h-8 bg-green-300 rounded w-48"></div>
+							<div className="relative bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 rounded-2xl sm:rounded-3xl p-1 shadow-2xl animate-pulse">
+								<div className="bg-white/95 backdrop-blur-xl rounded-[15px] sm:rounded-[22px] p-4 sm:p-6 lg:p-8 xl:p-12">
+									<div className="flex flex-col lg:flex-row items-center justify-between">
+										<div className="flex-1 lg:pr-12 w-full">
+											<div className="h-6 sm:h-8 bg-gray-200 rounded-lg mb-3 sm:mb-4 w-32 sm:w-48"></div>
+											<div className="h-8 sm:h-12 bg-gray-200 rounded-lg mb-4 sm:mb-6 w-48 sm:w-72"></div>
+											<div className="h-4 sm:h-6 bg-gray-200 rounded mb-3 sm:mb-4 w-40 sm:w-56"></div>
+											<div className="h-10 sm:h-14 bg-gray-200 rounded-2xl w-48 sm:w-64"></div>
+										</div>
+										<div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 bg-gray-200 rounded-2xl mt-6 sm:mt-8 lg:mt-0"></div>
 									</div>
-									<div className="h-6 bg-green-300 rounded mb-2 w-32"></div>
-									<div className="h-5 bg-green-300 rounded mb-4 w-64"></div>
-									<div className="h-4 bg-green-300 rounded mb-4 w-40"></div>
-									<div className="h-12 bg-green-300 rounded-full w-48"></div>
-								</div>
-								<div className="hidden md:block ml-10 z-10">
-									<div className="w-40 h-40 bg-green-300 rounded-2xl"></div>
 								</div>
 							</div>
 						) : firstBookingOffer ? (
-							<div className="relative flex flex-col md:flex-row items-center justify-between bg-gradient-to-br from-green-200 via-emerald-100 to-yellow-100 rounded-3xl shadow-2xl border-4 border-green-300/60 px-8 py-10 md:py-14 md:px-16 overflow-visible animate-glow-card">
-								{/* Overlay EXCLUSIVE Ribbon - overlaying the card, not inside padding */}
-								<div className="absolute -top-7 left-1/2 -translate-x-1/2 z-40 rotate-[-8deg]">
-									<span className="inline-block px-8 py-2 bg-gradient-to-r from-green-400 via-yellow-300 to-emerald-400 text-white font-bold text-base rounded-2xl shadow-2xl ring-2 ring-green-200/60 tracking-widest drop-shadow-xl animate-pulse">
-										EXCLUSIVE
-									</span>
-								</div>
-								{/* Animated Glow */}
-								<div className="absolute inset-0 rounded-3xl pointer-events-none z-0 animate-glow bg-gradient-to-br from-green-300/30 via-yellow-200/20 to-emerald-200/20 blur-2xl opacity-70"></div>
-								{/* Badge and Illustration */}
-								<div className="flex flex-col items-center md:items-start z-10">
-									<div className="mb-4 md:mb-6 flex items-center gap-3 relative">
-										<span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-green-400 via-yellow-400 to-emerald-400 text-white text-4xl font-extrabold shadow-2xl border-4 border-white/90 ring-4 ring-green-200/40 animate-bounce drop-shadow-xl z-10">
-											🆕
-										</span>
-										<span className="text-2xl md:text-3xl font-bold text-green-700 drop-shadow-lg tracking-tight z-10">1st Booking Discount</span>
-									</div>
-									<div className='flex gap-4'>
-									<div className="text-lg md:text-xl font-semibold text-green-900 mb-2">
-										{firstBookingOffer.discountAmount > 0 ? ` Get Rs. ${firstBookingOffer.discountAmount} OFF on Your First Ride.` : 
-										 firstBookingOffer.discountUpperLimit > 0 ? `Up to Rs. ${firstBookingOffer.discountUpperLimit} OFF` : 'Special Discount'}  
-										 
-									</div>
-									
-									<div className="text-sm text-green-700/80 mt-1">
-										Valid till: {new Date(firstBookingOffer.couponExpDate).toLocaleDateString('en-US', { 
-											year: 'numeric', 
-											month: 'short', 
-											day: 'numeric' 
-										})}
-									</div>
-									</div>
-									<div className="flex items-center gap-3 mt-2">
-										<span className={`relative px-6 py-3 rounded-full bg-white/80 backdrop-blur-xl border-2 border-green-300 font-extrabold tracking-wider text-xl text-green-700 shadow-inner animate-pulse flex items-center ${copiedIdx === -1 ? 'text-green-600 border-green-400/80 bg-green-50/80' : ''}`}>
-											{firstBookingOffer.couponCode}
-											<span className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-green-200/60 to-transparent opacity-0 group-hover:opacity-80 animate-shimmer pointer-events-none" />
-											{copiedIdx === -1 && (
-												<span className="ml-2 text-green-600 animate-bounce">
-													<svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-												</span>
-											)}
-										</span>
-										<button
-											type="button"
-											className={`bg-gradient-to-r from-green-400 via-yellow-400 to-emerald-400 text-white rounded-full p-3 shadow-lg border-2 border-white/80 hover:scale-110 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400/60 ${copiedIdx === -1 ? 'bg-green-500 border-green-300' : ''}`}
-											onClick={() => handleCopy(firstBookingOffer.couponCode, -1)}
-											aria-label={`Copy promo code ${firstBookingOffer.couponCode}`}
-										>
-											{copiedIdx === -1 ? (
-												<svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-											) : (
-												<svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-											)}
-										</button>
-									</div>
-									<div className="mt-4 text-green-700/80 text-base md:text-lg flex items-center gap-2">
-										<span className="text-2xl">🎁</span> 
-										<span>{firstBookingOffer.description || 'Use this code on your very first booking and enjoy a special welcome from Sona Travel!'}</span>
+							<div className="relative bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 rounded-2xl sm:rounded-3xl p-1 shadow-2xl hover:shadow-3xl transition-all duration-500 group">
+								{/* Exclusive Badge - Responsive */}
+								<div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2 z-20">
+									<div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-3 sm:px-6 py-1 sm:py-2 rounded-full font-bold text-xs sm:text-sm shadow-lg animate-bounce border-2 border-white/50">
+										🌟 EXCLUSIVE OFFER
 									</div>
 								</div>
-								{/* Illustration or Icon */}
-								<div className="hidden md:block ml-10 z-10">
-									<div className="rounded-2xl border-2 border-green-200 shadow-xl bg-white/70 p-2">
-										<img src="/images/img_group_green_600.svg" alt="First Booking" className="w-40 h-40 object-contain drop-shadow-2xl" />
+
+								<div className="bg-white/95 backdrop-blur-xl rounded-[15px] sm:rounded-[22px] p-4 sm:p-6 lg:p-8 xl:p-12 relative overflow-hidden">
+									{/* Background Pattern */}
+									<div className="absolute inset-0 opacity-5">
+										<div className="absolute top-0 right-0 w-32 h-32 sm:w-64 sm:h-64 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full transform translate-x-16 sm:translate-x-32 -translate-y-16 sm:-translate-y-32"></div>
+									</div>
+
+									<div className="flex flex-col lg:flex-row items-center justify-between relative z-10">
+										<div className="flex-1 lg:pr-8 xl:pr-12 w-full">
+											<div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+												<div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+													<span className="text-lg sm:text-xl md:text-2xl">🆕</span>
+												</div>
+												<div className="flex-1">
+													<h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 leading-tight">
+														First Booking Special
+													</h2>
+													<p className="text-sm sm:text-base lg:text-lg text-gray-600 font-medium">Welcome aboard discount</p>
+												</div>
+											</div>
+
+											<div className="mb-6 sm:mb-8">
+												<div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text mb-2">
+													{firstBookingOffer.discountAmount > 0 ? `Rs. ${firstBookingOffer.discountAmount} OFF` : 
+													 firstBookingOffer.discountUpperLimit > 0 ? `Up to Rs. ${firstBookingOffer.discountUpperLimit} OFF` : 'Special Discount'}
+												</div>
+												<p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+													{firstBookingOffer.description || 'Get an exclusive discount on your very first booking with Sona Travel. Start your journey with savings!'}
+												</p>
+												<div className="mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+													<svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+													</svg>
+													<span className="break-words">Valid until {new Date(firstBookingOffer.couponExpDate).toLocaleDateString('en-US', { 
+														year: 'numeric', 
+														month: 'long', 
+														day: 'numeric' 
+													})}</span>
+												</div>
+											</div>
+
+											<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+												<div className="flex items-center bg-gray-100 rounded-xl sm:rounded-2xl px-3 sm:px-6 py-2 sm:py-4 border-2 border-dashed border-gray-300 flex-1 sm:flex-none">
+													<span className="text-lg sm:text-xl md:text-2xl font-black text-gray-800 tracking-wider break-all">
+														{firstBookingOffer.couponCode}
+													</span>
+													{copiedIdx === -1 && (
+														<svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 ml-2 animate-bounce flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+														</svg>
+													)}
+												</div>
+												<button
+													onClick={() => handleCopy(firstBookingOffer.couponCode, -1)}
+													className="bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-xl sm:rounded-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
+												>
+													{copiedIdx === -1 ? (
+														<>
+															<svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+															</svg>
+															<span>Copied!</span>
+														</>
+													) : (
+														<>
+															<svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																<rect x="9" y="9" width="13" height="13" rx="2"/>
+																<path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+															</svg>
+															<span>Copy Code</span>
+														</>
+													)}
+												</button>
+											</div>
+										</div>
+
+										<div className="mt-6 sm:mt-8 lg:mt-0 lg:ml-6 xl:ml-8 flex-shrink-0">
+											<div className="relative">
+												<div className="w-40 h-40 sm:w-48 sm:h-48 lg:w-56 lg:h-56 bg-gradient-to-br from-emerald-100 to-blue-100 rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-2xl border border-white/50">
+													<img 
+														src="/images/img_group_green_600.svg" 
+														alt="First Booking Offer" 
+														className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 object-contain drop-shadow-xl" 
+													/>
+												</div>
+												<div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-xl shadow-lg animate-pulse">
+													🎁
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
-						) : (
-							// Hide first booking card if no SONAFIRST offer found
-							<div className="hidden"></div>
-						)}
+						) : null}
 					</div>
-					{/* Offers Grid */}
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 mt-12">
+
+					{/* Offers Grid - Responsive */}
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 						{isLoadingOffers ? (
-							// Loading skeleton
-							Array.from({ length: 9 }).map((_, index) => (
-								<div 
-									key={index}
-									className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-300/40 flex flex-col h-[420px] min-h-[420px] animate-pulse bg-gradient-to-br from-white/90 to-blue-50/80"
-								>
-									<div className="w-full h-40 bg-gray-200 rounded-t-2xl"></div>
-									<div className="flex flex-col flex-1 justify-between px-7 py-6 bg-white/80 rounded-b-2xl">
-										<div>
-											<div className="h-3 bg-gray-200 rounded mb-2 w-20"></div>
-											<div className="h-6 bg-gray-200 rounded mb-2 w-32"></div>
-											<div className="h-5 bg-gray-200 rounded mb-4 w-24"></div>
-										</div>
-										<div className="mt-auto">
-											<div className="h-12 bg-gray-200 rounded-xl"></div>
+							Array.from({ length: 6 }).map((_, index) => (
+								<div key={index} className="group animate-pulse">
+									<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+										<div className="h-32 sm:h-40 bg-gray-200"></div>
+										<div className="p-3 sm:p-5">
+											<div className="h-3 bg-gray-200 rounded mb-2 w-16"></div>
+											<div className="h-4 sm:h-5 bg-gray-200 rounded mb-2 w-24 sm:w-28"></div>
+											<div className="h-3 sm:h-4 bg-gray-200 rounded mb-3 w-16 sm:w-20"></div>
+											<div className="h-8 sm:h-12 bg-gray-200 rounded mb-4"></div>
+											<div className="h-8 sm:h-10 bg-gray-200 rounded-xl"></div>
 										</div>
 									</div>
 								</div>
 							))
 						) : offers.length > 0 ? (
 							offers.map((offer, idx) => {
-								// Map API data to display format
 								const displayOffer = {
 									title: offer.title,
 									subtitle: offer.discountAmount > 0 ? `Rs. ${offer.discountAmount} OFF` : `Up to Rs. ${offer.discountUpperLimit} OFF`,
 									promo: offer.couponCode,
 									image: offer.couponImageUrl || '/images/img_bestplacestovsitinkathmandunepal71683x1024_1_487x388.png',
-									badge: '🔥',
-									type: offer.couponType?.toLowerCase() || 'offer',
+									type: offer.couponType?.toLowerCase() || 'special offer',
 								};
 
-								let bgClass = '';
-								if (displayOffer.type.includes('festival')) {
-									bgClass = 'bg-gradient-to-br from-pink-100/90 via-yellow-100/80 to-orange-100/70';
-								} else if (displayOffer.type.includes('big') || displayOffer.type.includes('discount')) {
-									bgClass = 'bg-gradient-to-br from-orange-200/90 via-pink-100/80 to-yellow-100/70';
-								} else if (displayOffer.type.includes('year') || displayOffer.type.includes('annual')) {
-									bgClass = 'bg-gradient-to-br from-blue-100/90 via-emerald-100/80 to-white/80';
-								} else if (displayOffer.type.includes('season') || displayOffer.type.includes('monsoon')) {
-									bgClass = 'bg-gradient-to-br from-blue-200/90 via-green-100/80 to-emerald-100/70';
-								} else {
-									bgClass = 'bg-gradient-to-br from-white/90 to-blue-50/80';
-								}
-
 								return (
-									<div
-										key={offer.couponId}
-										className={`relative rounded-2xl overflow-hidden shadow-xl border border-gray-300/40 flex flex-col h-[420px] min-h-[420px] group ${bgClass}`}
-									>
-										{/* HOT! Badge */}
-										<span className="absolute top-4 left-4 z-20 px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-bold shadow-lg tracking-widest animate-pulse select-none">
-											HOT!
-										</span>
-										{/* Image */}
-										<div className="w-full h-40 overflow-hidden flex-shrink-0 rounded-t-2xl">
-											<img
-												src={displayOffer.image}
-												alt={displayOffer.title}
-												className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-												onError={(e) => {
-													e.target.src = '/images/img_bestplacestovsitinkathmandunepal71683x1024_1_487x388.png';
-												}}
-											/>
-										</div>
-										{/* Card Content */}
-										<div className="flex flex-col flex-1 justify-between px-7 py-6 bg-white/80 rounded-b-2xl">
-											<div>
-												<span className="block text-gray-400 text-xs font-semibold mb-1 uppercase tracking-widest">
-													{displayOffer.type || 'Special Offer'}
-												</span>
-												<span className="block text-gray-900 text-2xl font-extrabold mb-1 leading-tight truncate">
-													{displayOffer.title}
-												</span>
-												<span className="block text-orange-500 text-lg font-bold mb-4">
-													{displayOffer.subtitle}
-												</span>
-												{/* Description */}
-												<span className="block text-gray-600 text-sm mb-4 line-clamp-2">
-													{offer.description}
-												</span>
-												{/* Expiration Date */}
-												<span className="block text-gray-500 text-xs mb-2">
-													Valid till: {new Date(offer.couponExpDate).toLocaleDateString('en-US', { 
+									<div key={offer.couponId} className="group hover:scale-105 transition-all duration-300 h-full">
+										<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 relative h-full flex flex-col">
+											{/* Hot Badge - Responsive */}
+											<div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10 bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+												🔥 HOT
+											</div>
+
+											{/* Image - Responsive Fixed Height */}
+											<div className="h-32 sm:h-40 overflow-hidden relative flex-shrink-0">
+												<img
+													src={displayOffer.image}
+													alt={displayOffer.title}
+													className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+													onError={(e) => {
+														e.target.src = '/images/img_bestplacestovsitinkathmandunepal71683x1024_1_487x388.png';
+													}}
+												/>
+												<div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+											</div>
+
+											{/* Content - Responsive Compact */}
+											<div className="p-3 sm:p-4 flex flex-col flex-1">
+												<div className="mb-2 sm:mb-3">
+													<span className="inline-block bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-2">
+														{displayOffer.type}
+													</span>
+													<h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1 leading-tight line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+														{displayOffer.title}
+													</h3>
+													<div className="text-sm sm:text-base font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+														{displayOffer.subtitle}
+													</div>
+												</div>
+
+												<p className="text-gray-600 mb-2 sm:mb-3 line-clamp-2 leading-relaxed text-xs min-h-[2rem] sm:min-h-[2.5rem]">
+													{offer.description || 'Special discount offer for limited time. Book now and save more on your journey!'}
+												</p>
+
+												<div className="flex items-center text-xs text-gray-500 mb-2 sm:mb-3 gap-1">
+													<svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+													</svg>
+													<span className="truncate">Valid until {new Date(offer.couponExpDate).toLocaleDateString('en-US', { 
 														year: 'numeric', 
 														month: 'short', 
 														day: 'numeric' 
-													})}
-												</span>
-											</div>
-											<div className="mt-auto">
-												<div className="flex items-center justify-between bg-blue-50/80 rounded-xl px-4 py-3 mt-2 border border-blue-200/40">
-													<span className="text-gray-700 text-base font-semibold">
-														Promo Code:
-														<span className="ml-2 font-bold text-gray-900 tracking-wider">{displayOffer.promo}</span>
-													</span>
-													<button
-														type="button"
-														className={`ml-4 px-5 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-bold shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400/60 ${copiedIdx === idx ? 'bg-green-500' : ''}`}
-														onClick={() => handleCopy(displayOffer.promo, idx)}
-														aria-label={`Copy promo code ${displayOffer.promo}`}
-													>
-														{copiedIdx === idx ? 'Copied!' : 'Copy'}
-													</button>
+													})}</span>
+												</div>
+
+												{/* Copy Section - Responsive Compact */}
+												<div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-gray-200 mt-auto">
+													<div className="flex items-center justify-between gap-2">
+														<div className="flex-1 min-w-0">
+															<span className="text-xs text-gray-500 font-medium">Promo Code</span>
+															<div className="flex items-center gap-1 mt-0.5 sm:mt-1">
+																<span className="text-xs sm:text-sm font-black text-gray-900 tracking-wider truncate">
+																	{displayOffer.promo}
+																</span>
+																{copiedIdx === idx && (
+																	<svg className="w-3 h-3 text-green-500 animate-bounce flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																		<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+																	</svg>
+																)}
+															</div>
+														</div>
+														<button
+															onClick={() => handleCopy(displayOffer.promo, idx)}
+															className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg font-bold transition-all duration-200 transform hover:scale-105 text-xs flex-shrink-0 ${
+																copiedIdx === idx 
+																	? 'bg-green-500 text-white shadow-lg' 
+																	: 'bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg'
+															}`}
+														>
+															{copiedIdx === idx ? 'Copied!' : 'Copy'}
+														</button>
+													</div>
 												</div>
 											</div>
+
+											{/* Decorative Elements - Responsive */}
+											<div className="absolute top-2 sm:top-3 right-2 sm:right-3 text-sm sm:text-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300">
+												🎯
+											</div>
 										</div>
-										{/* Badge Icon */}
-										{displayOffer.badge && (
-											<span className="absolute top-4 right-4 text-3xl drop-shadow-lg select-none">
-												{displayOffer.badge}
-											</span>
-										)}
 									</div>
 								);
 							})
 						) : (
-							// No offers available
-							<div className="col-span-full text-center py-12">
-								<div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-300/40 shadow-xl">
-									<div className="text-gray-600 text-xl mb-2">No available Offers, Stay Tuned</div>
+							<div className="col-span-full flex flex-col items-center justify-center py-12 sm:py-16">
+								<div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 border border-gray-200 shadow-lg text-center max-w-sm mx-auto">
+									<div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+										<svg className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+										</svg>
+									</div>
+									<h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">No Offers Available</h3>
+									<p className="text-gray-600 leading-relaxed text-sm">
+										We're working on bringing you amazing deals. Check back soon for exclusive offers and discounts!
+									</p>
 								</div>
 							</div>
 						)}
 					</div>
 				</div>
-				<Footer />
-				<FloatingActionBar handleSocialClick={handleSocialClick} />
 			</section>
+			<Footer />
+			<FloatingActionBar
+				isVisible={isVisible}
+				socialActions={socialActions}
+			/>
 		</>
 	);
 };

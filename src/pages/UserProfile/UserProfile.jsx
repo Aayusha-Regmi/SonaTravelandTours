@@ -10,12 +10,12 @@ import Cancellations from './ComponentUserProfile/Cancellations.jsx';
 import MyReviews from './ComponentUserProfile/MyReviews.jsx';
 import MyFavorites from './ComponentUserProfile/MyFavorites.jsx';
 import Discounts from './ComponentUserProfile/Discounts.jsx';
-import FloatingActionBar from '../Home/ComponentHome/UI/FloatingActionBar';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 
 const UserProfile = () => {
   const location = useLocation();
-  const { handleSocialClick } = useSocialActions();
+  const { isVisible, socialActions } = useSocialActions();
   
   // Tab configuration
   const tabsData = [
@@ -75,7 +75,10 @@ const UserProfile = () => {
       </main>
 
       <Footer />
-      <FloatingActionBar handleSocialClick={handleSocialClick} />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };

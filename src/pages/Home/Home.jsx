@@ -8,11 +8,11 @@ import BookingSteps from './ComponentHome/BookingSteps';
 import UnifiedSections from './ComponentHome/UnifiedSections';
 import AppPromotion from './ComponentHome/AppPromotion';
 import PaymentMethods from './ComponentHome/PaymentMethods';
-import FloatingActionBar from './ComponentHome/UI/FloatingActionBar';
+import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 
 const HomePage = () => {
-  const { handleSocialClick } = useSocialActions();
+  const { isVisible, socialActions } = useSocialActions();
 
   // Prevent unwanted auto-scrolling on mobile devices
   useEffect(() => {
@@ -75,7 +75,10 @@ const HomePage = () => {
       </main>
       
       <Footer />
-      <FloatingActionBar handleSocialClick={handleSocialClick} />
+      <FloatingActionBar
+        isVisible={isVisible}
+        socialActions={socialActions}
+      />
     </div>
   );
 };
