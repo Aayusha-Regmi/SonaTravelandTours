@@ -14,7 +14,7 @@ class PaymentService {
       const url = `${this.baseUrl}/GetPaymentInstrumentDetails`;
       
       const requestBody = {
-        "MerchantId": "7367",
+        "MerchantId": "335",
         "MerchantName": "sonatravelsapi",
         "Signature": "7a611a234fa25b3a54752071d01408119e351fec556e9f193f780e091fc3bfb6ea0cfbee574de27d541e78cd733a6ba1748fd692e6afd0744c14ee2c6ea017b"
       };
@@ -132,7 +132,7 @@ class PaymentService {
       const url = `${this.baseUrl}/CheckTransactionStatus`;
       
       const requestBody = {
-        "MerchantId": "7367",
+        "MerchantId": "335",
         "MerchantName": "sonatravelsapi",
         "MerchantTxnId": merchantTxnId,
         "Signature": "de73b4e6a8b496f880b23b8e7055990f61a9d4337dbbf44f3f1edb62321eb43e671a958bd437ccf59cc5c500a13c48d8226e74906357429f5d63fc5635bd4911ed"
