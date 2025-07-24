@@ -33,8 +33,6 @@ import HotelsPage from './pages/Hotels/HotelsPage';
 import ToursPage from './pages/Tours/ToursPage';
 import Feed from './pages/Feed/Feed';
 
-import doing from './pages/doing'
-
 const AppRoutes = () => {
   return (
     <Routes>
@@ -146,11 +144,6 @@ const AppRoutes = () => {
         } 
       />
       <Route path="/trending-offers" element={<TrendingOffers />} />
-
-
-
-      {/* test pages*/}
-        <Route path="/doing" element = {<doing/>} />
 
     </Routes>
   );
