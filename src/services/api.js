@@ -1459,40 +1459,64 @@ const bookTickets = async (bookingInfo) => {
       throw new Error('Authentication required. Please login first.');
     }
     
-    // Prepare request body for admin/seat/book-seat endpoint
+    // Transform booking info to match the expected API format exactly
+    let passengersList = [];
+    
+    if (Array.isArray(bookingInfo.passengers)) {
+      // For two-way trips: passengers array contains entries for both departure and return
+      // For one-way trips: passengers array contains entries for single direction
+      // Each passenger entry already has the correct seat number and route details
+      passengersList = bookingInfo.passengers.map((passenger, index) => ({
+        passengerName: passenger.fullName || passenger.passengerName || passenger.name,
+        contactNumber: parseInt(passenger.phoneNumber || passenger.contactNumber || passenger.phone),
+        // Use passenger's specific seat number (already assigned for their direction)
+        seatNo: passenger.seatNumber || passenger.seatNo || 
+                (Array.isArray(bookingInfo.selectedSeats) ? bookingInfo.selectedSeats[index] : null),
+        // Use passenger-specific origin/destination (already set for departure/return)
+        origin: passenger.origin || bookingInfo.origin || bookingInfo.boardingLocation || 'Kathmandu',
+        destination: passenger.destination || bookingInfo.destination || bookingInfo.onboardingLocation || 'Birgunj',
+        gender: (passenger.gender || 'male').toLowerCase(),
+        // Use passenger-specific boarding/deboarding locations (already set for direction)
+        boardingLocation: passenger.boardingLocation || bookingInfo.boardingLocation || bookingInfo.boardingPoint || 'Bus Park',
+        deboardingLocation: passenger.deboardingLocation || bookingInfo.onboardingLocation || bookingInfo.droppingPoint || 'Terminal',
+        residence: passenger.address || passenger.residence || 'N/A',
+        email: passenger.email || passenger.emailId || ''
+      }));
+    } else {
+      // Legacy single passenger case - convert to array format
+      // This handles cases where bookingInfo doesn't have passengers array
+      const selectedSeatsArray = Array.isArray(bookingInfo.selectedSeats) 
+        ? bookingInfo.selectedSeats 
+        : [bookingInfo.selectedSeats];
+      
+      passengersList = selectedSeatsArray.map(seat => ({
+        passengerName: bookingInfo.passengerName || bookingInfo.fullName,
+        contactNumber: parseInt(bookingInfo.contactNumber || bookingInfo.phoneNumber),
+        seatNo: seat,
+        origin: bookingInfo.origin || bookingInfo.boardingLocation || 'Kathmandu',
+        destination: bookingInfo.destination || bookingInfo.onboardingLocation || 'Birgunj',
+        gender: (bookingInfo.gender || 'male').toLowerCase(),
+        boardingLocation: bookingInfo.boardingLocation || bookingInfo.boardingPoint || 'Bus Park',
+        deboardingLocation: bookingInfo.onboardingLocation || bookingInfo.droppingPoint || 'Terminal',
+        residence: bookingInfo.address || bookingInfo.residence || 'N/A',
+        email: bookingInfo.emailId || bookingInfo.email || ''
+      }));
+    }
+    
+    // Prepare request body matching the exact format you provided
     const requestBody = {
-      // Passenger details
-      passengerName: bookingInfo.passengerName,
-      contactNumber: bookingInfo.contactNumber,
-      emailId: bookingInfo.emailId,
-      gender: bookingInfo.gender,
-      age: bookingInfo.age,
-      
-      // Seat and travel details
-      selectedSeats: bookingInfo.selectedSeats,
-      seatNumber: Array.isArray(bookingInfo.selectedSeats) ? bookingInfo.selectedSeats.join(',') : bookingInfo.selectedSeats,
-      boardingLocation: bookingInfo.boardingLocation,
-      onboardingLocation: bookingInfo.onboardingLocation,
-      destination: bookingInfo.destination,
-      vesselId: bookingInfo.vesselId,
-      travelDate: bookingInfo.travelDate,
-      
-      // Payment details
-      merchantTransactionId: bookingInfo.merchantTransactionId,
-      gatewayTransactionId: bookingInfo.gatewayTransactionId,
-      amount: bookingInfo.amount,
-      paymentStatus: 'SUCCESS',
-      paymentMethod: bookingInfo.paymentMethod || 'NPS',
-      
-      // Booking metadata
-      bookingDate: new Date().toISOString(),
-      status: 'CONFIRMED',
-      remarks: bookingInfo.remarks || 'Ticket booked via NPS payment'
+      dateOfTravel: bookingInfo.travelDate || new Date().toISOString().split('T')[0],
+      paymentAmount: parseFloat(bookingInfo.amount || bookingInfo.paymentAmount || 0),
+      payment_status: "Completed", // Fixed value for successful bookings
+      paymentMode: bookingInfo.paymentMethod === 'NPS' ? 'online' : (bookingInfo.paymentMethod || 'online').toLowerCase(),
+      busId: parseInt(bookingInfo.vesselId || bookingInfo.busId || 0),
+      passengersList: passengersList
     };
     
-    console.log('Ticket booking request:', requestBody);
+    console.log('Ticket booking request (supporting two-way trips with passenger duplicates):', requestBody);
+    console.log('Passengers list contains:', passengersList.length, 'entries (includes departure + return for two-way trips)');
     
-    // Use the admin/seat/book-seat endpoint like Flutter bookTickets
+    // Use the /seat endpoint exactly as specified
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/seat`, {
       method: 'POST',
       headers: headers,
