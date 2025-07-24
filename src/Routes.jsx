@@ -33,6 +33,8 @@ import HotelsPage from './pages/Hotels/HotelsPage';
 import ToursPage from './pages/Tours/ToursPage';
 import Feed from './pages/Feed/Feed';
 
+
+
 const AppRoutes = () => {
   return (
     <Routes>
