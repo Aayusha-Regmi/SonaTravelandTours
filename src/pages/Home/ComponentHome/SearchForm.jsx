@@ -110,17 +110,26 @@ const SearchForm = () => {
       const originalScrollIntoView = Element.prototype.scrollIntoView;
       
       // Disable scrollTo on mobile for this component
-      window.scrollTo = (...args) => {
+      window.scrollTo = function() {
+        const args = Array.from(arguments);
         // Only allow manual scrolling, not programmatic
-        if (args.length === 0 || (args[0] && args[0].behavior !== 'smooth')) {
-          return originalScrollTo.apply(window, args);
+        if (args.length === 0 || (args[0] && typeof args[0] === 'object' && args[0].behavior !== 'smooth')) {
+          try {
+            return originalScrollTo.apply(window, args);
+          } catch (e) {
+            // Fallback to direct scroll if apply fails
+            if (args[0] && typeof args[0] === 'number') {
+              window.pageYOffset = args[1] || 0;
+              window.pageXOffset = args[0] || 0;
+            }
+          }
         }
         // Block smooth scrolling on mobile
         return;
       };
       
       // Disable scrollIntoView on mobile
-      Element.prototype.scrollIntoView = () => {
+      Element.prototype.scrollIntoView = function() {
         // Block all scrollIntoView calls on mobile
         return;
       };
@@ -315,8 +324,16 @@ const SearchForm = () => {
       }
 
       // Navigate to search results page with the data
-      // First scroll to top
-      window.scrollTo(0, 0);
+      // First scroll to top (safely handle mobile overrides)
+      if (window.scrollTo && typeof window.scrollTo === 'function') {
+        try {
+          window.scrollTo(0, 0);
+        } catch (scrollError) {
+          // Fallback if scrollTo fails
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }
+      }
       navigate('/search-results', {
         state: {
           searchResults: busResults,
@@ -330,7 +347,8 @@ const SearchForm = () => {
       });
     } catch (err) {
       console.error('❌ Search error:', err);
-      setError(`Search failed: ${err.message}`);
+      const errorMessage = err?.message || err?.toString() || 'An unexpected error occurred';
+      setError(`Search failed: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
