@@ -674,6 +674,13 @@ const debugNpsPaymentRequest = (form, gatewayUrl) => {
  */
 const validateInstrumentCode = (instrumentCode) => {
   const validCodes = {
+    // Cards - NPS Card Selection
+    '': 'NPS Card Selection Page', // Empty code shows NPS card selection
+    'CARD': 'Generic Card Payment',
+    'VISA': 'Visa Card',
+    'MASTERCARD': 'Mastercard',
+    'NCHL': 'NCHL Card Payment',
+    
     // Digital Wallets / Checkout Gateways
     'IMEPAYG': 'IME Pay Digital Wallet',
     'HAMROPAYG': 'Hamro Pay Digital Wallet',
@@ -730,6 +737,16 @@ const validateInstrumentCode = (instrumentCode) => {
  */
 const getFallbackPaymentInstruments = () => {
   return [
+    // Card payment options
+    {
+      instrumentCode: '', // Empty code for NPS card selection page
+      name: 'Credit/Debit Card',
+      logoUrl: null,
+      bankType: 'Card',
+      institutionName: 'Card Payment',
+      description: 'Pay with Credit or Debit Card'
+    },
+    // Digital wallets
     {
       instrumentCode: 'IMEPAYG',
       name: 'IME Pay',
@@ -762,6 +779,7 @@ const getFallbackPaymentInstruments = () => {
       institutionName: 'MyPay',
       description: 'Pay with MyPay digital wallet'
     },
+    // E-Banking
     {
       instrumentCode: 'NICENPKA',
       name: 'NIC ASIA Bank',

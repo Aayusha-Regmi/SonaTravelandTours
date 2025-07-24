@@ -419,7 +419,7 @@ const PaymentPage = () => {
       return;
     }
 
-    // Validate required data before opening modal
+    // Validate required data before processing
     if (!passengers.length || !selectedSeats.length) {
       toast.error('Missing booking data. Please start from seat selection.');
       return;
@@ -430,7 +430,110 @@ const PaymentPage = () => {
       return;
     }
 
-    // Set the selected category and open modal
+    // Special handling for card category - redirect directly to payment gateway
+    if (category.id === 'card') {
+      console.log('🔄 Card category selected - processing direct payment...');
+      
+      try {
+        // Get available payment instruments to find a card instrument
+        const instruments = await api.getPaymentInstruments();
+        
+        if (instruments.success) {
+          // Find first card instrument or fallback to a known card code
+          const cardInstruments = instruments.data.filter(instrument => 
+            instrument.bankType === 'Card' || 
+            instrument.name.toLowerCase().includes('card') ||
+            instrument.instrumentCode.toLowerCase().includes('card') ||
+            ['VISA', 'MASTERCARD', 'CARD', 'NCHL'].includes(instrument.instrumentCode)
+          );
+          
+          let selectedCardInstrument;
+          if (cardInstruments.length > 0) {
+            selectedCardInstrument = cardInstruments[0];
+            console.log('💳 Using first available card instrument:', selectedCardInstrument.name);
+          } else {
+            // Try predefined card codes in order of preference
+            const preferredCardCodes = ['CARD', 'VISA', 'MASTERCARD', 'NCHL', ''];
+            selectedCardInstrument = {
+              instrumentCode: preferredCardCodes[0], // Start with generic 'CARD'
+              name: 'Credit/Debit Card',
+              bankType: 'Card'
+            };
+            console.log('💳 No specific card instruments found, using generic card code:', selectedCardInstrument.instrumentCode);
+          }
+          
+          // Store booking data for callback handling
+          const bookingData = {
+            totalPrice: totalPrice,
+            passengers: passengers,
+            selectedSeats: selectedSeats,
+            travelDate: travelDate,
+            bookingDetails: bookingDetails,
+            searchParams: searchParams,
+            selectedInstrument: selectedCardInstrument
+          };
+          sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+          
+          // Initiate payment with the card instrument
+          console.log('💳 Initiating payment for card with amount:', totalPrice);
+          console.log('💳 Using instrument code:', selectedCardInstrument.instrumentCode);
+          
+          const paymentInitiated = await api.initiatePayment(totalPrice, selectedCardInstrument.instrumentCode);
+          
+          if (paymentInitiated.success) {
+            console.log('💳 Payment initiated successfully, redirecting to card gateway...');
+            
+            // Show user-friendly message
+            if (selectedCardInstrument.instrumentCode) {
+              toast.success(`Redirecting to ${selectedCardInstrument.name} payment gateway...`);
+            } else {
+              toast.success('Redirecting to card payment selection...');
+            }
+            
+            // Prepare URLs
+            const successUrl = `${window.location.origin}/payment/success`;
+            const failureUrl = `${window.location.origin}/payment/failure`;
+            
+            // Redirect directly to payment gateway with card instrument
+            const redirected = api.redirectToPaymentGateway(
+              paymentInitiated.data,
+              successUrl,
+              failureUrl,
+              {
+                instrumentCode: selectedCardInstrument.instrumentCode,
+                callbackUrl: `${window.location.origin}/payment/callback`,
+                remarks: `Bus booking for seats ${selectedSeats.join(', ')} on ${travelDate}`,
+                customerEmail: bookingDetails?.contactInfo?.email || '',
+                customerPhone: bookingDetails?.contactInfo?.phone || ''
+              }
+            );
+            
+            if (redirected) {
+              console.log('💳 Successfully redirected to card payment gateway');
+            } else {
+              console.error('💳 Failed to redirect to card payment gateway');
+              toast.error('Failed to redirect to payment gateway. Please try again.');
+            }
+            
+          } else {
+            console.error('💳 Card payment initiation failed:', paymentInitiated.message);
+            toast.error(`Payment Error: ${paymentInitiated.message || 'Card payment initiation failed'}`);
+          }
+          
+        } else {
+          console.error('💳 Failed to load payment instruments for card processing');
+          toast.error('Failed to load card payment options. Please try again.');
+        }
+        
+      } catch (error) {
+        console.error('💳 Card payment processing error:', error);
+        toast.error(`Card Payment Error: ${error.message || 'Failed to process card payment'}`);
+      }
+      
+      return; // Exit early for card processing
+    }
+
+    // For other categories (wallet, mobile, internet), open the modal as usual
     setSelectedCategory(category);
     setIsPaymentModalOpen(true);
   };
