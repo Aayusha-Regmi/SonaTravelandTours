@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) => {
+const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate, tripType }) => {
   const today = new Date();  
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
@@ -187,8 +187,12 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
       let isDepartureSelection = false;
       let needsReturnReset = false;
       
+      // For one-way trips, only allow departure date selection
+      if (tripType === 'oneWay') {
+        isDepartureSelection = true;
+      }
       // If both departure and return dates exist, determine which one to change based on proximity
-      if (isoDeparture && isoReturn) {
+      else if (isoDeparture && isoReturn) {
         const selectedDate = new Date(dateItem.iso);
         const departureDate_obj = new Date(isoDeparture);
         const returnDate_obj = new Date(isoReturn);
@@ -197,13 +201,7 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
         const daysToDeparture = Math.abs((selectedDate - departureDate_obj) / (1000 * 60 * 60 * 24));
         const daysToReturn = Math.abs((selectedDate - returnDate_obj) / (1000 * 60 * 60 * 24));
         
-        console.log('📅 Date proximity analysis:', {
-          selectedDate: dateItem.iso,
-          departure: isoDeparture,
-          return: isoReturn,
-          daysToDeparture,
-          daysToReturn
-        });
+      
         
         // If the selected date is closer to return date, or equal distance but after departure
         if (daysToReturn < daysToDeparture || (daysToReturn === daysToDeparture && dateItem.iso > isoDeparture)) {
@@ -322,17 +320,17 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
             const isoDeparture = toISODate(departureDate);
             const isoSelected = selectedDate;
             return (isoDeparture ? isoDeparture : isoSelected) === dateItem.iso;
-          }) || visibleDates.some(dateItem => {
+          }) || (tripType !== 'oneWay' && visibleDates.some(dateItem => {
             const isoReturn = toISODate(returnDate);
             return isoReturn === dateItem.iso;
-          })) && (
+          }))) && (
             <div className="absolute -top-8 sm:-top-10 left-0 right-0 flex mb-4">
               {visibleDates.map((dateItem, tagIndex) => {
                 const isoDeparture = toISODate(departureDate);
                 const isoSelected = selectedDate;
                 const isoReturn = toISODate(returnDate);
                 const isDeparture = (isoDeparture ? isoDeparture : isoSelected) === dateItem.iso;
-                const isReturn = isoReturn === dateItem.iso;
+                const isReturn = tripType !== 'oneWay' && isoReturn === dateItem.iso;
                 
                 return (
                   <div key={tagIndex} className="min-w-[60px] sm:min-w-[80px] mx-[3px] sm:mx-[6px] flex justify-center">
@@ -364,32 +362,21 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate }) 
             {visibleDates.map((dateItem, index) => {
             const isoDeparture = toISODate(departureDate);
             const isoSelected = selectedDate;
-            const isoReturn = toISODate(returnDate);
+            const isoReturn = tripType !== 'oneWay' ? toISODate(returnDate) : null;
             const isDeparture = (isoDeparture ? isoDeparture : isoSelected) === dateItem.iso;
-            const isReturn = isoReturn === dateItem.iso;
-            // Debug log
-            if (index === 0) {
-              console.log('DEBUG DateSelector:', {
-                isoDeparture,
-                isoSelected,
-                isoReturn,
-                dateItemIso: dateItem.iso,
-                departureDate,
-                returnDate,
-                selectedDate
-              });
-            }
+            const isReturn = tripType !== 'oneWay' && isoReturn === dateItem.iso;
+           
             // Highlight between departure and return
             let buttonClass = '';
             const isBetween = (() => {
-              if (isoDeparture && isoReturn && isoDeparture !== isoReturn) {
+              if (tripType !== 'oneWay' && isoDeparture && isoReturn && isoDeparture !== isoReturn) {
                 return dateItem.iso > isoDeparture && dateItem.iso < isoReturn;
               }
               return false;
             })();
             
-            // Check if date is selectable for return (only if in return selection mode)
-            const isSelectableForReturn = selectionMode === 'return' && isoDeparture && dateItem.iso > isoDeparture;
+            // Check if date is selectable for return (only if in return selection mode and not one-way)
+            const isSelectableForReturn = tripType !== 'oneWay' && selectionMode === 'return' && isoDeparture && dateItem.iso > isoDeparture;
             
             if (isDeparture) {
               buttonClass = 'bg-blue-600 text-white shadow-sm';

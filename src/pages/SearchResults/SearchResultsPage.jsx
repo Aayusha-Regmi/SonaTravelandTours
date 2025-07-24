@@ -778,6 +778,7 @@ const SearchResultsPage = () => {
           initialDate={formData.date || travelDate}
           departureDate={formData.date}
           returnDate={formData.returnDate}
+          tripType={tripType}
           onDateChange={(dateString, dateObj, action) => {
             console.log('📅 DateSelector change:', dateString, 'Action:', action);
             
