@@ -70,7 +70,8 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <SearchResultsPage />
           </ProtectedRoute>
-        }        />
+        } 
+      />
       <Route 
         path="/passenger-detail" 
         element={
@@ -112,7 +113,6 @@ const AppRoutes = () => {
         } 
       />
       
-      
       <Route
         path="/routes" 
         element={
@@ -128,6 +128,7 @@ const AppRoutes = () => {
         path="/insurance" 
         element={<TravelInsurance />} 
       /> 
+      
       {/* User Profile Routes */}
       <Route 
         path="/user-profile" 
@@ -147,10 +148,8 @@ const AppRoutes = () => {
       />
       <Route path="/trending-offers" element={<TrendingOffers />} />
 
-
-
       {/* test pages*/}
-        <Route path="/doing" element = {<doing/>} />
+      <Route path="/doing" element={<doing/>} />
 
     </Routes>
   );

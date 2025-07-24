@@ -648,11 +648,11 @@ const debugNpsPaymentRequest = (form, gatewayUrl) => {
   // Highlight the instrument code specifically
   const instrumentCodeValue = formData.InstrumentCode;
   if (instrumentCodeValue) {
-    console.log('🔹 ✅ InstrumentCode in form:', instrumentCodeValue);
+    console.log('🔹  InstrumentCode in form:', instrumentCodeValue);
     const validation = validateInstrumentCode(instrumentCodeValue);
     console.log('🔹 Validation:', validation);
   } else {
-    console.log('🔹 ❌ InstrumentCode NOT found in form - NPS will show selection page');
+    console.log('🔹  InstrumentCode NOT found in form - NPS will show selection page');
   }
   
   // Create a cURL command for debugging
@@ -866,7 +866,7 @@ const getServiceCharge = async (amount, instrumentCode) => {
       };
     }
     
-    console.log('Service charge parsed response:', result);
+    
 
     if (response.ok) {
       let serviceCharge = 0;
@@ -1085,7 +1085,8 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
       Amount: paymentData.amount, // Capital A
       ProcessId: paymentData.processId, // Capital P
       InstrumentCode: paymentData.instrumentCode || additionalParams.instrumentCode || '', // Use instrument code from payment data first, then additional params
-      TransactionRemarks: additionalParams.remarks || 'Bus ticket booking', // Capital T, R
+      TransactionRemarks: additionalParams.remarks || 'Bus ticket booking',
+      returnUrl:"https://6le3z7icgf.execute-api.us-east-1.amazonaws.com/prod/payment/callback", // Capital T, R
       
       // Don't include ReturnUrl, CancelUrl, or AuthToken as NPS doesn't support these
       
@@ -1098,20 +1099,18 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
     };
 
     // Log the instrument code being used for debugging
-    console.log('💳 Using InstrumentCode:', params.InstrumentCode);
-    console.log('💳 All payment parameters:', params);
+  
     
     // Validate the instrument code
     const validation = validateInstrumentCode(params.InstrumentCode);
-    console.log('💳 Instrument code validation:', validation);
+  
     
     // If no instrument code is provided, warn about potential redirect to selection page
     if (!params.InstrumentCode) {
       console.warn('💳 No InstrumentCode provided - NPS gateway will show payment method selection page');
       console.warn('💳 To bypass selection page, pass instrumentCode in paymentData or additionalParams');
     } else if (validation.isValid) {
-      console.log('💳 Valid InstrumentCode provided:', params.InstrumentCode, '-', validation.bankName);
-      console.log('💳 Should proceed directly to payment method');
+      
     } else {
       console.warn('💳 Invalid InstrumentCode:', validation.message);
       console.warn('💳 Recommendation:', validation.recommendation);
@@ -1128,22 +1127,13 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
       }
     });
     
-    // Create a detailed debugging log for the payment gateway request
-    console.group('💳 NPS PAYMENT GATEWAY REQUEST DETAILS');
-    console.log('🔹 Gateway URL:', gatewayUrl);
-    console.log('🔹 HTTP Method:', form.method);
-    console.log('� Form Parameters:', 
-      Object.fromEntries(
-        Array.from(form.elements).map(el => [el.name, el.value])
-      )
-    );
     
     // Debug the payment request
     debugNpsPaymentRequest(form, gatewayUrl);
     
     // Add form to body and submit
     document.body.appendChild(form);
-    console.log('💳 Submitting payment form to gateway:', gatewayUrl);
+   
     form.submit();
     
     // Return true to indicate the redirect is in progress
@@ -1279,16 +1269,102 @@ const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumen
 };
 
 /**
- * Confirm seat booking after successful payment
- * @param {Object} seatInfo - Seat and passenger information
- * @param {Object} paymentInfo - Payment information
- * @returns {Promise} - Promise resolving to booking confirmation
+ * Check NPS transaction status using CheckTransactionStatus endpoint
+ * @param {string} merchantTxnId - Merchant Transaction ID
+ * @returns {Promise} - Promise resolving to NPS transaction status
  */
-const confirmSeatBooking = async (seatInfo, paymentInfo) => {
+const checkNPSTransactionStatus = async (merchantTxnId) => {
   try {
-    console.log('Confirming seat booking...');
+    console.log('Checking NPS transaction status for:', merchantTxnId);
     
-    // Check for authentication token using the utility function
+    // Check for authentication token
+    const authCheck = checkAuthentication();
+    
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    
+    if (authCheck.isAuthenticated) {
+      headers.Authorization = `Bearer ${authCheck.token}`;
+      console.log(`Adding authorization header from ${authCheck.source}`);
+    } else {
+      console.log('No authentication token found for NPS status check');
+      throw new Error('Authentication required. Please login first.');
+    }
+    
+    // Prepare request body in the format expected by NPS CheckTransactionStatus
+    const requestBody = {
+      MerchantId: 'sonatravelapi', // Your merchant ID
+      MerchantName: 'sonatravelapi', // Your merchant name
+      MerchantTxnId: merchantTxnId,
+      // Signature will be generated by backend if needed
+    };
+    
+    console.log('NPS status check request:', requestBody);
+    
+    // Use the CheckTransactionStatus endpoint
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/CheckTransactionStatus`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(requestBody)
+    });
+
+    console.log('NPS status response status:', response.status);
+
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      console.error('Failed to parse NPS status JSON:', parseError);
+      result = { message: 'Invalid response from NPS status API' };
+    }
+    
+    console.log('NPS status response:', result);
+
+    if (response.ok && result.success) {
+      // NPS returns status codes: 000=Success, 001/002=Pending, others=Failed
+      const statusCode = result.data?.StatusCode || result.StatusCode;
+      const message = result.data?.Message || result.Message || 'Transaction status retrieved';
+      
+      return {
+        success: true,
+        data: {
+          StatusCode: statusCode,
+          Message: message,
+          GatewayTransactionId: result.data?.GatewayTransactionId || result.GatewayTransactionId,
+          MerchantTransactionId: merchantTxnId
+        }
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || `HTTP ${response.status}: NPS status check failed`,
+        data: result.data,
+        statusCode: result.statusCode || response.status
+      };
+    }
+  } catch (error) {
+    console.error('NPS transaction status check error:', error);
+    return {
+      success: false,
+      message: error.message || 'Network error occurred during NPS status check',
+      error: error.name
+    };
+  }
+};
+
+/**
+ * Update payment status using setPayment endpoint (like Flutter setPayment)
+ * @param {Object} paymentInfo - Payment information including transaction IDs
+ * @param {string} status - Payment status (SUCCESS, FAILED, PENDING)
+ * @returns {Promise} - Promise resolving to payment update result
+ */
+const updatePaymentStatus = async (paymentInfo, status) => {
+  try {
+    console.log('Updating payment status:', status);
+    
+    // Check for authentication token
     const authCheck = checkAuthentication();
     
     const headers = {
@@ -1299,53 +1375,444 @@ const confirmSeatBooking = async (seatInfo, paymentInfo) => {
       headers.Authorization = `Bearer ${authCheck.token}`;
       console.log(`Adding authorization header from ${authCheck.source}`);
     } else {
-      console.log('No authentication token found for seat booking confirmation');
+      console.log('No authentication token found for payment status update');
       throw new Error('Authentication required. Please login first.');
     }
     
+    // Prepare request body matching Flutter setPayment format
     const requestBody = {
-      seatInfo,
-      paymentInfo
+      merchantTransactionId: paymentInfo.merchantTransactionId,
+      gatewayTransactionId: paymentInfo.gatewayTransactionId,
+      amount: paymentInfo.amount,
+      paymentStatus: status,
+      paymentMethod: paymentInfo.paymentMethod || 'NPS',
+      transactionDate: new Date().toISOString(),
+      remarks: paymentInfo.remarks || `Payment ${status.toLowerCase()}`
     };
     
-    console.log('Seat booking confirmation request:', requestBody);
+    console.log('Payment status update request:', requestBody);
     
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/seat/payment`, {
+    // Use the seat/payment endpoint like Flutter setPayment
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/seat/payment`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(requestBody)
     });
 
-    console.log('Seat booking response status:', response.status);
+    console.log('Payment status update response:', response.status);
 
     let result;
     try {
       result = await response.json();
     } catch (parseError) {
-      console.error('Failed to parse seat booking JSON:', parseError);
+      console.error('Failed to parse payment status update JSON:', parseError);
       result = { message: 'Invalid response from server' };
     }
     
-    console.log('Seat booking response:', result);
+    console.log('Payment status update result:', result);
 
     if (response.ok && result.success) {
       return {
         success: true,
         data: result.data,
-        message: result.message
+        message: result.message || 'Payment status updated successfully'
       };
     } else {
       return {
         success: false,
-        message: result.message || `HTTP ${response.status}: Seat booking failed`,
-        data: result.data
+        message: result.message || `HTTP ${response.status}: Payment status update failed`,
+        data: result.data,
+        statusCode: result.statusCode || response.status
+      };
+    }
+  } catch (error) {
+    console.error('Update payment status error:', error);
+    return {
+      success: false,
+      message: error.message || 'Network error occurred during payment status update',
+      error: error.name
+    };
+  }
+};
+
+/**
+ * Book tickets after successful payment (like Flutter bookTickets)
+ * @param {Object} bookingInfo - Complete booking information
+ * @returns {Promise} - Promise resolving to ticket booking result
+ */
+const bookTickets = async (bookingInfo) => {
+  try {
+    console.log('Booking tickets after successful payment...');
+    
+    // Check for authentication token
+    const authCheck = checkAuthentication();
+    
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (authCheck.isAuthenticated) {
+      headers.Authorization = `Bearer ${authCheck.token}`;
+      console.log(`Adding authorization header from ${authCheck.source}`);
+    } else {
+      console.log('No authentication token found for ticket booking');
+      throw new Error('Authentication required. Please login first.');
+    }
+    
+    // Prepare request body for admin/seat/book-seat endpoint
+    const requestBody = {
+      // Passenger details
+      passengerName: bookingInfo.passengerName,
+      contactNumber: bookingInfo.contactNumber,
+      emailId: bookingInfo.emailId,
+      gender: bookingInfo.gender,
+      age: bookingInfo.age,
+      
+      // Seat and travel details
+      selectedSeats: bookingInfo.selectedSeats,
+      seatNumber: Array.isArray(bookingInfo.selectedSeats) ? bookingInfo.selectedSeats.join(',') : bookingInfo.selectedSeats,
+      boardingLocation: bookingInfo.boardingLocation,
+      onboardingLocation: bookingInfo.onboardingLocation,
+      destination: bookingInfo.destination,
+      vesselId: bookingInfo.vesselId,
+      travelDate: bookingInfo.travelDate,
+      
+      // Payment details
+      merchantTransactionId: bookingInfo.merchantTransactionId,
+      gatewayTransactionId: bookingInfo.gatewayTransactionId,
+      amount: bookingInfo.amount,
+      paymentStatus: 'SUCCESS',
+      paymentMethod: bookingInfo.paymentMethod || 'NPS',
+      
+      // Booking metadata
+      bookingDate: new Date().toISOString(),
+      status: 'CONFIRMED',
+      remarks: bookingInfo.remarks || 'Ticket booked via NPS payment'
+    };
+    
+    console.log('Ticket booking request:', requestBody);
+    
+    // Use the admin/seat/book-seat endpoint like Flutter bookTickets
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/seat`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(requestBody)
+    });
+
+    console.log('Ticket booking response status:', response.status);
+
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      console.error('Failed to parse ticket booking JSON:', parseError);
+      result = { message: 'Invalid response from server' };
+    }
+    
+    console.log('Ticket booking response:', result);
+
+    if (response.ok && result.success) {
+      return {
+        success: true,
+        data: {
+          bookingId: result.data?.bookingId || result.bookingId,
+          ticketNumber: result.data?.ticketNumber || result.ticketNumber,
+          confirmationCode: result.data?.confirmationCode || result.confirmationCode,
+          bookingDetails: result.data || result
+        },
+        message: result.message || 'Tickets booked successfully'
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || `HTTP ${response.status}: Ticket booking failed`,
+        data: result.data,
+        statusCode: result.statusCode || response.status
+      };
+    }
+  } catch (error) {
+    console.error('Book tickets error:', error);
+    return {
+      success: false,
+      message: error.message || 'Network error occurred during ticket booking',
+      error: error.name
+    };
+  }
+};
+
+/**
+ * Get user's booking history (like Flutter getMyBookings)
+ * @param {Object} params - Query parameters for bookings
+ * @returns {Promise} - Promise resolving to booking history
+ */
+const getMyBookings = async (params = {}) => {
+  try {
+    console.log('Fetching user booking history...');
+    
+    // Check for authentication token
+    const authCheck = checkAuthentication();
+    
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (authCheck.isAuthenticated) {
+      headers.Authorization = `Bearer ${authCheck.token}`;
+      console.log(`Adding authorization header from ${authCheck.source}`);
+    } else {
+      console.log('No authentication token found for booking history');
+      throw new Error('Authentication required. Please login first.');
+    }
+    
+    // Prepare query parameters
+    const queryParams = new URLSearchParams({
+      date: params.date || new Date().toISOString().split('T')[0], // Default to today
+      pageSize: params.pageSize || '100',
+      currentPage: params.currentPage || '1',
+      ...params // Include any additional parameters
+    });
+    
+    const url = `${import.meta.env.VITE_API_BASE_URL}/bookings?${queryParams.toString()}`;
+    console.log('Booking history URL:', url);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: headers
+    });
+
+    console.log('Booking history response status:', response.status);
+
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      console.error('Failed to parse booking history JSON:', parseError);
+      result = { message: 'Invalid response from server' };
+    }
+    
+    console.log('Booking history response:', result);
+
+    if (response.ok && result.success) {
+      return {
+        success: true,
+        data: result.data || [],
+        totalCount: result.totalCount || 0,
+        currentPage: result.currentPage || 1,
+        pageSize: result.pageSize || 100,
+        message: result.message || 'Booking history retrieved successfully'
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || `HTTP ${response.status}: Failed to fetch booking history`,
+        data: [],
+        statusCode: result.statusCode || response.status
+      };
+    }
+  } catch (error) {
+    console.error('Get booking history error:', error);
+    return {
+      success: false,
+      message: error.message || 'Network error occurred while fetching booking history',
+      data: [],
+      error: error.name
+    };
+  }
+};
+
+/**
+ * Complete NPS payment flow handler
+ * Orchestrates the entire payment success/failure flow like Flutter
+ * @param {Object} callbackData - Data from NPS callback
+ * @param {Object} bookingDetails - Original booking information
+ * @returns {Promise} - Promise resolving to complete flow result
+ */
+const handleNPSPaymentCallback = async (callbackData, bookingDetails) => {
+  try {
+    console.log('Handling NPS payment callback...', callbackData);
+    
+    const { MerchantTxnId, GatewayTxnId } = callbackData;
+    
+    // Step 1: Check NPS transaction status
+    console.log('Step 1: Checking NPS transaction status...');
+    const statusResult = await checkNPSTransactionStatus(MerchantTxnId);
+    
+    if (!statusResult.success) {
+      throw new Error(`Status check failed: ${statusResult.message}`);
+    }
+    
+    const { StatusCode, Message } = statusResult.data;
+    
+    // Step 2: Update payment status based on NPS response
+    console.log('Step 2: Updating payment status...');
+    const paymentInfo = {
+      merchantTransactionId: MerchantTxnId,
+      gatewayTransactionId: GatewayTxnId || statusResult.data.GatewayTransactionId,
+      amount: bookingDetails.amount,
+      paymentMethod: 'NPS',
+      remarks: Message
+    };
+    
+    let paymentStatus;
+    if (StatusCode === '000') {
+      paymentStatus = 'SUCCESS';
+    } else if (StatusCode === '001' || StatusCode === '002') {
+      paymentStatus = 'PENDING';
+    } else {
+      paymentStatus = 'FAILED';
+    }
+    
+    const paymentUpdateResult = await updatePaymentStatus(paymentInfo, paymentStatus);
+    
+    if (paymentStatus === 'SUCCESS') {
+      // Step 3: Book tickets for successful payment
+      console.log('Step 3: Booking tickets...');
+      const ticketBookingInfo = {
+        ...bookingDetails,
+        merchantTransactionId: MerchantTxnId,
+        gatewayTransactionId: GatewayTxnId || statusResult.data.GatewayTransactionId,
+        paymentMethod: 'NPS'
+      };
+      
+      const bookingResult = await bookTickets(ticketBookingInfo);
+      
+      if (bookingResult.success) {
+        return {
+          success: true,
+          status: 'SUCCESS',
+          message: 'Payment successful and tickets booked',
+          data: {
+            payment: paymentUpdateResult.data,
+            booking: bookingResult.data,
+            transactionId: MerchantTxnId,
+            statusCode: StatusCode,
+            statusMessage: Message
+          }
+        };
+      } else {
+        // Payment successful but booking failed
+        console.error('Payment successful but ticket booking failed:', bookingResult.message);
+        return {
+          success: false,
+          status: 'BOOKING_FAILED',
+          message: `Payment successful but booking failed: ${bookingResult.message}`,
+          data: {
+            payment: paymentUpdateResult.data,
+            transactionId: MerchantTxnId,
+            statusCode: StatusCode,
+            statusMessage: Message,
+            bookingError: bookingResult.message
+          }
+        };
+      }
+    } else if (paymentStatus === 'FAILED') {
+      // Step 3: Handle payment failure - release seats
+      console.log('Step 3: Handling payment failure...');
+      
+      return {
+        success: false,
+        status: 'FAILED',
+        message: `Payment failed: ${Message}`,
+        data: {
+          payment: paymentUpdateResult.data,
+          transactionId: MerchantTxnId,
+          statusCode: StatusCode,
+          statusMessage: Message
+        }
+      };
+    } else {
+      // Payment pending
+      return {
+        success: true,
+        status: 'PENDING',
+        message: `Payment is pending: ${Message}`,
+        data: {
+          payment: paymentUpdateResult.data,
+          transactionId: MerchantTxnId,
+          statusCode: StatusCode,
+          statusMessage: Message
+        }
+      };
+    }
+    
+  } catch (error) {
+    console.error('NPS payment callback handling error:', error);
+    return {
+      success: false,
+      status: 'ERROR',
+      message: error.message || 'Error processing payment callback',
+      error: error.name
+    };
+  }
+};
+
+/**
+ * Confirm seat booking after successful payment
+ * @param {Object} seatInfo - Seat and passenger information
+ * @param {Object} paymentInfo - Payment information
+ * @returns {Promise} - Promise resolving to booking confirmation
+ */
+const confirmSeatBooking = async (seatInfo, paymentInfo) => {
+  try {
+    console.log('Confirming seat booking via complete NPS flow...');
+    
+    // Use the complete NPS payment flow instead of simple seat booking
+    const callbackData = {
+      MerchantTxnId: paymentInfo.merchantTransactionId || paymentInfo.merchantTxnId,
+      GatewayTxnId: paymentInfo.gatewayTransactionId || paymentInfo.gatewayTxnId
+    };
+    
+    const bookingDetails = {
+      // Passenger details
+      passengerName: seatInfo.passengerName || seatInfo.fullName,
+      contactNumber: seatInfo.contactNumber || seatInfo.phoneNumber,
+      emailId: seatInfo.emailId || seatInfo.email,
+      gender: seatInfo.gender,
+      age: seatInfo.age,
+      
+      // Seat selection details
+      selectedSeats: seatInfo.selectedSeats,
+      seatNumber: Array.isArray(seatInfo.selectedSeats) ? seatInfo.selectedSeats.join(',') : seatInfo.selectedSeats,
+      
+      // Travel details
+      boardingLocation: seatInfo.boardingLocation || seatInfo.boardingPoint,
+      onboardingLocation: seatInfo.onboardingLocation || seatInfo.droppingPoint,
+      destination: seatInfo.destination,
+      vesselId: seatInfo.vesselId || seatInfo.busId,
+      travelDate: seatInfo.travelDate,
+      
+      // Payment details
+      amount: paymentInfo.amount,
+      paymentMethod: paymentInfo.paymentMethod || 'NPS',
+      remarks: paymentInfo.remarks || 'Bus ticket booking via NPS gateway'
+    };
+    
+    console.log('Processing complete NPS payment flow...');
+    
+    // Use the complete NPS payment callback handler
+    const result = await handleNPSPaymentCallback(callbackData, bookingDetails);
+    
+    if (result.success && result.status === 'SUCCESS') {
+      return {
+        success: true,
+        data: result.data,
+        message: result.message,
+        statusCode: 200
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message,
+        data: result.data,
+        statusCode: result.status === 'FAILED' ? 400 : 500
       };
     }
   } catch (error) {
     console.error('Confirm seat booking error:', error);
     return {
       success: false,
-      message: error.message || 'Network error occurred'
+      message: error.message || 'Network error occurred during seat booking',
+      error: error.name
     };
   }
 };
@@ -1680,6 +2147,13 @@ export default {
   redirectToPaymentGateway,
   getPaymentRedirectUrl,
   confirmSeatBooking,
+
+  // NPS Payment Flow Functions (matching Flutter app)
+  checkNPSTransactionStatus,
+  updatePaymentStatus,
+  bookTickets,
+  getMyBookings,
+  handleNPSPaymentCallback,
 
   // FonePay functions (Removed - using NPS payment flow)
   // generateFonePayQR,

@@ -200,6 +200,34 @@ const PaymentModal = ({
         const successUrl = `${window.location.origin}/payment/success`;
         const failureUrl = `${window.location.origin}/payment/failure`;
         
+        // Save booking details to sessionStorage for callback processing
+        const bookingDetailsForCallback = {
+          // Passenger details
+          passengerName: passengers?.[0]?.fullName || bookingDetails?.passengerDetails?.name || 'Unknown Passenger',
+          contactNumber: passengers?.[0]?.phoneNumber || bookingDetails?.contactInfo?.phone || 'N/A',
+          emailId: passengers?.[0]?.email || bookingDetails?.contactInfo?.email || 'N/A',
+          gender: passengers?.[0]?.gender || 'N/A',
+          age: passengers?.[0]?.age || 0,
+          
+          // Seat and travel details
+          selectedSeats: selectedSeats,
+          seatNumber: Array.isArray(selectedSeats) ? selectedSeats.join(',') : selectedSeats,
+          boardingLocation: searchParams?.from || bookingDetails?.fromLocation,
+          onboardingLocation: searchParams?.to || bookingDetails?.toLocation,
+          destination: searchParams?.to || bookingDetails?.toLocation,
+          vesselId: bookingDetails?.busId || searchParams?.busId,
+          travelDate: travelDate,
+          
+          // Payment details
+          amount: totalPrice,
+          paymentMethod: 'NPS',
+          merchantTransactionId: paymentInitiated.data.merchantTransactionId,
+          remarks: `Booking for ${selectedSeats.join(', ')} on ${travelDate}`
+        };
+        
+        console.log('Saving booking details for callback:', bookingDetailsForCallback);
+        sessionStorage.setItem('pendingBookingDetails', JSON.stringify(bookingDetailsForCallback));
+        
         // Redirect to Nepal Payment Gateway with the data from initiate-payment
         const redirected = api.redirectToPaymentGateway(
           paymentInitiated.data,
@@ -209,6 +237,7 @@ const PaymentModal = ({
             // Additional parameters if needed
             instrumentCode: instrument.instrumentCode, // Pass the selected instrument code
             callbackUrl: `${window.location.origin}/payment/callback`,
+            returnUrl: `${window.location.origin}/payment/callback`, // Use our callback URL
             remarks: `Booking for ${selectedSeats.join(', ')} on ${travelDate}`,
             customerEmail: bookingDetails?.contactInfo?.email || '',
             customerPhone: bookingDetails?.contactInfo?.phone || ''
