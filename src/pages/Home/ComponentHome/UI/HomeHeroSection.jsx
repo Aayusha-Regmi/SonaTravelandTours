@@ -24,7 +24,7 @@ const HeroSection = () => {
   //     feeds: '/feed', // Feeds page
   //     whatsapp: 'https://wa.me/9779851234567?text=Hello! I would like to inquire about bus booking services.',
   //     routes: '/routes', // Internal route for bus routes
-  //     linkedin: 'https://www.linkedin.com/company/sona-travel-tours',
+  //     linkedin: 'https://www.linkedin.com/company/sona-travel-and-tours/',
   //   };
   //   if (['feeds', 'routes'].includes(platform)) {
   //     window.location.href = links[platform];
