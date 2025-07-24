@@ -42,7 +42,8 @@ const InlineSeatSelection = ({
   const [showSeatReveal, setShowSeatReveal] = useState(false);
   
   // Get dynamic seat price from bus data, fallback to 2000
-  const seatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+  const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+  const seatPrice = busseatPrice-(0.13*busseatPrice);
   
   // Update seat selection when seats change
   useEffect(() => {

@@ -611,8 +611,12 @@ const PaymentPage = () => {
       }
       
       // Calculate the final payment amount with VAT and discount
+      // First determine the bus seat price - follow same logic as InlineSeatSelection
+      const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+      // Calculate base fare from seat price and seats
       const baseFare = Math.round(seatPrice * selectedSeats.length || totalPrice / 1.13);
-      const vatAmount = Math.round(baseFare * 0.13);
+      // VAT is 13% of the busseatPrice
+      const vatAmount = Math.round(busseatPrice * 0.13);
       const subtotal = baseFare + vatAmount;
       const finalPaymentAmount = Math.max(0, subtotal - discountAmount);
       
@@ -1086,29 +1090,24 @@ const PaymentPage = () => {
                         );
                       })()}
                       
-                      {/* Combined VAT */}
+                      {/* VAT calculation */}
                       {(() => {
-                        const departureFare = Math.round(
-                          seatPrice * selectedSeats.length || 
-                          totalPrice / 2.26 || 
-                          2300
-                        );
-                        const returnFare = Math.round(
-                          returnSeatPrice * returnSeats.length || 
-                          returnTotalPrice / 1.13 || 
-                          seatPrice * returnSeats.length || 
-                          totalPrice / 2.26 || 
-                          2300
-                        );
-                        const totalVAT = Math.round((departureFare + returnFare) * 0.13);
+                        // Get the bus seat price directly from backend data
+                        const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+                        // Calculate VAT separately for departure and return
+                        const departureVatPerSeat = Math.round(busseatPrice * 0.13);
+                        const returnVatPerSeat = Math.round(busseatPrice * 0.13);
+                        const departureVatTotal = departureVatPerSeat * selectedSeats.length;
+                        const returnVatTotal = returnVatPerSeat * returnSeats.length;
+                        const totalVatAmount = departureVatTotal + returnVatTotal;
                         
                         return (
                           <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-indigo-50/80 to-purple-50/80 rounded-xl border border-indigo-100/50 hover:shadow-md transition-all duration-200">
                             <span className="text-sm font-medium text-slate-700 font-opensans">
-                              VAT (13%)
+                              VAT (13% × 2)
                             </span>
                             <span className="text-sm font-semibold text-slate-800 font-opensans">
-                              Rs. {totalVAT.toLocaleString()}
+                              Rs. {totalVatAmount.toLocaleString()}
                             </span>
                           </div>
                         );
@@ -1118,6 +1117,8 @@ const PaymentPage = () => {
                     // One-way trip breakdown
                     <>
                       {(() => {
+                        // First determine the bus seat price - follow same logic as InlineSeatSelection
+                        const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
                         // Calculate base fare mathematically
                         const baseFare = Math.round(
                           seatPrice * selectedSeats.length || 
@@ -1125,8 +1126,9 @@ const PaymentPage = () => {
                           2300
                         );
                         
-                        // Calculate VAT amount (13% of base fare)
-                        const vatAmount = Math.round(baseFare * 0.13);
+                        // Calculate VAT per seat and multiply by number of seats
+                        const vatPerSeat = Math.round(busseatPrice * 0.13);
+                        const vatAmount = vatPerSeat * selectedSeats.length;
                         
                         return (
                           <>
@@ -1178,6 +1180,11 @@ const PaymentPage = () => {
 
                 {/* Enhanced Total fare with modern glassy effect */}
                 {(() => {
+                  // Common calculations for both scenarios
+                  const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+                  const vatPerSeat = Math.round(busseatPrice * 0.13);
+                  let subtotal;
+
                   if (tripType === 'twoWay') {
                     // Two-way trip calculation
                     const departureFare = Math.round(
@@ -1192,8 +1199,8 @@ const PaymentPage = () => {
                       totalPrice / 2.26 || 
                       2300
                     );
-                    const totalVAT = Math.round((departureFare + returnFare) * 0.13);
-                    const subtotal = departureFare + returnFare + totalVAT;
+                    // Calculate total: base fares + VAT for all seats
+                    subtotal = departureFare + returnFare + (vatPerSeat * (selectedSeats.length + returnSeats.length));
                     
                     return (
                       <div className="backdrop-blur-md bg-gradient-to-r from-emerald-50/90 via-green-50/80 to-emerald-50/90 rounded-2xl p-4 mb-6 border border-emerald-200/50 shadow-xl shadow-emerald-100/50 hover:shadow-2xl hover:shadow-emerald-200/40 transition-all duration-300 transform hover:-translate-y-1">
@@ -1209,17 +1216,15 @@ const PaymentPage = () => {
                     );
                   } else {
                     // One-way trip calculation
+                    // First determine the bus seat price - follow same logic as InlineSeatSelection
+                    const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
                     const baseFare = Math.round(
                       seatPrice * selectedSeats.length || 
                       totalPrice / 1.13 || 
                       2300
                     );
                     
-                    // Calculate VAT amount (13% of base fare)
-                    const vatAmount = Math.round(baseFare * 0.13);
-                    
-                    // Calculate subtotal (base + VAT)
-                    const subtotal = baseFare + vatAmount;
+                    const subtotal = baseFare + (vatPerSeat * selectedSeats.length);
                     
                     return (
                       <div className="backdrop-blur-md bg-gradient-to-r from-emerald-50/90 via-green-50/80 to-emerald-50/90 rounded-2xl p-4 mb-6 border border-emerald-200/50 shadow-xl shadow-emerald-100/50 hover:shadow-2xl hover:shadow-emerald-200/40 transition-all duration-300 transform hover:-translate-y-1">
@@ -1299,8 +1304,11 @@ const PaymentPage = () => {
 
                 {/* Enhanced Final Total with premium glass effect */}
                 {(() => {
+                  // Common calculations for all scenarios
+                  const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+                  const vatPerSeat = Math.round(busseatPrice * 0.13);
                   let subtotal;
-                  
+
                   if (tripType === 'twoWay') {
                     // Two-way trip calculation
                     const departureFare = Math.round(
@@ -1315,8 +1323,11 @@ const PaymentPage = () => {
                       totalPrice / 2.26 || 
                       2300
                     );
-                    const totalVAT = Math.round((departureFare + returnFare) * 0.13);
-                    subtotal = departureFare + returnFare + totalVAT;
+                    // Use the same VAT calculation as in the summary section
+                    const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+                    const vatPerSeat = Math.round(busseatPrice * 0.13);
+                    const vatAmount = vatPerSeat * (selectedSeats.length + returnSeats.length);
+                    subtotal = departureFare + returnFare + vatAmount;
                   } else {
                     // One-way trip calculation
                     const baseFare = Math.round(
@@ -1326,7 +1337,7 @@ const PaymentPage = () => {
                     );
                     
                     // Calculate VAT amount (13% of base fare)
-                    const vatAmount = Math.round(baseFare * 0.13);
+                    const vatAmount = Math.round(busseatPrice * 0.13);
                     
                     // Calculate subtotal (base + VAT)
                     subtotal = baseFare + vatAmount;
@@ -1419,11 +1430,14 @@ const PaymentPage = () => {
 
       {/* Payment Modal */}
       {(() => {
-        // Calculate the final payment amount with VAT and discount
-        let subtotal;
+        // Calculate the total fare with VAT and apply discount
+        let totalAmount;
         
         if (tripType === 'twoWay') {
-          // Two-way trip calculation
+          // Get the bus seat price directly from backend data
+          const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+          
+          // Calculate base fares
           const departureFare = Math.round(
             seatPrice * selectedSeats.length || 
             totalPrice / 2.26 || 
@@ -1436,16 +1450,31 @@ const PaymentPage = () => {
             totalPrice / 2.26 || 
             2300
           );
-          const totalVAT = Math.round((departureFare + returnFare) * 0.13);
-          subtotal = departureFare + returnFare + totalVAT;
+          
+                    // Calculate VAT per seat and multiply by total seats
+                        const vatPerSeat = Math.round(busseatPrice * 0.13);
+                        const vatAmount = vatPerSeat * (selectedSeats.length + returnSeats.length);
+                        // Sum up all components
+                        totalAmount = departureFare + returnFare + vatAmount;
         } else {
           // One-way trip calculation
-          const baseFare = Math.round(seatPrice * selectedSeats.length || totalPrice / 1.13);
-          const vatAmount = Math.round(baseFare * 0.13);
-          subtotal = baseFare + vatAmount;
+          // First determine the bus seat price - follow same logic as InlineSeatSelection
+          const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
+          const baseFare = Math.round(
+            seatPrice * selectedSeats.length || 
+            totalPrice / 1.13 || 
+            2300
+          );
+          // Calculate VAT amount (13% of busseatPrice) per seat
+          const vatPerSeat = Math.round(busseatPrice * 0.13);
+          // Calculate total VAT for all seats
+          const vatAmount = vatPerSeat * selectedSeats.length;
+          // Calculate total amount including VAT for all seats
+          totalAmount = baseFare + vatAmount;
         }
         
-        const finalPaymentAmount = Math.max(0, subtotal - discountAmount);
+        // Calculate final amount by subtracting discount from total fare
+        const finalPaymentAmount = Math.max(0, totalAmount - (discountAmount || 0));
         
         return (
           <PaymentModal
