@@ -39,7 +39,7 @@ const NowBookingSection = () => {
       origin: 'Banepa',
       destination: 'Kalaiya',
       price: 'Rs. 1,100.00',
-      duration: '4h 40m',
+      duration: '4h 15m',
       busType: 'Luxury'
     }
   ];
@@ -61,12 +61,21 @@ const NowBookingSection = () => {
       return;
     }
     
+    // Special handling for card 4: Display shows Banepa-Kalaiya but search should be Kathmandu-Birgunj
+    let searchOrigin = booking.origin;
+    let searchDestination = booking.destination;
+    
+    if (booking.id === 4) {
+      searchOrigin = 'Kathmandu';
+      searchDestination = 'Birgunj';
+    }
+    
     // Prepare search parameters for auto-population for regular cards
     const searchParams = {
-      from: booking.origin,
-      to: booking.destination,
-      fromCity: booking.origin,
-      toCity: booking.destination,
+      from: searchOrigin,
+      to: searchDestination,
+      fromCity: searchOrigin,
+      toCity: searchDestination,
       date: new Date().toLocaleDateString('en-US', { 
         month: '2-digit', 
         day: '2-digit', 
@@ -87,8 +96,8 @@ const NowBookingSection = () => {
             searchParams: searchParams,
             fromAutoSelect: true,
             selectedRoute: {
-              origin: booking.origin,
-              destination: booking.destination,
+              origin: searchOrigin,
+              destination: searchDestination,
               price: booking.price,
               busType: booking.busType
             }
@@ -102,8 +111,8 @@ const NowBookingSection = () => {
           searchParams: searchParams,
           fromAutoSelect: true,
           selectedRoute: {
-            origin: booking.origin,
-            destination: booking.destination,
+            origin: searchOrigin,
+            destination: searchDestination,
             price: booking.price,
             busType: booking.busType
           }
