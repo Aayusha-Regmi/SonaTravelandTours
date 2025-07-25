@@ -143,10 +143,6 @@ const AppRoutes = () => {
       />
       <Route path="/trending-offers" element={<TrendingOffers />} />
 
-
-
-   
-
     </Routes>
   );
 };

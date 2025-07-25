@@ -14,7 +14,7 @@ class PaymentService {
       const url = `${this.baseUrl}/GetPaymentInstrumentDetails`;
       
       const requestBody = {
-        "MerchantId": "7367",
+        "MerchantId": "335",
         "MerchantName": "sonatravelsapi",
         "Signature": "7a611a234fa25b3a54752071d01408119e351fec556e9f193f780e091fc3bfb6ea0cfbee574de27d541e78cd733a6ba1748fd692e6afd0744c14ee2c6ea017b"
       };
