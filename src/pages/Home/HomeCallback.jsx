@@ -36,6 +36,51 @@ const formatDateForAPI = (dateString) => {
   }
 };
 
+// Enhanced validation function for transaction IDs
+const validateTransactionId = (merchantTxnId) => {
+  console.log('🔍 Validating transaction ID:', merchantTxnId);
+  
+  // Check if transaction ID has been used before (in the last 24 hours)
+  const usedTransactions = JSON.parse(localStorage.getItem('usedTransactionIds') || '{}');
+  const now = Date.now();
+  const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+  
+  // Clean up old transaction IDs (older than 24 hours)
+  Object.keys(usedTransactions).forEach(txnId => {
+    if (usedTransactions[txnId] < twentyFourHoursAgo) {
+      delete usedTransactions[txnId];
+    }
+  });
+  
+  // Check if this transaction ID was already used
+  if (usedTransactions[merchantTxnId]) {
+    const usedTime = new Date(usedTransactions[merchantTxnId]).toLocaleString();
+    throw new Error(`This transaction ID was already used on ${usedTime}. Please initiate a new payment.`);
+  }
+  
+  // Mark this transaction as used
+  usedTransactions[merchantTxnId] = now;
+  localStorage.setItem('usedTransactionIds', JSON.stringify(usedTransactions));
+  
+  console.log('✅ Transaction ID validation passed');
+  return true;
+};
+
+// Function to clear all payment-related storage after successful booking
+const clearPaymentStorage = () => {
+  console.log('🧹 Clearing payment-related storage...');
+  
+  // Clear session storage
+  sessionStorage.removeItem('pendingBooking');
+  sessionStorage.removeItem('attemptedBookings');
+  
+  // Clear local storage
+  localStorage.removeItem('currentBookingData');
+  localStorage.removeItem('redirectAfterLogin');
+  
+  console.log('✅ Payment storage cleared');
+};
+
 const HomeCallback = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,15 +107,33 @@ const HomeCallback = () => {
     });
 
     if (merchantTxnId && gatewayTxnId) {
-      // Store the payment parameters
-      setPaymentParams({
-        merchantTxnId,
-        gatewayTxnId,
-        timestamp: new Date().toISOString()
-      });
-      
-      // Immediately call /payment/onepg API
-      checkPaymentStatusOnePg(merchantTxnId, gatewayTxnId);
+      try {
+        // Validate transaction ID before processing
+        validateTransactionId(merchantTxnId);
+        
+        // Store the payment parameters
+        setPaymentParams({
+          merchantTxnId,
+          gatewayTxnId,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Immediately call /payment/onepg API
+        checkPaymentStatusOnePg(merchantTxnId, gatewayTxnId);
+      } catch (validationError) {
+        console.error('❌ Transaction validation failed:', validationError.message);
+        
+        // Still set payment params so we don't get stuck in loading state
+        setPaymentParams({
+          merchantTxnId,
+          gatewayTxnId,
+          timestamp: new Date().toISOString()
+        });
+        
+        setPaymentStatus('error');
+        setError(validationError.message);
+        setIsProcessing(false);
+      }
     } else {
       // No payment parameters, redirect to main home page
       console.log('No payment parameters found, redirecting to /main');
@@ -185,9 +248,9 @@ const HomeCallback = () => {
       console.log(JSON.stringify(seatPaymentData, null, 2));
       
       // 🔍 Enhanced debugging for 500 error diagnosis
-      console.log('🔍 DEBUG: Authentication check before API call');
-      console.log('🔍 Auth token exists:', !!localStorage.getItem('authToken') || !!sessionStorage.getItem('authToken'));
-      console.log('🔍 Seat payment data validation:');
+      console.log(' DEBUG: Authentication check before API call');
+      console.log(' Auth token exists:', !!localStorage.getItem('authToken') || !!sessionStorage.getItem('authToken'));
+      console.log(' Seat payment data validation:');
       console.log('- Travel date format:', seatPaymentData.seatInfo.dateOfTravel);
       console.log('- Bus ID type:', typeof seatPaymentData.seatInfo.busId, seatPaymentData.seatInfo.busId);
       console.log('- Passengers count:', seatPaymentData.seatInfo.passengersList.length);
@@ -195,12 +258,15 @@ const HomeCallback = () => {
       
       const result = await paymentService.processSeatPayment(seatPaymentData);
       
-      console.log('📥 Seat booking result:', result);
+      console.log(' Seat booking result:', result);
       setBookingResult(result);
       
       if (result.success && result.isBookingSuccessful) {
         console.log('✅ Seats booked successfully!');
         setPaymentStatus('success');
+        
+        // Clear all payment-related storage after successful booking
+        clearPaymentStorage();
         
         // Extract receipt data from the response
         if (result.data) {
@@ -237,7 +303,7 @@ const HomeCallback = () => {
         
         // Show loading receipt for 2 seconds, then show receipt buttons
         setTimeout(() => {
-          console.log('📋 Receipt data ready for display:', receiptData);
+          console.log(' Receipt data ready for display:', receiptData);
           setShowReceiptButtons(true);
         }, 2000);
         
@@ -251,7 +317,7 @@ const HomeCallback = () => {
           setIsProcessing(false);
         }, 3000);
       } else {
-        console.log('❌ Seat booking failed:', result.error);
+        console.log(' Seat booking failed:', result.error);
         
         // Check if payment was successful but booking failed
         if (result.data?.paymentDetails?.status === 'fail') {
@@ -263,7 +329,7 @@ const HomeCallback = () => {
         }
       }
     } catch (error) {
-      console.error('❌ Error in seat booking:', error);
+      console.error(' Error in seat booking:', error);
       
       // Handle specific database constraint violations
       if (error.message && error.message.includes('UNIQUE KEY constraint')) {
@@ -283,12 +349,33 @@ const HomeCallback = () => {
 
   // Function to handle retry payment
   const handleRetryPayment = () => {
-    // Navigate back to payment page with current booking data
-    const bookingData = localStorage.getItem('currentBookingData') || sessionStorage.getItem('pendingBooking');
-    if (bookingData) {
-      sessionStorage.setItem('retryBookingData', bookingData);
+    console.log('🔄 Handling retry payment...');
+    
+    // Clear any old transaction data to prevent reuse
+    const usedTransactions = JSON.parse(localStorage.getItem('usedTransactionIds') || '{}');
+    if (paymentParams?.merchantTxnId) {
+      delete usedTransactions[paymentParams.merchantTxnId];
+      localStorage.setItem('usedTransactionIds', JSON.stringify(usedTransactions));
     }
-    navigate('/payment');
+    
+    // Clear current attempt tracking
+    sessionStorage.removeItem('attemptedBookings');
+    
+    // Check if we have booking data to retry with
+    const bookingData = localStorage.getItem('currentBookingData') || 
+                       sessionStorage.getItem('pendingBooking') ||
+                       localStorage.getItem('redirectAfterLogin');
+    
+    if (bookingData) {
+      // Store retry data and navigate to payment
+      sessionStorage.setItem('retryBookingData', bookingData);
+      console.log('📦 Saved booking data for retry, navigating to payment page');
+      navigate('/payment');
+    } else {
+      // No booking data found, redirect to search results
+      console.log('❌ No booking data found, redirecting to search results');
+      navigate('/search-results');
+    }
   };
 
   // Function to close receipt popup
@@ -415,7 +502,8 @@ const HomeCallback = () => {
     };
   };
 
-  if (!paymentParams) {
+  // Show loading state only when we don't have payment params AND we're not in an error state
+  if (!paymentParams && paymentStatus !== 'error') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
