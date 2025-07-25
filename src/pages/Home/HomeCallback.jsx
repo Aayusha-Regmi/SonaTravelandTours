@@ -507,6 +507,25 @@ const HomeCallback = () => {
                   </svg>
                   Download Receipt PDF
                 </button>
+                <button 
+                  onClick={() => {
+                    console.log('🔙 Navigating to My Bookings...');
+                    // Navigate to user profile with my bookings tab active
+                    navigate('/profile?tab=bookings', { 
+                      replace: true,
+                      state: { 
+                        activeTab: 'bookings',
+                        fromPaymentSuccess: true 
+                      }
+                    });
+                  }}
+                  className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                  </svg>
+                  Go back
+                </button>
               </div>
             )}
           </div>

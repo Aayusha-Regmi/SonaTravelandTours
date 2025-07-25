@@ -50,9 +50,16 @@ const UserProfile = () => {
     const urlParams = new URLSearchParams(location.search);
     const tabParam = urlParams.get('tab');
     
-    if (tabParam === 'mybookings') {
+    // Check for different variations of booking tab parameter
+    if (tabParam === 'mybookings' || tabParam === 'bookings') {
       return 1; // My Bookings tab index
     }
+    
+    // Check if coming from payment success (from state)
+    if (location.state?.activeTab === 'mybookings' || location.state?.fromPaymentSuccess) {
+      return 1; // My Bookings tab index
+    }
+    
     return 0; // Default to My Account
   };
 
