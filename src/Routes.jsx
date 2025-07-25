@@ -7,13 +7,13 @@ import PlaceholderPage from './components/PlaceholderPage';
 
 // Import page components
 import HomePage from './pages/Home/Home';
+import HomeCallback from './pages/Home/HomeCallback';
 import SearchResultsPage from './pages/SearchResults/SearchResultsPage';
 import LoginPage from './pages/Auth/LoginPage';
 import SignupPage from './pages/Auth/SignupPage';
 import PhoneSignupPage from './pages/Auth/PhoneSignupPage';
 import OTPVerificationPage from './pages/Auth/OTPVerificationPage';
 import PaymentPage from './pages/Payment/PaymentPage';
-import PaymentCallback from './pages/PaymentCallback';
 import PassengerDetail from './pages/BookingPassengerDetails/PassengerDetail';
 import ContactUs from './pages/ContactUs/ContactUs';
 import AboutUs from './pages/AboutUs/AboutUs';
@@ -40,6 +40,8 @@ const AppRoutes = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/main" element={<HomePage />} />
+      <Route path="/home" element={<HomeCallback />} />
       <Route path="/bus-routes" element={<BusRoutes />} />
       <Route path="/hotels" element={<HotelsPage />} />
       <Route path="/tours" element={<ToursPage />} />
@@ -87,12 +89,6 @@ const AppRoutes = () => {
             <PaymentPage />
           </ProtectedRoute>
         } 
-      />
-
-      {/* Payment callback route for NPS gateway return */}
-      <Route 
-        path="/payment/callback" 
-        element={<PaymentCallback />} 
       />
       
       <Route 
@@ -149,8 +145,7 @@ const AppRoutes = () => {
 
 
 
-      {/* test pages*/}
-        <Route path="/doing" element = {<doing/>} />
+   
 
     </Routes>
   );

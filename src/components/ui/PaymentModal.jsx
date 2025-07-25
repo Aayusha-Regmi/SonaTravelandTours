@@ -63,6 +63,21 @@ const PaymentModal = ({
   // Initialize payment modal when opened
   useEffect(() => {
     if (isOpen) {
+      // Store booking data immediately when modal opens (fix for callback storage issue)
+      const bookingData = {
+        totalPrice: totalPrice,
+        passengers: passengers,
+        selectedSeats: selectedSeats,
+        travelDate: travelDate,
+        bookingDetails: bookingDetails,
+        searchParams: searchParams
+      };
+      
+      // Store in both sessionStorage and localStorage for redundancy
+      sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+      localStorage.setItem('currentBookingData', JSON.stringify(bookingData));
+      console.log('💾 Booking data stored immediately on modal open for callback safety');
+      
       // Set up session expiry handler for this modal
       setSessionExpiredCallback(() => {
         handleSessionExpiry('Please login to continue with payment');
