@@ -297,111 +297,111 @@ const BusRoutes = () => {
                 </div>
               </div>
             </div>
-          </div>          {/* Ultra Premium Video Section with Supreme Glassmorphism */}
-          <div className="mb-32">
-            <div className="max-w-8xl mx-auto">
+          </div>          {/* Mobile-Optimized Journey Through Nepal Video Section */}
+          <div className="mb-16 sm:mb-24 lg:mb-32">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="relative group">
-                {/* Supreme main container with ultra-enhanced glassmorphism */}
-                <div className="relative backdrop-blur-3xl bg-gradient-to-br from-white/60 via-white/40 to-white/20 border-2 border-white/60 rounded-[3rem] p-16 shadow-3xl hover:shadow-4xl transition-all duration-1000 hover:scale-[1.01] hover:bg-gradient-to-br hover:from-white/70 hover:via-white/50 hover:to-white/30 group-hover:border-white/80">
-                  {/* Supreme glassmorphism overlay effects with enhanced depth */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/15 via-purple-500/12 to-pink-500/15 rounded-[3rem] blur-3xl"></div>
-                  <div className="absolute inset-0 bg-gradient-to-tl from-cyan-500/10 via-transparent to-violet-500/10 rounded-[3rem]"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-[3rem]"></div>
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/30 rounded-[3rem]"></div>
+                {/* Mobile-friendly main container */}
+                <div className="relative backdrop-blur-xl bg-gradient-to-br from-white/70 via-white/50 to-white/40 border border-white/60 rounded-2xl sm:rounded-3xl lg:rounded-[3rem] p-6 sm:p-12 lg:p-16 shadow-2xl hover:shadow-3xl transition-all duration-700 hover:scale-[1.01] overflow-hidden">
                   
-                  {/* Ultra premium animated gradient orbs with enhanced effects */}
-                  <div className="absolute -top-60 -left-60 w-[600px] h-[600px] bg-gradient-to-r from-blue-400/40 via-cyan-400/30 to-indigo-400/40 rounded-full blur-3xl animate-pulse opacity-70 group-hover:opacity-90 transition-opacity duration-700"></div>
-                  <div className="absolute -bottom-60 -right-60 w-[600px] h-[600px] bg-gradient-to-r from-pink-400/40 via-purple-400/30 to-violet-400/40 rounded-full blur-3xl animate-pulse opacity-70 group-hover:opacity-90 transition-opacity duration-700" style={{ animationDelay: '1.5s' }}></div>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-r from-indigo-400/25 via-blue-400/20 to-cyan-400/25 rounded-full blur-3xl animate-pulse opacity-50 group-hover:opacity-70 transition-opacity duration-700" style={{ animationDelay: '3s' }}></div>
+                  {/* Background Effects - Simplified for mobile */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/8 to-pink-500/10 rounded-2xl sm:rounded-3xl lg:rounded-[3rem]"></div>
+                  <div className="absolute inset-0 bg-gradient-to-tl from-cyan-500/5 via-transparent to-violet-500/5 rounded-2xl sm:rounded-3xl lg:rounded-[3rem]"></div>
                   
-                  {/* Floating crystal-like elements */}
-                  <div className="absolute top-20 left-20 w-8 h-8 bg-gradient-to-r from-blue-400/60 to-cyan-400/60 rounded-lg rotate-45 animate-pulse blur-sm"></div>
-                  <div className="absolute bottom-20 right-20 w-6 h-6 bg-gradient-to-r from-purple-400/60 to-pink-400/60 rounded-lg rotate-12 animate-pulse blur-sm" style={{ animationDelay: '1s' }}></div>
-                  <div className="absolute top-1/3 right-1/4 w-4 h-4 bg-gradient-to-r from-indigo-400/60 to-blue-400/60 rounded-full animate-pulse blur-sm" style={{ animationDelay: '2s' }}></div>
+                  {/* Floating Elements - Reduced for mobile */}
+                  <div className="absolute top-4 left-4 sm:top-8 sm:left-8 lg:top-20 lg:left-20 w-3 h-3 sm:w-4 sm:h-4 lg:w-8 lg:h-8 bg-gradient-to-r from-blue-400/40 to-cyan-400/40 rounded-lg rotate-45 animate-pulse blur-sm"></div>
+                  <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 lg:bottom-20 lg:right-20 w-2 h-2 sm:w-3 sm:h-3 lg:w-6 lg:h-6 bg-gradient-to-r from-purple-400/40 to-pink-400/40 rounded-lg rotate-12 animate-pulse blur-sm" style={{ animationDelay: '1s' }}></div>
                   
-                  <div className="relative z-30">
-                    <div className="text-center mb-16">
-                      <div className="inline-flex items-center bg-gradient-to-r from-white/90 via-red-50/90 to-white/90 backdrop-blur-xl border-2 border-white/60 shadow-2xl px-12 py-6 rounded-3xl text-lg font-black mb-12 hover:shadow-3xl transition-all duration-500 hover:scale-105 group-hover:border-red-200/80">
-                        <div className="relative mr-4">
-                          <span className="w-4 h-4 bg-gradient-to-r from-red-500 via-pink-500 to-red-600 rounded-full animate-pulse flex"></span>
-                          <div className="absolute inset-0 w-4 h-4 bg-gradient-to-r from-red-400 via-pink-400 to-red-500 rounded-full blur-md animate-pulse opacity-70"></div>
+                  <div className="relative z-10">
+                    {/* Header Section - Mobile Optimized */}
+                    <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+                      {/* Mobile-friendly badge */}
+                      <div className="inline-flex items-center bg-gradient-to-r from-white/80 via-red-50/80 to-white/80 backdrop-blur-lg border border-white/60 shadow-xl px-4 sm:px-8 lg:px-12 py-3 sm:py-4 lg:py-6 rounded-full text-sm sm:text-base lg:text-lg font-bold mb-6 sm:mb-8 lg:mb-12 hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                        <div className="relative mr-2 sm:mr-3 lg:mr-4">
+                          <span className="w-2 h-2 sm:w-3 sm:h-3 lg:w-4 lg:h-4 bg-gradient-to-r from-red-500 via-pink-500 to-red-600 rounded-full animate-pulse flex"></span>
+                          <div className="absolute inset-0 w-2 h-2 sm:w-3 sm:h-3 lg:w-4 lg:h-4 bg-gradient-to-r from-red-400 via-pink-400 to-red-500 rounded-full blur-sm animate-pulse opacity-70"></div>
                         </div>
-                        <span className="bg-gradient-to-r from-red-600 via-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent tracking-wider">
-                          ● LIVE • FEATURED JOURNEY VIDEO • PREMIUM EXPERIENCE
+                        <span className="bg-gradient-to-r from-red-600 via-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent tracking-wide">
+                          ● LIVE • JOURNEY VIDEO • PREMIUM
                         </span>
-                        <div className="ml-4 w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
-                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="ml-2 sm:ml-3 lg:ml-4 w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                          <svg className="w-2 h-2 sm:w-3 sm:h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M8 5v10l6-5-6-5z"/>
                           </svg>
                         </div>
                       </div>
                       
-                      <h2 className="text-6xl md:text-7xl lg:text-8xl font-black mb-12 leading-tight tracking-tight">
-                        <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-2xl">
+                      {/* Mobile-responsive heading */}
+                      <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-6 sm:mb-8 lg:mb-12 leading-tight tracking-tight">
+                        <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-lg">
                           Journey Through Nepal
                         </span>
                       </h2>
-                      <p className="text-gray-800 text-2xl md:text-3xl max-w-4xl mx-auto leading-relaxed font-light">
+                      
+                      {/* Mobile-optimized description */}
+                      <p className="text-gray-800 text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl max-w-4xl mx-auto leading-relaxed font-light px-4 sm:px-0">
                         Experience the <span className="font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">scenic beauty of Nepal</span> as our premium buses traverse through 
-                        <br className="hidden lg:block" />
+                        <br className="hidden sm:block" />
                         <span className="font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">majestic mountains, serene valleys,</span> and vibrant cities
                       </p>
                     </div>
                     
-                    {/* Ultra Premium YouTube Video Embed with Supreme styling */}
-                    <div className="relative group/video">
-                      {/* Animated rainbow gradient border with enhanced glow */}
-                      <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 via-purple-500 via-pink-500 via-red-500 via-yellow-500 via-green-500 to-blue-500 rounded-[2.5rem] blur-2xl opacity-70 group-hover/video:opacity-90 transition-opacity duration-700 animate-pulse" style={{ animationDuration: '4s' }}></div>
+                    {/* Mobile-Optimized YouTube Video Embed */}
+                    <div className="relative group/video mb-8 sm:mb-12">
+                      {/* Simplified gradient border for mobile */}
+                      <div className="absolute -inset-1 sm:-inset-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-xl sm:rounded-2xl lg:rounded-[2.5rem] blur-lg sm:blur-xl lg:blur-2xl opacity-50 sm:opacity-70 group-hover/video:opacity-80 sm:group-hover/video:opacity-90 transition-opacity duration-700"></div>
                       
-                      <div className="relative bg-gradient-to-br from-white/50 to-white/20 p-6 rounded-[2.5rem] backdrop-blur-xl border-2 border-white/60 shadow-3xl group-hover/video:shadow-4xl transition-all duration-500">
-                        <div className="relative w-full overflow-hidden rounded-[2rem] shadow-3xl" style={{ paddingBottom: '56.25%' }}>
+                      <div className="relative bg-gradient-to-br from-white/60 to-white/30 p-3 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl lg:rounded-[2.5rem] backdrop-blur-lg border border-white/60 shadow-2xl group-hover/video:shadow-3xl transition-all duration-500">
+                        <div className="relative w-full overflow-hidden rounded-lg sm:rounded-xl lg:rounded-[2rem] shadow-2xl" style={{ paddingBottom: '56.25%' }}>
                           <iframe
-                            className="absolute top-0 left-0 w-full h-full rounded-[2rem]"
-                            src="https://www.youtube.com/embed/3HtnJHP0sRI?si=jLIEqPtu0Co3k_rP&autoplay=1&loop=1&mute=1&playlist=3HtnJHP0sRI&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&quality=hd1080&cc_load_policy=1&hl=en&cc_lang_pref=en"
+                            className="absolute top-0 left-0 w-full h-full rounded-lg sm:rounded-xl lg:rounded-[2rem]"
+                            src="https://www.youtube.com/embed/3HtnJHP0sRI?si=jLIEqPtu0Co3k_rP&autoplay=0&loop=1&mute=0&playlist=3HtnJHP0sRI&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&quality=hd1080&cc_load_policy=1&hl=en&cc_lang_pref=en"
                             title="Sona Travel & Tours - Premium Bus Routes Network Journey Across Nepal | Ultra HD Experience"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowFullScreen="true"
                           ></iframe>
                           
-                          {/* Premium video overlay with enhanced gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent via-transparent to-white/10 rounded-[2rem] pointer-events-none"></div>
+                          {/* Video overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-white/5 rounded-lg sm:rounded-xl lg:rounded-[2rem] pointer-events-none"></div>
                           
-                          {/* Floating play indicator */}
-                          <div className="absolute top-6 left-6 bg-red-500/20 backdrop-blur-sm border border-red-300/50 px-4 py-2 rounded-full flex items-center space-x-2 pointer-events-none">
-                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                            <span className="text-white text-sm font-semibold">LIVE</span>
+                          {/* Mobile-friendly live indicator */}
+                          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 lg:top-6 lg:left-6 bg-red-500/20 backdrop-blur-sm border border-red-300/50 px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 rounded-full flex items-center space-x-1 sm:space-x-2 pointer-events-none">
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full animate-pulse"></div>
+                            <span className="text-white text-xs sm:text-sm font-semibold">LIVE</span>
                           </div>
                         </div>
                       </div>
                     </div>
                     
-                    {/* Supreme video description with ultra-premium glassmorphism */}
-                    <div className="mt-12 backdrop-blur-3xl bg-gradient-to-r from-white/50 via-white/40 to-white/50 border-2 border-white/60 rounded-3xl p-10 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:bg-gradient-to-r hover:from-white/60 hover:via-white/50 hover:to-white/60">
-                      <div className="flex flex-col xl:flex-row items-center justify-between gap-8">
-                        <div className="text-center xl:text-left">
-                          <h3 className="text-3xl font-black text-gray-900 mb-4">
+                    {/* Mobile-Optimized video description */}
+                    <div className="backdrop-blur-xl bg-gradient-to-r from-white/60 via-white/40 to-white/60 border border-white/60 rounded-xl sm:rounded-2xl lg:rounded-3xl p-4 sm:p-6 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500">
+                      <div className="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6 lg:gap-8">
+                        <div className="text-center lg:text-left">
+                          <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 mb-2 sm:mb-3 lg:mb-4">
                             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Watch Our Premium Fleet in Action</span>
                           </h3>
-                          <p className="text-gray-700 text-xl leading-relaxed">
+                          <p className="text-gray-700 text-sm sm:text-base lg:text-xl leading-relaxed">
                             Discover why <span className="font-bold text-gray-900">thousands of travelers</span> choose Sona Travel & Tours for their journey across Nepal
                           </p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-6">
-                          <div className="flex items-center space-x-3 bg-white/40 backdrop-blur-xl px-6 py-3 rounded-2xl border-2 border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                            <div className="w-4 h-4 bg-red-500 rounded-full animate-pulse"></div>
-                            <span className="text-sm font-bold text-gray-700">Live Coverage</span>
+                        
+                        {/* Mobile-friendly feature badges */}
+                        <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 lg:gap-6">
+                          <div className="flex items-center space-x-2 bg-white/40 backdrop-blur-lg px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                            <div className="w-2 h-2 sm:w-3 sm:h-3 lg:w-4 lg:h-4 bg-red-500 rounded-full animate-pulse"></div>
+                            <span className="text-xs sm:text-sm font-bold text-gray-700">Live Coverage</span>
                           </div>
-                          <div className="flex items-center space-x-3 bg-white/40 backdrop-blur-xl px-6 py-3 rounded-2xl border-2 border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                            <svg className="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                          <div className="flex items-center space-x-2 bg-white/40 backdrop-blur-lg px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
-                            <span className="text-sm font-bold text-gray-700">Ultra HD 4K</span>
+                            <span className="text-xs sm:text-sm font-bold text-gray-700">Ultra HD</span>
                           </div>
-                          <div className="flex items-center space-x-3 bg-white/40 backdrop-blur-xl px-6 py-3 rounded-2xl border-2 border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                            <svg className="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                          <div className="flex items-center space-x-2 bg-white/40 backdrop-blur-lg px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
-                            <span className="text-sm font-bold text-gray-700">Premium Quality</span>
+                            <span className="text-xs sm:text-sm font-bold text-gray-700">Premium</span>
                           </div>
                         </div>
                       </div>

@@ -495,7 +495,7 @@ const Header = () => {
             </Link>
             
             <Link 
-              to="/contact-us" 
+              to="/contact" 
               className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-all duration-300 py-2 border-b border-gray-100 last:border-b-0 cursor-pointer hover:scale-105 hover:font-semibold hover:pl-2"
               onClick={() => setIsMenuOpen(false)}
             >
