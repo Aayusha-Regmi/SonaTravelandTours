@@ -93,6 +93,7 @@ const HomeCallback = () => {
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
   const [showReceiptButtons, setShowReceiptButtons] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(null);
 
   useEffect(() => {
     // Extract query parameters from URL
@@ -144,6 +145,35 @@ const HomeCallback = () => {
     }
   }, [location.search, navigate]);
 
+  // Add countdown effect for successful payments
+  useEffect(() => {
+    if (paymentStatus === 'success' && showReceiptButtons) {
+      // Start 5-second countdown
+      setRedirectCountdown(5);
+      
+      const countdownInterval = setInterval(() => {
+        setRedirectCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            // Redirect to My Bookings after countdown
+            navigate('/profile?tab=bookings', { 
+              replace: true,
+              state: { 
+                activeTab: 'bookings',
+                fromPaymentSuccess: true 
+              }
+            });
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Cleanup interval on component unmount
+      return () => clearInterval(countdownInterval);
+    }
+  }, [paymentStatus, showReceiptButtons, navigate]);
+
   // Step 1: Check payment status using /payment/onepg API
   const checkPaymentStatusOnePg = async (merchantTxnId, gatewayTxnId) => {
     console.log('Step 1: Checking payment status with /payment/onepg...');
@@ -153,22 +183,22 @@ const HomeCallback = () => {
     try {
       const result = await paymentService.checkPaymentOnePg(merchantTxnId, gatewayTxnId);
       
-      console.log('📥 Payment status result:', result);
+      console.log(' Payment status result:', result);
       setTransactionResult(result);
       
       if (result.success && result.isPaymentSuccessful) {
-        console.log('✅ Payment successful, proceeding to book seats...');
+        console.log(' Payment successful, proceeding to book seats...');
         setPaymentStatus('booking');
         
         // Step 2: Call /seat/payment to book seats
         await bookSeatsAfterPayment(merchantTxnId);
       } else {
-        console.log('❌ Payment failed or not successful:', result.status);
+        console.log(' Payment failed or not successful:', result.status);
         setPaymentStatus('failed');
         setError('Payment got failed. Please try again.');
       }
     } catch (error) {
-      console.error('❌ Error in payment status check:', error);
+      console.error(' Error in payment status check:', error);
       setPaymentStatus('error');
       setError(error.message || 'Failed to check payment status');
     }
@@ -526,19 +556,10 @@ const HomeCallback = () => {
             paymentStatus === 'failed' || paymentStatus === 'error' || paymentStatus === 'booking_failed' || paymentStatus === 'booking_error' ? 'bg-red-600' : 
             'bg-blue-600'
           }`}>
-            {paymentStatus === 'success' ? (
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-            ) : paymentStatus === 'failed' || paymentStatus === 'error' || paymentStatus === 'booking_failed' || paymentStatus === 'booking_error' ? (
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            ) : (
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-              </svg>
-            )}
+            {/* Company "S" Logo */}
+            <div className="text-white text-2xl font-bold font-serif">
+              S
+            </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Sona Travel & Tours</h1>
         </div>
@@ -568,6 +589,25 @@ const HomeCallback = () => {
             </div>
             <h2 className="text-xl font-semibold text-green-800 mb-2">Payment Successful!</h2>
             <p className="text-gray-600">Your seats have been booked successfully.</p>
+            
+            {/* Auto-redirect countdown */}
+            {redirectCountdown !== null && redirectCountdown > 0 && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-center mb-2">
+                  <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span className="text-blue-800 font-medium">Auto-redirecting in {redirectCountdown}s</span>
+                </div>
+                <p className="text-sm text-blue-600">You'll be redirected to My Bookings automatically</p>
+                <div className="w-full bg-blue-200 rounded-full h-1.5 mt-2">
+                  <div 
+                    className="bg-blue-600 h-1.5 rounded-full transition-all duration-1000" 
+                    style={{ width: `${((5 - redirectCountdown) / 5) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
             
             {/* Loading Receipt State */}
             {!showReceiptButtons && receiptData && (
@@ -600,7 +640,9 @@ const HomeCallback = () => {
                 </button>
                 <button 
                   onClick={() => {
-                    console.log('🔙 Navigating to My Bookings...');
+                    console.log('🔙 Navigating to My Bookings manually...');
+                    // Clear countdown if user manually navigates
+                    setRedirectCountdown(null);
                     // Navigate to user profile with my bookings tab active
                     navigate('/profile?tab=bookings', { 
                       replace: true,
@@ -615,7 +657,7 @@ const HomeCallback = () => {
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                   </svg>
-                  Go back
+                  Go back {redirectCountdown && redirectCountdown > 0 ? `(${redirectCountdown}s)` : ''}
                 </button>
               </div>
             )}
