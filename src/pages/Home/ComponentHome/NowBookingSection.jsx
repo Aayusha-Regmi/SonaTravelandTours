@@ -36,7 +36,7 @@ const NowBookingSection = () => {
     },
     {
       id: 4,
-      origin: 'Panauti',
+      origin: 'Banepa',
       destination: 'Kalaiya',
       price: 'Rs. 1,100.00',
       duration: '4h 40m',
