@@ -153,10 +153,10 @@ const MyBookings = () => {
 };
 
 function BookingCard({ booking, isLive = false }) {
-  // Extract data from booking object according to API structure
-  const seats = booking.passengers?.map(p => p.seatNumber).join(', ') || 'N/A';
-  const boarding = booking.passengers?.[0]?.boardingPlace || 'N/A';
-  const deboarding = booking.passengers?.[0]?.deboardingPlace || 'N/A';
+  // Extract data from booking object according to actual API structure
+  const seats = booking.seatNumber || 'N/A';
+  const boarding = booking.boarding_place || booking.boardingPlace || 'N/A';
+  const deboarding = booking.deboarding_place || booking.deboardingPlace || 'N/A';
   const travelDate = booking.travelDate ? new Date(booking.travelDate) : null;
   const formattedDate = travelDate ? travelDate.toLocaleDateString('en-US', {
     month: '2-digit',
