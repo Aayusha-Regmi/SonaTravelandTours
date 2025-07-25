@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import Button from '../../../components/ui/Button';
 import Chip from './Chip';
 import api from '../../../services/api';
@@ -232,6 +233,37 @@ const BusListings = ({
   // Handle seat selection - show inline seat selection
   const handleSelectSeats = (bus) => {
     console.log('Select Seats clicked for bus:', bus);
+    
+    // Validation: Check if required search parameters are selected
+    const hasValidFrom = searchParams.fromCity && searchParams.fromCity.trim() !== '';
+    const hasValidTo = searchParams.toCity && searchParams.toCity.trim() !== '';
+    const hasValidDate = searchParams.date && searchParams.date.trim() !== '' && searchParams.date !== null;
+    
+    if (!hasValidFrom || !hasValidTo || !hasValidDate) {
+      console.warn('❌ Cannot select seats - missing required parameters:', {
+        fromCity: searchParams.fromCity,
+        toCity: searchParams.toCity,
+        date: searchParams.date
+      });
+      
+      // Show error message to user
+      if (typeof toast !== 'undefined') {
+        toast.error('Please select From, To, and Date before viewing seat map.');
+      } else {
+        alert('Please select From, To, and Date before viewing seat map.');
+      }
+      return;
+    }
+    
+    // Additional validation: From and To should be different
+    if (searchParams.fromCity === searchParams.toCity) {
+      if (typeof toast !== 'undefined') {
+        toast.error('From and To locations cannot be the same.');
+      } else {
+        alert('From and To locations cannot be the same.');
+      }
+      return;
+    }
     
     // If same bus is clicked, toggle off
     if (selectedBusForSeats && selectedBusForSeats.id === bus.id) {

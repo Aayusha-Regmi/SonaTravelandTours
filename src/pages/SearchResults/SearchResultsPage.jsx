@@ -40,7 +40,7 @@ const SearchResultsPage = () => {
   // Set default values or values from search params
   const [fromLocation, setFromLocation] = useState(searchParams.fromCity || 'Birgunj');
   const [toLocation, setToLocation] = useState(searchParams.toCity || 'Kathmandu');
-  const [travelDate, setTravelDate] = useState(searchParams.date || '06/06/2024');
+  const [travelDate, setTravelDate] = useState(searchParams.date || null); // Changed to null instead of hardcoded date
   const [sortBy, setSortBy] = useState('Earliest');
   
   // Seat selection state for two-way trips
