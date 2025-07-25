@@ -123,6 +123,9 @@ const HomeCallback = () => {
       } catch (validationError) {
         console.error('❌ Transaction validation failed:', validationError.message);
         
+        // Clear URL parameters to prevent refresh attempts with old transaction
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
         // Still set payment params so we don't get stuck in loading state
         setPaymentParams({
           merchantTxnId,
