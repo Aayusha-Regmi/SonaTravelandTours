@@ -20,7 +20,7 @@ const Feed = () => {
       // Load Facebook SDK script
       if (!document.getElementById('facebook-jssdk')) {
         const script = document.createElement('script');
-        script.src = "https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v23.0";
+        script.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v23.0";
         script.async = true;
         script.defer = true;
         script.crossOrigin = "anonymous";
@@ -152,36 +152,83 @@ const Feed = () => {
               {/* Facebook Root Element */}
               <div id="fb-root"></div>
               
-              {/* Centered Facebook Iframe Container */}
+              {/* Redesigned Facebook Page Plugin Container */}
               <div className="flex justify-center w-full">
                 <div className="w-full max-w-md mx-auto">
-                  <div className="w-full h-[400px] sm:h-[500px] lg:h-[850px] relative border border-gray-700/30 rounded-lg overflow-hidden">
-                    <iframe 
-                      src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fsonatraveltours%2F&tabs=timeline&width=400&height=850&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" 
-                      width="100%" 
-                      height="100%" 
-                      style={{border: 'none', overflow: 'hidden'}} 
-                      scrolling="no" 
-                      frameBorder="0" 
-                      allowFullScreen={true} 
-                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                      className="w-full h-full"
-                    />
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-cyan-400/20 to-blue-500/20 rounded-xl blur-lg group-hover:blur-xl transition-all duration-700"></div>
+                    <div className="relative backdrop-blur-xl bg-gradient-to-br from-gray-900/80 via-blue-900/60 to-gray-900/80 rounded-xl p-4 border border-blue-400/30 shadow-2xl group-hover:border-blue-400/50 transition-all duration-700">
+                      
+                      {/* Holographic Frame - Full Facebook Integration */}
+                      <div className="relative overflow-hidden rounded-lg border-2 border-blue-400/40 group-hover:border-blue-400/70 transition-all duration-500">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-cyan-400/5 to-blue-500/10"></div>
+                        
+                        {/* Facebook Page Plugin - Full Card Integration */}
+                        <div className="relative rounded-lg overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] w-full flex items-center justify-center">
+                          <div 
+                            className="fb-page" 
+                            data-href="https://www.facebook.com/sonatraveltours/" 
+                            data-tabs="timeline" 
+                            data-width="400" 
+                            data-height="600" 
+                            data-small-header="true" 
+                            data-adapt-container-width="true" 
+                            data-hide-cover="false" 
+                            data-show-facepile="true"
+                          >
+                            <blockquote 
+                              cite="https://www.facebook.com/sonatraveltours/" 
+                              className="fb-xfbml-parse-ignore"
+                            >
+                              <a href="https://www.facebook.com/sonatraveltours/">
+                                Sona Travel &amp; Tours Pvt. Ltd.
+                              </a>
+                            </blockquote>
+                          </div>
+                        </div>
+                        
+                        {/* Cyberpunk Corner Accents */}
+                        <div className="absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 border-cyan-400/60"></div>
+                        <div className="absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 border-cyan-400/60"></div>
+                        <div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-cyan-400/60"></div>
+                        <div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-cyan-400/60"></div>
+                      </div>
+                      
+                      {/* Holographic Status Indicators */}
+                      <div className="flex items-center justify-center gap-2 mt-4">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500/20 to-cyan-400/20 backdrop-blur-sm rounded-lg border border-blue-400/30">
+                          <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                          <span className="text-blue-400 text-xs font-semibold">LIVE</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-500/20 to-emerald-400/20 backdrop-blur-sm rounded-lg border border-green-400/30">
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                          <span className="text-green-400 text-xs font-semibold">CONNECTED</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
               
-              {/* Mobile Responsive Status Indicator */}
-              <div className="mt-3 text-center">
-                <div className="relative inline-block">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-cyan-400/20 to-blue-500/20 rounded-lg blur-sm"></div>
-                  <div className="relative px-3 py-2 backdrop-blur-sm border border-cyan-400/30 rounded-lg">
-                    <p className="text-gray-300 text-xs sm:text-sm">
-                      <span className="inline-flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                        Live updates from our Facebook page
-                      </span>
-                    </p>
+              {/* Enhanced Status Indicator */}
+              <div className="mt-4 text-center">
+                <div className="relative inline-block group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-cyan-400/20 to-blue-500/20 rounded-lg blur-sm group-hover:blur-md transition-all duration-300"></div>
+                  <div className="relative px-4 py-3 backdrop-blur-sm border border-cyan-400/30 rounded-lg group-hover:border-cyan-400/50 transition-all duration-300">
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                        <span className="text-cyan-400 text-sm font-semibold">Live Updates</span>
+                      </div>
+                      <div className="w-px h-4 bg-gray-600"></div>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                        <span className="text-gray-300 text-sm">Facebook Feed</span>
+                      </div>
+                    </div>
+                    <p className="text-gray-400 text-xs mt-2">Stay connected with our latest adventures</p>
                   </div>
                 </div>
               </div>
