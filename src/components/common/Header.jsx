@@ -216,7 +216,7 @@ const Header = () => {
             Home
           </Link>
           <Link to="/bus-routes" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-all duration-300 cursor-pointer hover:scale-105 hover:font-semibold">
-            Bus Routes
+            Routes
           </Link>
           <Link to="/trending-offers" className="text-[#5f5f5f] text-sm xl:text-base font-medium hover:text-[#0a639d] transition-all duration-300 cursor-pointer hover:scale-105 hover:font-semibold">
             Offers
@@ -259,8 +259,8 @@ const Header = () => {
               </div>
             </div>           
              {/* Weather Section */}
-            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl px-2 lg:px-4 py-1.5 lg:py-2 shadow-lg hover:bg-white/30 transition-all duration-300 min-w-[140px] lg:min-w-[180px]">
-              <div className="flex items-center gap-1.5 lg:gap-2">
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl px-2 lg:px-3 py-1.5 lg:py-2 shadow-lg hover:bg-white/30 transition-all duration-300 min-w-[120px] lg:min-w-[140px]">
+              <div className="flex items-center gap-1.5">
                 <div className="text-base lg:text-lg flex-shrink-0">🌤️</div>
                 <div className="text-right flex-1 min-w-0">
                   <div className="flex items-center gap-1 justify-end mb-0.5">
@@ -463,7 +463,7 @@ const Header = () => {
               className="text-[#5f5f5f] text-base sm:text-lg font-medium hover:text-[#0a639d] transition-all duration-300 py-2 border-b border-gray-100 last:border-b-0 cursor-pointer hover:scale-105 hover:font-semibold hover:pl-2"
               onClick={() => setIsMenuOpen(false)}
             >
-              Bus Routes
+              Routes
             </Link>
             <Link 
               to="/trending-offers" 

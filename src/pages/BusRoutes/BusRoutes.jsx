@@ -11,6 +11,78 @@ const BusRoutes = () => {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filteredRoutes, setFilteredRoutes] = useState([]);
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Aggressive autoplay handler for both mobile and desktop
+  useEffect(() => {
+    const handleAutoplay = () => {
+      // Multiple attempts to ensure autoplay works
+      const attemptAutoplay = (attempts = 0) => {
+        if (attempts >= 5) return; // Max 5 attempts
+        
+        setTimeout(() => {
+          const iframe = document.querySelector('iframe[src*="youtube"]');
+          if (iframe) {
+            try {
+              // Force reload iframe with autoplay
+              const currentSrc = iframe.src;
+              if (!currentSrc.includes('autoplay=1')) {
+                iframe.src = currentSrc.replace('autoplay=0', 'autoplay=1').replace('autoplay=', 'autoplay=1&temp=');
+              }
+              
+              // Try postMessage API
+              if (iframe.contentWindow) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+              }
+            } catch (e) {
+              console.log(`Autoplay attempt ${attempts + 1}:`, e);
+            }
+          }
+          
+          // Retry if video isn't playing
+          attemptAutoplay(attempts + 1);
+        }, 1000 + (attempts * 500)); // Increasing delay
+      };
+      
+      attemptAutoplay();
+    };
+
+    // Start autoplay attempts after component mounts
+    const timer = setTimeout(handleAutoplay, 2000);
+    
+    // Also try on user interaction (scroll, mouse move, touch)
+    const interactionEvents = ['scroll', 'mousemove', 'touchstart', 'click'];
+    const handleInteraction = () => {
+      handleAutoplay();
+      // Remove listeners after first interaction
+      interactionEvents.forEach(event => {
+        document.removeEventListener(event, handleInteraction);
+      });
+    };
+    
+    interactionEvents.forEach(event => {
+      document.addEventListener(event, handleInteraction, { once: true, passive: true });
+    });
+
+    return () => {
+      clearTimeout(timer);
+      interactionEvents.forEach(event => {
+        document.removeEventListener(event, handleInteraction);
+      });
+    };
+  }, []);
 
   // Sample bus routes data with detailed information
   const busRoutes = [
@@ -233,8 +305,8 @@ const BusRoutes = () => {
               </div>
             </div>
             
-            {/* Ultra premium main heading with enhanced typography */}
-            <h1 className="text-7xl md:text-8xl lg:text-9xl font-black mb-12 leading-tight tracking-tight">
+            {/* Ultra premium main heading with enhanced typography - Mobile Optimized */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black mb-8 sm:mb-10 lg:mb-12 leading-tight tracking-tight">
               <span className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent drop-shadow-lg">
                 Bus Routes &
               </span>
@@ -243,56 +315,56 @@ const BusRoutes = () => {
               </span>
             </h1>
             
-            {/* Enhanced subtitle with better typography */}
-            <p className="text-2xl md:text-3xl text-gray-700 max-w-5xl mx-auto leading-relaxed font-light mb-12">
+            {/* Enhanced subtitle with better typography - Mobile Optimized */}
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl text-gray-700 max-w-5xl mx-auto leading-relaxed font-light mb-10 sm:mb-12 px-4 sm:px-6 lg:px-0">
               Discover our <span className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">extensive network</span> of bus routes connecting major cities across Nepal. 
               <br className="hidden md:block" />
               Experience <span className="font-bold text-gray-900">comfortable and reliable transportation</span> with Sona Travel & Tours.
             </p>
             
-            {/* Premium trust indicators with enhanced design */}
-            <div className="flex flex-wrap justify-center items-center gap-10 mt-16">
-              <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
-                <div className="relative flex items-center space-x-4 bg-white/80 backdrop-blur-xl border border-white/50 px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-                  <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            {/* Premium trust indicators with enhanced design - Mobile Optimized */}
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-6 lg:gap-10 mt-12 sm:mt-14 lg:mt-16 px-4 sm:px-6 lg:px-0">
+              <div className="group relative w-full sm:w-auto">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl sm:rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                <div className="relative flex items-center justify-center sm:justify-start space-x-3 sm:space-x-4 bg-white/80 backdrop-blur-xl border border-white/50 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div className="text-left">
-                    <div className="text-2xl font-black text-green-600">50+</div>
-                    <div className="text-gray-700 font-semibold">Cities Connected</div>
+                  <div className="text-center sm:text-left">
+                    <div className="text-xl sm:text-2xl font-black text-green-600">50+</div>
+                    <div className="text-gray-700 font-semibold text-sm sm:text-base">Cities Connected</div>
                   </div>
                 </div>
               </div>
               
-              <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
-                <div className="relative flex items-center space-x-4 bg-white/80 backdrop-blur-xl border border-white/50 px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="group relative w-full sm:w-auto">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-xl sm:rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                <div className="relative flex items-center justify-center sm:justify-start space-x-3 sm:space-x-4 bg-white/80 backdrop-blur-xl border border-white/50 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div className="text-left">
-                    <div className="text-2xl font-black text-blue-600">200+</div>
-                    <div className="text-gray-700 font-semibold">Daily Departures</div>
+                  <div className="text-center sm:text-left">
+                    <div className="text-xl sm:text-2xl font-black text-blue-600">200+</div>
+                    <div className="text-gray-700 font-semibold text-sm sm:text-base">Daily Departures</div>
                   </div>
                 </div>
               </div>
               
-              <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
-                <div className="relative flex items-center space-x-4 bg-white/80 backdrop-blur-xl border border-white/50 px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="group relative w-full sm:w-auto">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl sm:rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                <div className="relative flex items-center justify-center sm:justify-start space-x-3 sm:space-x-4 bg-white/80 backdrop-blur-xl border border-white/50 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div className="text-left">
-                    <div className="text-2xl font-black text-purple-600">24/7</div>
-                    <div className="text-gray-700 font-semibold">Premium Support</div>
+                  <div className="text-center sm:text-left">
+                    <div className="text-xl sm:text-2xl font-black text-purple-600">24/7</div>
+                    <div className="text-gray-700 font-semibold text-sm sm:text-base">Premium Support</div>
                   </div>
                 </div>
               </div>
@@ -355,11 +427,41 @@ const BusRoutes = () => {
                         <div className="relative w-full overflow-hidden rounded-lg sm:rounded-xl lg:rounded-[2rem] shadow-2xl" style={{ paddingBottom: '56.25%' }}>
                           <iframe
                             className="absolute top-0 left-0 w-full h-full rounded-lg sm:rounded-xl lg:rounded-[2rem]"
-                            src="https://www.youtube.com/embed/3HtnJHP0sRI?si=jLIEqPtu0Co3k_rP&autoplay=0&loop=1&mute=0&playlist=3HtnJHP0sRI&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&quality=hd1080&cc_load_policy=1&hl=en&cc_lang_pref=en"
+                            src="https://www.youtube.com/embed/3HtnJHP0sRI?si=jLIEqPtu0Co3k_rP&autoplay=1&loop=1&mute=1&playlist=3HtnJHP0sRI&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&playsinline=1&start=0&end=0&version=3&widget_referrer=https://sonatravelandtours.com"
                             title="Sona Travel & Tours - Premium Bus Routes Network Journey Across Nepal | Ultra HD Experience"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             allowFullScreen="true"
+                            loading="eager"
+                            onLoad={() => {
+                              // Force autoplay after iframe loads
+                              setTimeout(() => {
+                                const iframe = document.querySelector('iframe[src*="youtube"]');
+                                if (iframe && iframe.contentWindow) {
+                                  try {
+                                    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                                  } catch (e) {
+                                    console.log('Autoplay attempt:', e);
+                                  }
+                                }
+                              }, 1000);
+                            }}
                           ></iframe>
+                          
+                          {/* Fallback play button for cases where autoplay still fails */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-[2rem] opacity-0 hover:opacity-100 transition-opacity duration-300 group/play pointer-events-none">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white/90 backdrop-blur-lg rounded-full flex items-center justify-center shadow-2xl animate-pulse pointer-events-auto cursor-pointer"
+                                 onClick={() => {
+                                   const iframe = document.querySelector('iframe[src*="youtube"]');
+                                   if (iframe) {
+                                     iframe.src = iframe.src.replace('&start=0&end=0', '') + '&autoplay=1&start=0';
+                                     iframe.contentWindow?.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                                   }
+                                 }}>
+                              <svg className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-red-600 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.68L9.54 5.98C8.87 5.55 8 6.03 8 6.82z"/>
+                              </svg>
+                            </div>
+                          </div>
                           
                           {/* Video overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-white/5 rounded-lg sm:rounded-xl lg:rounded-[2rem] pointer-events-none"></div>
@@ -596,25 +698,25 @@ const BusRoutes = () => {
                 }}></div>
                 
                 <div className="relative z-10 text-center">
-                  {/* Header Section */}
-                  <div className="mb-16">
-                    <div className="inline-flex items-center bg-gradient-to-r from-white/15 via-blue-100/20 to-white/15 backdrop-blur-xl border border-white/25 shadow-2xl px-10 py-5 rounded-full text-lg font-bold mb-10 hover:shadow-3xl transition-all duration-500 hover:scale-105">
-                      <div className="relative mr-4">
-                        <span className="w-4 h-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 rounded-full animate-pulse flex"></span>
-                        <div className="absolute inset-0 w-4 h-4 bg-cyan-400 rounded-full blur-md animate-pulse opacity-70"></div>
+                  {/* Header Section - Mobile Optimized */}
+                  <div className="mb-12 sm:mb-16 px-4 sm:px-6 lg:px-0">
+                    <div className="inline-flex items-center bg-gradient-to-r from-white/15 via-blue-100/20 to-white/15 backdrop-blur-xl border border-white/25 shadow-2xl px-4 sm:px-6 lg:px-10 py-3 sm:py-4 lg:py-5 rounded-full text-sm sm:text-base lg:text-lg font-bold mb-8 sm:mb-10 hover:shadow-3xl transition-all duration-500 hover:scale-105">
+                      <div className="relative mr-2 sm:mr-3 lg:mr-4">
+                        <span className="w-3 h-3 sm:w-4 sm:h-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 rounded-full animate-pulse flex"></span>
+                        <div className="absolute inset-0 w-3 h-3 sm:w-4 sm:h-4 bg-cyan-400 rounded-full blur-md animate-pulse opacity-70"></div>
                       </div>
-                      <span className="text-white tracking-wider font-black">
+                      <span className="text-white tracking-wider font-black text-xs sm:text-sm lg:text-base">
                         CUTTING-EDGE TECHNOLOGY
                       </span>
-                      <div className="ml-4 w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="ml-2 sm:ml-3 lg:ml-4 w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </div>
                     </div>
                     
-                    <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-tight tracking-tight">
-                      <span className="bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent drop-shadow-2xl">
+                    <h2 className="text-2xl min-[400px]:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black text-white mb-6 sm:mb-8 leading-[1.1] sm:leading-tight tracking-tight px-2 sm:px-4 lg:px-0">
+                      <span className="bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent drop-shadow-2xl block sm:inline">
                         Innovation in
                       </span>
                       <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent drop-shadow-2xl">
@@ -622,70 +724,70 @@ const BusRoutes = () => {
                       </span>
                     </h2>
                     
-                    <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed font-light">
+                    <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed font-light px-4 sm:px-6 lg:px-0">
                       Discover how we're revolutionizing bus travel with <span className="font-semibold text-cyan-300">smart technology</span> and
                       <br className="hidden md:block" />
                       <span className="font-semibold text-white">passenger-centric innovations</span>
                     </p>
                   </div>
                   
-                  {/* Innovation Grid */}
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                  {/* Innovation Grid - Mobile-First Responsive */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16 px-4 sm:px-6 lg:px-0">
                     {/* Smart GPS Tracking */}
                     <div className="group relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-3xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
-                      <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105">
-                        <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl sm:rounded-3xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
+                      <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+                          <svg className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-4">Smart GPS Tracking</h3>
-                        <p className="text-gray-300 leading-relaxed">Real-time location tracking with precision accuracy for enhanced safety and peace of mind.</p>
+                        <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Smart GPS Tracking</h3>
+                        <p className="text-gray-300 leading-relaxed text-sm sm:text-base">Real-time location tracking with precision accuracy for enhanced safety and peace of mind.</p>
                       </div>
                     </div>
                     
                     {/* Mobile Integration */}
                     <div className="group relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-3xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
-                      <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105">
-                        <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl sm:rounded-3xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
+                      <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+                          <svg className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                           </svg>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-4">Mobile Integration</h3>
-                        <p className="text-gray-300 leading-relaxed">Seamless mobile app experience for booking, tracking, and managing your entire journey.</p>
+                        <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Mobile Integration</h3>
+                        <p className="text-gray-300 leading-relaxed text-sm sm:text-base">Seamless mobile app experience for booking, tracking, and managing your entire journey.</p>
                       </div>
                     </div>
                     
                     {/* AI-Powered Analytics */}
-                    <div className="group relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-3xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
-                      <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105">
-                        <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="group relative md:col-span-2 lg:col-span-1">
+                      <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl sm:rounded-3xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
+                      <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+                          <svg className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                           </svg>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-4">AI-Powered Analytics</h3>
-                        <p className="text-gray-300 leading-relaxed">Advanced analytics for route optimization and predictive maintenance ensuring reliability.</p>
+                        <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">AI-Powered Analytics</h3>
+                        <p className="text-gray-300 leading-relaxed text-sm sm:text-base">Advanced analytics for route optimization and predictive maintenance ensuring reliability.</p>
                       </div>
                     </div>
                   </div>
                   
-                  {/* Call to Action */}
-                  <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-10 shadow-2xl max-w-4xl mx-auto">
-                    <h3 className="text-3xl font-bold text-white mb-6">Experience the Future of Bus Travel</h3>
-                    <p className="text-gray-300 text-lg mb-8 leading-relaxed">
+                  {/* Call to Action - Mobile Optimized */}
+                  <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl max-w-4xl mx-auto">
+                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">Experience the Future of Bus Travel</h3>
+                    <p className="text-gray-300 text-base sm:text-lg mb-6 sm:mb-8 leading-relaxed px-4 sm:px-0">
                       Join us in revolutionizing transportation across Nepal with cutting-edge technology and unmatched comfort.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <button className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+                      <button className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1">
                         Explore Technology
                       </button>
-                      <button className="backdrop-blur-xl bg-white/20 border border-white/30 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1">
+                      <button className="backdrop-blur-xl bg-white/20 border border-white/30 text-white px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1">
                         Learn More
                       </button>
                     </div>
