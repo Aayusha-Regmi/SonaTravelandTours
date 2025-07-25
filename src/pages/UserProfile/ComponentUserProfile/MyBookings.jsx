@@ -52,13 +52,23 @@ const MyBookings = () => {
 
   // Split bookings into live and history based on travel date
   const now = new Date();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of today
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
+  
   const liveTickets = bookings.filter(booking => {
     const travelDate = new Date(booking.travelDate);
-    return travelDate >= now;
+    travelDate.setHours(0, 0, 0, 0); // Normalize to start of day for comparison
+    // Only show bookings for today
+    return travelDate.getTime() === today.getTime();
   });
+  
   const history = bookings.filter(booking => {
     const travelDate = new Date(booking.travelDate);
-    return travelDate < now;
+    travelDate.setHours(0, 0, 0, 0); // Normalize to start of day for comparison
+    // Show all bookings that are not today (past and future)
+    return travelDate.getTime() !== today.getTime();
   });
 
   if (loading) {
