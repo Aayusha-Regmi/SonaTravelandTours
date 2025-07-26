@@ -201,7 +201,16 @@ const LoginPage = () => {
             
             // Set the new token with proper expiry
             setAuthToken(result.data.token);
-            console.log('Token stored successfully with expiry');
+            console.log('✅ Token stored successfully with expiry');
+            
+            // Verify token was set correctly
+            const storedToken = localStorage.getItem('authToken');
+            const storedExpiry = localStorage.getItem('tokenExpiry');
+            console.log('🔍 Token verification after login:', {
+              hasToken: !!storedToken,
+              tokenPreview: storedToken ? storedToken.substring(0, 20) + '...' : 'null',
+              expiry: storedExpiry ? new Date(parseInt(storedExpiry)).toISOString() : 'null'
+            });
             
             // Decode JWT token to check user role
             try {
@@ -228,6 +237,13 @@ const LoginPage = () => {
                 console.log('Post-login navigation - Page state:', pageState);
                 
                 setIsLoading(false);
+                
+                // Clear login session after a delay to prevent session monitor interference
+                setTimeout(() => {
+                  localStorage.removeItem('loginSession');
+                  localStorage.removeItem('recentLogin');
+                  console.log('Login session cleared after successful navigation');
+                }, 5000);
                 
                 // Priority 1: If user was on a specific page (not home), return them there with all state
                 if (returnPath && returnPath !== '/' && returnPath !== '/login') {

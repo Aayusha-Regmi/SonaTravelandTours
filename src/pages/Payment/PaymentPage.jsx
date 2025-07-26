@@ -264,6 +264,13 @@ const PaymentPage = () => {
         travelDate: formattedTravelDate
       };
       
+      // Debug logging for deployed environment
+      console.log('🔄 Coupon API Request:', {
+        url: API_URLS.COUPONS.APPLY_DISCOUNT,
+        requestBody,
+        hasToken: !!getAuthToken()
+      });
+      
       const response = await fetch(API_URLS.COUPONS.APPLY_DISCOUNT, {
         method: 'POST',
         headers: headers,
@@ -276,9 +283,20 @@ const PaymentPage = () => {
         
         try {
           errorText = await response.text();
-          errorData = JSON.parse(errorText);
+          if (errorText) {
+            errorData = JSON.parse(errorText);
+          }
         } catch (e) {
-          // Silent error handling
+          console.warn('Could not parse error response:', e);
+          errorData = { message: 'Service unavailable' };
+        }
+        
+        // Handle 404 errors specifically for deployed environment
+        if (response.status === 404) {
+          console.error('404 Error - API endpoint not found:', API_URLS.COUPONS.APPLY_DISCOUNT);
+          toast.error('Coupon service is currently unavailable. Please try again later.');
+          setIsApplyingCoupon(false);
+          return;
         }
         
         // Check if it's an authentication error
@@ -293,8 +311,8 @@ const PaymentPage = () => {
           return;
         }
         
-        // Check if it's a coupon not found error
-        if (response.status === 404 && errorData && errorData.message) {
+        // Check if it's a coupon not found error (only after 404 handling)
+        if (errorData && errorData.message) {
           if (errorData.message.includes('expired')) {
             // Show orange warning toast for expired coupons
             toast.warn(`${promoCode} is not available.`, {

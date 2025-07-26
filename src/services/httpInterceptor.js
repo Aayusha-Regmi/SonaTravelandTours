@@ -204,6 +204,19 @@ class HttpInterceptor {
   handleSessionExpiry(url, options) {
     console.warn(' Session expired - handling with user action tracking');
     
+    // Check if we're in an active login session - don't interfere
+    const loginSession = localStorage.getItem('loginSession');
+    if (loginSession === 'active') {
+      console.log('Active login session detected, skipping session expiry handling');
+      return;
+    }
+    
+    // Don't handle session expiry for login/auth endpoints
+    if (url.includes('/login') || url.includes('/register') || url.includes('/otp')) {
+      console.log('Auth endpoint detected, skipping session expiry handling');
+      return;
+    }
+    
     // Track the API call that failed due to authentication
     userActionTracker.trackAction(ACTION_TYPES.API_CALL, {
       url,

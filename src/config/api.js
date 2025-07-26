@@ -1,19 +1,19 @@
 // API Configuration
-const AUTH_API_BASE_URL = import.meta.env.VITE_AUTH_API_BASE_URL;
-const BUS_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const AUTH_API_BASE_URL = import.meta.env.VITE_AUTH_API_BASE_URL || 'https://4g1vzlphwk.execute-api.us-east-1.amazonaws.com';
+const BUS_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://6le3z7icgf.execute-api.us-east-1.amazonaws.com/prod';
 
 // API Endpoints
 export const API_URLS = {
   AUTH: {
-    LOGIN: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_LOGIN_ENDPOINT}`,
-    REGISTER: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_REGISTER_ENDPOINT}`,
-    SEND_OTP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_SEND_OTP_ENDPOINT}`,
-    VERIFY_OTP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_VERIFY_OTP_ENDPOINT}`,
-    RESEND_OTP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_RESEND_OTP_ENDPOINT}`,
+    LOGIN: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_LOGIN_ENDPOINT || '/prod/login'}`,
+    REGISTER: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_REGISTER_ENDPOINT || '/prod/register'}`,
+    SEND_OTP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_SEND_OTP_ENDPOINT || '/prod/otp'}`,
+    VERIFY_OTP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_VERIFY_OTP_ENDPOINT || '/prod/otp/verify'}`,
+    RESEND_OTP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_RESEND_OTP_ENDPOINT || '/prod/resend-otp'}`,
   },
   BUS: {
-    SEARCH: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEARCH_ENDPOINT}`,
-    DETAILS: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT}${`?all=true`}`,
+    SEARCH: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEARCH_ENDPOINT || '/bus/search'}`,
+    DETAILS: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEAT_DETAILS_ENDPOINT || '/seat/details'}${`?all=true`}`,
   },
   PROFILE: {
     GET: `${BUS_API_BASE_URL}/profile`,
@@ -26,7 +26,7 @@ export const API_URLS = {
     USER_BOOKINGS: `${BUS_API_BASE_URL}/bookings`,
   },
   COUPONS:{
-    GET_COUPONS: `${BUS_API_BASE_URL}${import.meta.env.VITE_GET_ALL_COUPONS}`,
+    GET_COUPONS: `${BUS_API_BASE_URL}${import.meta.env.VITE_GET_ALL_COUPONS || '/coupons'}`,
     APPLY_DISCOUNT: `${BUS_API_BASE_URL}/coupon/discount`,
     APPLIED_COUPONS: `${BUS_API_BASE_URL}/user/applied-coupons`,
   }

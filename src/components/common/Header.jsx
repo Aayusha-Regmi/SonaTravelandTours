@@ -27,7 +27,7 @@ const Header = () => {
         try {
           const profileData = await fetchUserProfile();
           if (profileData && profileData.firstName) {
-            console.log('Retrieved firstName from API:', profileData.firstName);
+           
             // Cache the name for future use
             localStorage.setItem('userFirstName', profileData.firstName);
             return profileData.firstName;
@@ -51,7 +51,7 @@ const Header = () => {
     // Check for cached firstName first
     let firstName = localStorage.getItem('userFirstName');
     if (firstName && firstName !== 'User') {
-      console.log('Found cached firstName:', firstName);
+     
       return firstName;
     }
 
@@ -60,10 +60,10 @@ const Header = () => {
     if (userProfile) {
       try {
         const profile = JSON.parse(userProfile);
-        console.log('userProfile data:', profile);
+        
         
         if (profile.firstName) {
-          console.log('Found firstName in userProfile:', profile.firstName);
+         
           localStorage.setItem('userFirstName', profile.firstName);
           return profile.firstName;
         }
@@ -72,7 +72,7 @@ const Header = () => {
       }
     }
 
-    console.log('No cached user name found');
+
     return '';
   };
 
@@ -105,7 +105,7 @@ const Header = () => {
       
       throw new Error(result.message || 'Failed to fetch profile');
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+
       throw error;
     }
   };  useEffect(() => {
@@ -132,23 +132,23 @@ const Header = () => {
     // Get user name and set up listener for changes
     const updateUserName = async () => {
       // Debug: Log ALL available localStorage data
-      console.log('=== ALL localStorage Keys ===');
+      
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         const value = localStorage.getItem(key);
-        console.log(`${key}:`, value);
+       
       }
       
-      console.log('=== ALL sessionStorage Keys ===');
+    
       for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);
         const value = sessionStorage.getItem(key);
-        console.log(`${key}:`, value);
+        
       }
       
       try {
         const name = await getUserName();
-        console.log('Final resolved name:', name);
+        
         setUserName(name);
       } catch (error) {
         console.error('Error updating user name:', error);
@@ -316,6 +316,8 @@ const Header = () => {
                   </Link>
                   <button
         onClick={() => {
+          // Set explicit logout flag for cross-tab detection
+          localStorage.setItem('explicitLogout', 'true');
           localStorage.removeItem('authToken');
           localStorage.removeItem('token');
           sessionStorage.removeItem('authToken');
@@ -530,6 +532,8 @@ const Header = () => {
                     </Link>
                     <button
                       onClick={() => {
+                        // Set explicit logout flag for cross-tab detection
+                        localStorage.setItem('explicitLogout', 'true');
                         localStorage.removeItem('authToken');
                         localStorage.removeItem('token');
                         sessionStorage.removeItem('authToken');
