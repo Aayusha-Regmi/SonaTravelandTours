@@ -24,6 +24,21 @@ export default defineConfig({
     port: "4029",
     host: "0.0.0.0",
     strictPort: true,
-    allowedHosts: ['.amazonaws.com', '.builtwithrocket.new']
+    allowedHosts: ['.amazonaws.com', '.builtwithrocket.new'],
+    proxy: {
+      '/api': {
+        target: 'https://4g1vzlphwk.execute-api.us-east-1.amazonaws.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/prod'),
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            // Add CORS headers for preflight requests
+            proxyReq.setHeader('Access-Control-Allow-Origin', '*');
+            proxyReq.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            proxyReq.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+          });
+        }
+      }
+    }
   }
 });

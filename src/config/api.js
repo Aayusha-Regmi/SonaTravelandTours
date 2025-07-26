@@ -6,10 +6,9 @@ const BUS_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://6le3z7icg
 export const API_URLS = {
   AUTH: {
     LOGIN: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_LOGIN_ENDPOINT || '/prod/login'}`,
-    REGISTER: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_REGISTER_ENDPOINT || '/prod/register'}`,
+    OTP_SIGNUP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_OTP_SIGNUP_ENDPOINT || '/prod/otp/signup'}`,
     SEND_OTP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_SEND_OTP_ENDPOINT || '/prod/otp'}`,
     VERIFY_OTP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_VERIFY_OTP_ENDPOINT || '/prod/otp/verify'}`,
-    RESEND_OTP: `${AUTH_API_BASE_URL}${import.meta.env.VITE_AUTH_RESEND_OTP_ENDPOINT || '/prod/resend-otp'}`,
   },
   BUS: {
     SEARCH: `${BUS_API_BASE_URL}${import.meta.env.VITE_BUS_SEARCH_ENDPOINT || '/bus/search'}`,

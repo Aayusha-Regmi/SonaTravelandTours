@@ -75,7 +75,7 @@ const OTPVerificationPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           mobileNumber: contact,
@@ -119,6 +119,8 @@ const OTPVerificationPage = () => {
       
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
         errorMessage = 'Unable to connect to server. Please try again later.';
+      } else if (err.message.includes('CORS')) {
+        errorMessage = 'Network connectivity issue. Please check your internet connection and try again.';
       }
       
       setError(errorMessage);
@@ -134,12 +136,12 @@ const OTPVerificationPage = () => {
       
       try {
         console.log(`Resending OTP to ${contact} via ${isEmail ? 'email' : 'SMS'}...`);
-          // API call to resend OTP
-        const response = await fetch(API_URLS.AUTH.RESEND_OTP, {
+          // API call to send OTP again (same as initial OTP request)
+        const response = await fetch(API_URLS.AUTH.SEND_OTP, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            'Accept': 'application/json'
           },
           body: JSON.stringify({
             mobileNumber: contact,
@@ -155,7 +157,13 @@ const OTPVerificationPage = () => {
         }
       } catch (err) {
         console.error('Resend OTP error:', err);
-        setError('Failed to resend OTP. Please try again.');
+        
+        // Better error handling for CORS issues
+        if (err.message.includes('CORS') || err.message.includes('fetch')) {
+          setError('Network connectivity issue. Please check your internet connection and try again.');
+        } else {
+          setError('Failed to resend OTP. Please try again.');
+        }
       }
     }
   };

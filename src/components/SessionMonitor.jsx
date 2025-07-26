@@ -43,7 +43,7 @@ const SessionMonitor = () => {
       const currentPath = window.location.pathname;
       
       // Define different security levels for different pages
-      const publicPaths = ['/login', '/register', '/forgot-password', '/', '/about', '/contact', '/signup', '/otp-verification'];
+      const publicPaths = ['/login', '/signup', '/forgot-password', '/', '/about', '/contact', '/otp-verification'];
       const criticalPaths = ['/payment', '/booking', '/passenger-details', '/confirmation'];
       const protectedPaths = ['/profile', '/user-profile', '/my-bookings'];
       
@@ -147,7 +147,7 @@ const SessionMonitor = () => {
           localStorage.removeItem('explicitLogout'); // Clean up the flag
           
           const currentPath = window.location.pathname;
-          const publicPaths = ['/login', '/register', '/forgot-password', '/', '/about', '/contact', '/signup', '/otp-verification'];
+          const publicPaths = ['/login', '/signup', '/forgot-password', '/', '/about', '/contact', '/otp-verification'];
           
           // Only trigger logout if we're on a protected page
           if (!publicPaths.includes(currentPath)) {

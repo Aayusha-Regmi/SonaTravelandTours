@@ -212,7 +212,7 @@ class HttpInterceptor {
     }
     
     // Don't handle session expiry for login/auth endpoints
-    if (url.includes('/login') || url.includes('/register') || url.includes('/otp')) {
+    if (url.includes('/login') || url.includes('/signup') || url.includes('/otp')) {
       console.log('Auth endpoint detected, skipping session expiry handling');
       return;
     }

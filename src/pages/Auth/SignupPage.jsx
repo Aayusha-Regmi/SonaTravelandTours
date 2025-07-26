@@ -194,22 +194,20 @@ const SignupPage = () => {
       // Split the name into firstName and lastName as expected by backend
       const nameParts = formData.name.trim().split(' ');
       const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || 'User'; // Default lastName if not provided
+      const lastName = nameParts.slice(1).join(' ') || ''; // Keep lastName empty if not provided
       
       const signupData = {
         firstName: firstName,
         lastName: lastName,
-        address: "Not specified", // Default address since we don't collect it in UI
-        contactNumber: contact, // Use the verified phone number
+        mobileNumber: contact, // Use the verified phone number
         email: formData.email.trim() || `user${Date.now()}@temp.com`, // Use provided email or generate temp email
-        role: "user", // Always set to user for this site
         password: formData.password
       };
 
       console.log('Complete signup data:', { ...signupData, password: '[HIDDEN]' });
       
-      // API call to register endpoint
-      const response = await fetch(API_URLS.AUTH.REGISTER, {
+      // API call to otp/signup endpoint
+      const response = await fetch(API_URLS.AUTH.OTP_SIGNUP, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -44,7 +44,7 @@ export const logSessionStatus = (context = 'Unknown') => {
  * Check if current page should require authentication
  */
 export const shouldRequireAuth = (path = window.location.pathname) => {
-  const publicPaths = ['/login', '/register', '/forgot-password', '/', '/about', '/contact', '/signup', '/otp-verification'];
+  const publicPaths = ['/login', '/signup', '/forgot-password', '/', '/about', '/contact', '/otp-verification'];
   return !publicPaths.includes(path);
 };
 
@@ -52,7 +52,7 @@ export const shouldRequireAuth = (path = window.location.pathname) => {
  * Check if we're on a login-related page
  */
 export const isLoginPage = (path = window.location.pathname) => {
-  const loginPaths = ['/login', '/register', '/forgot-password', '/signup', '/otp-verification'];
+  const loginPaths = ['/login', '/signup', '/forgot-password', '/otp-verification'];
   return loginPaths.includes(path);
 };
 

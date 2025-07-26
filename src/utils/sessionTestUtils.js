@@ -34,7 +34,7 @@ export const setShortExpiryForTesting = () => {
  */
 export const checkSessionStatus = () => {
   const currentPath = window.location.pathname;
-  const publicPaths = ['/login', '/register', '/forgot-password', '/', '/about', '/contact', '/signup', '/otp-verification'];
+  const publicPaths = ['/login', '/signup', '/forgot-password', '/', '/about', '/contact', '/otp-verification'];
   const isPublicPage = publicPaths.includes(currentPath);
   
   const token = localStorage.getItem('authToken');
