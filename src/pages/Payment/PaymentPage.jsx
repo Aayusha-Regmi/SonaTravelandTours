@@ -11,6 +11,7 @@ import FloatingActionBar from '../../components/common/FloatingActionBar';
 import { useSocialActions } from '../../hooks/useSocialActions';
 import { useUserActionTracking, useStateRestoration } from '../../hooks/useUserActionTracking';
 import api from '../../services/api';
+import paymentService from '../../services/paymentServiceNew';
 import { getAuthToken, getAuthHeaders, isAuthenticated } from '../../utils/authToken';
 import API_URLS from '../../config/api';
 
@@ -556,41 +557,299 @@ const PaymentPage = () => {
     setIsPaymentModalOpen(true);
   };
 
-  const handlePaymentSuccess = (paymentDetails) => {
-    // Show success message
-    toast.success(` Payment successful! Booking confirmed for seats ${selectedSeats.join(', ')}`);
-    
-    // Close the modal
-    setIsPaymentModalOpen(false);
-    
-    // Store booking details in localStorage for later reference
-    const completedBooking = {
-      ...paymentDetails,
-      passengers,
-      selectedSeats,
-      busData,
-      travelDate,
-      bookingDate: new Date().toISOString(),
-      totalAmount: paymentDetails.amount,
-      origin: bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu',
-      destination: bookingDetails?.destination || searchParams?.toCity || 'Birgunj'
-    };
-    
-    // Save to localStorage for receipt/confirmation page
-    localStorage.setItem('lastBooking', JSON.stringify(completedBooking));
-    
-    // Navigate to search results with success state
-    setTimeout(() => {
-      navigate('/search-results', { 
-        state: { 
-          bookingSuccess: true, 
-          bookingId: paymentDetails.bookingId || paymentDetails.merchantTransactionId,
-          bookedSeats: selectedSeats,
-          paymentDetails: completedBooking,
-          totalAmount: paymentDetails.amount
-        } 
-      });
-    }, 2000);
+  const handlePaymentSuccess = async (paymentDetails) => {
+    try {
+      // Show initial success message
+      toast.success(`Payment successful! Processing seat booking...`);
+      
+      // Close the modal
+      setIsPaymentModalOpen(false);
+      
+      // Critical: Check and ensure authentication before seat booking
+      console.log('🔐 Verifying authentication before seat booking...');
+      
+      // Check current authentication status
+      const authCheck = api.checkAuthentication();
+      if (!authCheck.isAuthenticated) {
+        console.warn('⚠️ Authentication expired during payment - attempting to restore...');
+        
+        // Try to migrate/restore tokens
+        api.migrateAuthTokens();
+        
+        // Check again after migration
+        const authCheckAfterMigration = api.checkAuthentication();
+        if (!authCheckAfterMigration.isAuthenticated) {
+          console.error('❌ Unable to restore authentication after payment');
+          toast.error('Session expired. Please login again to complete your booking. Your payment was successful.');
+          
+          // Store payment details for later booking completion
+          localStorage.setItem('completedPayment', JSON.stringify({
+            paymentDetails,
+            passengers,
+            selectedSeats,
+            busData,
+            travelDate,
+            tripType,
+            returnPassengers,
+            returnSeats,
+            returnBusData,
+            returnTravelDate,
+            timestamp: new Date().toISOString()
+          }));
+          
+          // Navigate to login with payment completion context
+          navigate('/login', {
+            state: {
+              paymentCompleted: true,
+              redirectMessage: 'Please login to complete your seat booking. Your payment was successful.',
+              returnPath: '/payment-complete'
+            }
+          });
+          return;
+        }
+      }
+      
+      console.log('✅ Authentication verified - proceeding with seat booking');
+      
+      // Helper function to format date for API
+      const formatDateForAPI = (dateString) => {
+        if (!dateString) return new Date().toISOString().split('T')[0];
+        
+        try {
+          const date = new Date(dateString);
+          return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
+        } catch (error) {
+          console.warn('Date formatting error:', error);
+          return new Date().toISOString().split('T')[0];
+        }
+      };
+
+      // Book departure trip seats
+      const departureBookingData = {
+        seatInfo: {
+          dateOfTravel: formatDateForAPI(travelDate),
+          busId: parseInt(busData?.busId) || parseInt(busData?.id) || 102,
+          passengersList: (passengers || []).map((passenger, index) => {
+            const fallbackSeatNo = passenger.seatNumber || 
+                                  selectedSeats?.[index] || 
+                                  `S${Date.now()}-${index + 1}`;
+            
+            return {
+              passengerName: passenger.fullName || passenger.name || `Passenger ${index + 1}`,
+              contactNumber: String(passenger.phoneNumber || passenger.phone || "9999999999"),
+              seatNo: passenger.id || fallbackSeatNo,
+              origin: (searchParams?.fromCity || searchParams?.from || "Birgunj").toLowerCase(),
+              destination: (searchParams?.toCity || searchParams?.to || "Kathmandu").toLowerCase(),
+              gender: passenger.gender?.toLowerCase() === 'male' ? 'male' : 
+                     passenger.gender?.toLowerCase() === 'female' ? 'female' : 'male',
+              boardingLocation: passenger.boardingPlace || "Bus Park",
+              deboardingLocation: passenger.droppingPlace || "Kalanki",
+              residence: passenger.cityOfResidence || "nepali",
+              email: passenger.email || `passenger${index + 1}@sonabus.com`
+            };
+          })
+        },
+        paymentInfo: {
+          merchantTransactionId: paymentDetails.merchantTransactionId || paymentDetails.transactionId
+        }
+      };
+
+      console.log('🎫 Booking departure seats:', JSON.stringify(departureBookingData, null, 2));
+      
+      // Call seat booking API for departure with retry mechanism
+      let departureResult;
+      try {
+        departureResult = await paymentService.processSeatPayment(departureBookingData);
+      } catch (error) {
+        console.error('❌ Departure seat booking failed:', error);
+        
+        // Check if it's an authentication error
+        if (error.message === 'AUTHENTICATION_REQUIRED' || error.message.includes('401') || error.message.includes('403')) {
+          console.warn('🔐 Authentication error during seat booking - user needs to re-login');
+          toast.error('Your session expired. Please login again to complete booking. Your payment was successful.');
+          
+          // Store payment details for completion after re-login
+          localStorage.setItem('pendingBookingCompletion', JSON.stringify({
+            paymentDetails,
+            departureBookingData,
+            returnBookingData: tripType === 'twoWay' ? {
+              seatInfo: {
+                dateOfTravel: formatDateForAPI(returnTravelDate),
+                busId: parseInt(returnBusData?.busId) || parseInt(returnBusData?.id) || 102,
+                passengersList: (returnPassengers || []).map((passenger, index) => {
+                  const fallbackSeatNo = passenger.seatNumber || 
+                                        returnSeats?.[index] || 
+                                        `R${Date.now()}-${index + 1}`;
+                  
+                  return {
+                    passengerName: passenger.fullName || passenger.name || `Passenger ${index + 1}`,
+                    contactNumber: String(passenger.phoneNumber || passenger.phone || "9999999999"),
+                    seatNo: passenger.id || fallbackSeatNo,
+                    // Switch origin/destination for return trip
+                    origin: (searchParams?.toCity || searchParams?.to || "Kathmandu").toLowerCase(),
+                    destination: (searchParams?.fromCity || searchParams?.from || "Birgunj").toLowerCase(),
+                    gender: passenger.gender?.toLowerCase() === 'male' ? 'male' : 
+                           passenger.gender?.toLowerCase() === 'female' ? 'female' : 'male',
+                    boardingLocation: passenger.boardingPlace || "Bus Park",
+                    deboardingLocation: passenger.droppingPlace || "Kalanki",
+                    residence: passenger.cityOfResidence || "nepali",
+                    email: passenger.email || `passenger${index + 1}@sonabus.com`
+                  };
+                })
+              },
+              paymentInfo: {
+                merchantTransactionId: paymentDetails.merchantTransactionId || paymentDetails.transactionId
+              }
+            } : null,
+            tripType,
+            timestamp: new Date().toISOString()
+          }));
+          
+          navigate('/login', {
+            state: {
+              bookingCompletion: true,
+              redirectMessage: 'Please login to complete your seat booking. Your payment was successful.',
+              returnPath: '/complete-booking'
+            }
+          });
+          return;
+        }
+        
+        throw error; // Re-throw non-auth errors
+      }
+      
+      let returnResult = null;
+      
+      // For two-way trips: Make second API call for return seats with switched origin/destination
+      if (tripType === 'twoWay' && returnBusData && returnTravelDate && returnPassengers && returnSeats) {
+        console.log('🔄 Booking return trip seats (switched origin/destination)...');
+        
+        const returnBookingData = {
+          seatInfo: {
+            dateOfTravel: formatDateForAPI(returnTravelDate),
+            busId: parseInt(returnBusData?.busId) || parseInt(returnBusData?.id) || 102,
+            passengersList: (returnPassengers || []).map((passenger, index) => {
+              const fallbackSeatNo = passenger.seatNumber || 
+                                    returnSeats?.[index] || 
+                                    `R${Date.now()}-${index + 1}`;
+              
+              return {
+                passengerName: passenger.fullName || passenger.name || `Passenger ${index + 1}`,
+                contactNumber: String(passenger.phoneNumber || passenger.phone || "9999999999"),
+                seatNo: passenger.id || fallbackSeatNo,
+                // Switch origin/destination for return trip
+                origin: (searchParams?.toCity || searchParams?.to || "Kathmandu").toLowerCase(),
+                destination: (searchParams?.fromCity || searchParams?.from || "Birgunj").toLowerCase(),
+                gender: passenger.gender?.toLowerCase() === 'male' ? 'male' : 
+                       passenger.gender?.toLowerCase() === 'female' ? 'female' : 'male',
+                boardingLocation: passenger.boardingPlace || "Bus Park",
+                deboardingLocation: passenger.droppingPlace || "Kalanki",
+                residence: passenger.cityOfResidence || "nepali",
+                email: passenger.email || `passenger${index + 1}@sonabus.com`
+              };
+            })
+          },
+          paymentInfo: {
+            // Same payment transaction ID - seats booked after single payment
+            merchantTransactionId: paymentDetails.merchantTransactionId || paymentDetails.transactionId
+          }
+        };
+
+        console.log('🎫 Booking return seats (same payment, switched route):', JSON.stringify(returnBookingData, null, 2));
+        
+        // Call seat booking API for return trip (second API call) with error handling
+        try {
+          returnResult = await paymentService.processSeatPayment(returnBookingData);
+        } catch (error) {
+          console.error('❌ Return seat booking failed:', error);
+          
+          // Check if it's an authentication error
+          if (error.message === 'AUTHENTICATION_REQUIRED' || error.message.includes('401') || error.message.includes('403')) {
+            console.warn('🔐 Authentication error during return seat booking');
+            toast.warning('Departure booking successful, but return booking requires re-authentication. Please login to complete.');
+            
+            // Store return booking data for completion
+            localStorage.setItem('pendingReturnBooking', JSON.stringify({
+              returnBookingData,
+              departureResult,
+              paymentDetails,
+              timestamp: new Date().toISOString()
+            }));
+            
+            // Since departure was successful, we'll consider this partial success
+            // but still need user to complete return booking
+          } else {
+            // For non-auth errors, log but don't fail entire process
+            console.error('❌ Return booking failed with non-auth error:', error);
+            toast.warning('Departure booking successful, but return booking failed. Please contact support.');
+          }
+        }
+      }
+
+      // Check if both bookings were successful
+      const departureSuccess = departureResult?.success && departureResult?.isBookingSuccessful;
+      const returnSuccess = tripType === 'twoWay' ? (returnResult?.success && returnResult?.isBookingSuccessful) : true;
+      
+      if (departureSuccess && returnSuccess) {
+        // Show success message based on trip type
+        if (tripType === 'twoWay') {
+          toast.success(`Both departure and return bookings confirmed successfully!`);
+        } else {
+          toast.success(`Booking confirmed for seats ${selectedSeats.join(', ')}`);
+        }
+        
+        // Store booking details in localStorage for later reference
+        const completedBooking = {
+          ...paymentDetails,
+          passengers,
+          selectedSeats,
+          busData,
+          travelDate,
+          bookingDate: new Date().toISOString(),
+          totalAmount: paymentDetails.amount,
+          origin: bookingDetails?.origin || searchParams?.fromCity || 'Kathmandu',
+          destination: bookingDetails?.destination || searchParams?.toCity || 'Birgunj',
+          tripType,
+          departureBookingResult: departureResult,
+          returnBookingResult: returnResult,
+          // Add return trip details for two-way
+          ...(tripType === 'twoWay' && {
+            returnPassengers,
+            returnSeats,
+            returnBusData,
+            returnTravelDate
+          })
+        };
+        
+        // Save to localStorage for receipt/confirmation page
+        localStorage.setItem('lastBooking', JSON.stringify(completedBooking));
+        
+        // Navigate to search results with success state
+        setTimeout(() => {
+          navigate('/search-results', { 
+            state: { 
+              bookingSuccess: true, 
+              bookingId: paymentDetails.bookingId || paymentDetails.merchantTransactionId,
+              bookedSeats: selectedSeats,
+              paymentDetails: completedBooking,
+              totalAmount: paymentDetails.amount
+            } 
+          });
+        }, 2000);
+      } else {
+        // Handle booking failure
+        const failureReason = tripType === 'twoWay' 
+          ? (!departureSuccess ? 'Departure booking failed' : 'Return booking failed')
+          : 'Booking failed';
+        
+        toast.error(`${failureReason}. Please contact support with your payment details.`);
+        console.error('Booking failure:', { departureResult, returnResult });
+      }
+      
+    } catch (error) {
+      console.error('Error in handlePaymentSuccess:', error);
+      toast.error('An error occurred while processing your booking. Please contact support.');
+    }
   };
 
   const handlePaymentModalClose = () => {

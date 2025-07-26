@@ -7,9 +7,9 @@
 const apiConfig = {
   // Base URLs for different environments
   baseUrls: {
-    development: 'http://localhost:3000',
-    production: 'https://api.sonatraveltours.com', // Replace with actual production URL
-    staging: 'https://staging-api.sonatraveltours.com', // Replace with actual staging URL
+    development: 'https://6le3z7icgf.execute-api.us-east-1.amazonaws.com/prod',
+    production: 'https://6le3z7icgf.execute-api.us-east-1.amazonaws.com/prod',
+    staging: 'https://6le3z7icgf.execute-api.us-east-1.amazonaws.com/prod',
   },
   
   // API Endpoints
