@@ -18,6 +18,10 @@ const PassengerDetail = () => {
   // 🔥 FIX: Get selected seats from navigation state - supporting separate departure and return seats
   const { selectedSeats, returnSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails, tripType = 'oneWay', returnBusData, returnTravelDate } = location.state || {};
   
+  // Debug: Log search parameters to verify routing data
+  console.log('🔍 PassengerDetail received searchParams:', searchParams);
+  console.log('🔍 Current tripType:', tripType);
+  
   // 🔥 FIX: Create passengers array based on actual selected seats (separate for departure and return)
   const [passengers, setPassengers] = useState([]);
   const [returnPassengers, setReturnPassengers] = useState([]);
@@ -25,6 +29,40 @@ const PassengerDetail = () => {
   const [returnErrors, setReturnErrors] = useState({});
   const [activeTab, setActiveTab] = useState('departure');
   const [useSamePassengerDetails, setUseSamePassengerDetails] = useState(false);
+
+  // Dynamic boarding and dropping options based on journey direction
+  const getDynamicBoardingDroppingOptions = () => {
+    const fromCity = searchParams?.fromCity || searchParams?.from || 'Kathmandu';
+    const toCity = searchParams?.toCity || searchParams?.to || 'Birgunj';
+    const isReturnJourney = activeTab === 'return';
+    
+    console.log(`🚌 Calculating boarding/dropping options for ${activeTab} tab:`, {
+      fromCity,
+      toCity,
+      isReturnJourney,
+      searchParams: searchParams
+    });
+    
+    // Get journey points from API - this handles the switching logic
+    const journeyPoints = api.getJourneyPoints(fromCity, toCity, isReturnJourney);
+    
+    console.log(`🚌 Journey points for ${activeTab} tab:`, {
+      boardingPoints: journeyPoints.boardingPoints.slice(0, 3),
+      droppingPoints: journeyPoints.droppingPoints.slice(0, 3),
+      effectiveFromCity: journeyPoints.fromCity,
+      effectiveToCity: journeyPoints.toCity
+    });
+    
+    return {
+      boardingOptions: journeyPoints.boardingPoints,
+      droppingOptions: journeyPoints.droppingPoints
+    };
+  };
+
+  // Recalculate options whenever activeTab changes - FIXED: Move useMemo before any conditional returns
+  const { boardingOptions, droppingOptions } = React.useMemo(() => {
+    return getDynamicBoardingDroppingOptions();
+  }, [activeTab, searchParams?.fromCity, searchParams?.toCity, searchParams?.from, searchParams?.to]);
 
   // Initialize passengers based on selected seats (independent for departure and return)
   useEffect(() => {
@@ -69,7 +107,7 @@ const PassengerDetail = () => {
     
     // If no seats selected, redirect back
     if (departureSeats.length === 0 && (tripType === 'oneWay' || returnSeatsArray.length === 0)) {
-      console.error(' No selected seats found, redirecting back');
+      console.error('❌ No selected seats found, redirecting back');
       toast.error('No seats selected. Please select seats first.');
       navigate(-1); // Go back to previous page
     }
@@ -129,23 +167,6 @@ const PassengerDetail = () => {
   "Gaindakot", "Galkot", "Galyang", "Ganeshman Charnath",
   "Garuda", "Gaur", "Gauradaha", "Ghodaghodi", "Godawari",
   "Gokarneshwor", "Gorkha", "Gulariya", "Gulariya", "Gulmi",];
-
-  // Dynamic boarding and dropping options based on journey direction
-  const getDynamicBoardingDroppingOptions = () => {
-    const fromCity = searchParams?.from || 'Kathmandu';
-    const toCity = searchParams?.to || 'Birgunj';
-    const isReturnJourney = activeTab === 'return';
-    
-    // Get journey points from API - this handles the switching logic
-    const journeyPoints = api.getJourneyPoints(fromCity, toCity, isReturnJourney);
-    
-    return {
-      boardingOptions: journeyPoints.boardingPoints,
-      droppingOptions: journeyPoints.droppingPoints
-    };
-  };
-
-  const { boardingOptions, droppingOptions } = getDynamicBoardingDroppingOptions();
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];
 
