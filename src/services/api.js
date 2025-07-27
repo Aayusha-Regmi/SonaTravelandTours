@@ -32,33 +32,71 @@ const getBusTypes = () => {
 
 /**
  * Get all boarding points for filtering
- * @returns {Array} - Array of boarding point names
+ * @param {string} fromCity - Origin city (default: 'Kathmandu')
+ * @returns {Array} - Array of boarding point names for the specified city
  */
-const getBoardingPoints = () => {
-  return [
-    'New Bus Park, Kathmandu',
-    'Kalanki, Kathmandu',
-    'Balkhu, Kathmandu',
-    'Koteshwor, Kathmandu',
-    'Chabahil, Kathmandu',
-    // Add more for demo
-    
-  ];
+const getBoardingPoints = (fromCity = 'Kathmandu') => {
+  const boardingPointsByCity = {
+    'Kathmandu': [
+      'Banepa', 'Sanga', 'Palanse', 'Nalinchowk', 'Bhaktapur', 'Jagati', 
+      'Sallaghari', 'Bhatbhateni,Thimi', 'SS Chowk', 'Sagbari', 'Kaushaltar', 
+      'Lokanthali', 'Jadibuti', 'Tinkune', 'Airport', 'Gaushala', 'Chabahil', 
+      'GopiKrishna', 'Sukedhara', 'Dhumbarahi', 'ChappalKarkhana', 'Chakrapath', 
+      'Basundhara', 'Samakhusi', 'Gangabu', 'Buspark', 'Machapokhari', 'Balaju', 
+      'Banasthali', 'Sitapaila', 'Kalanki (Narayani Petrol Pump)', 'Swyambhu', 
+      'Naikap', 'Satungal', 'Gurjudhare', 'Chandrasiri', 'Koteshwor'
+    ],
+    'Birgunj': [
+      'Simara', 'Kalaiya', 'Jeetpur', 'Parwanipur', 'Gandak', 'Pipra', 'Ghantaghar'
+    ]
+  };
+  
+  return boardingPointsByCity[fromCity] || boardingPointsByCity['Kathmandu'];
 };
 
 /**
  * Get all dropping points for filtering
- * @returns {Array} - Array of dropping point names
+ * @param {string} toCity - Destination city (default: 'Birgunj')
+ * @returns {Array} - Array of dropping point names for the specified city
  */
-const getDroppingPoints = () => {
-  return [
-    'Adarsha Nagar, Birgunj',
-    'Ghantaghar, Birgunj',
-    'Birta, Birgunj',
-    'Powerhouse, Birgunj',
-    'Rangeli, Birgunj',
-   
-  ];
+const getDroppingPoints = (toCity = 'Birgunj') => {
+  const droppingPointsByCity = {
+    'Kathmandu': [
+      'Banepa', 'Sanga', 'Palanse', 'Nalinchowk', 'Bhaktapur', 'Jagati', 
+      'Sallaghari', 'Bhatbhateni,Thimi', 'SS Chowk', 'Sagbari', 'Kaushaltar', 
+      'Lokanthali', 'Jadibuti', 'Tinkune', 'Airport', 'Gaushala', 'Chabahil', 
+      'GopiKrishna', 'Sukedhara', 'Dhumbarahi', 'ChappalKarkhana', 'Chakrapath', 
+      'Basundhara', 'Samakhusi', 'Gangabu', 'Buspark', 'Machapokhari', 'Balaju', 
+      'Banasthali', 'Sitapaila', 'Kalanki (Narayani Petrol Pump)', 'Swyambhu', 
+      'Naikap', 'Satungal', 'Gurjudhare', 'Chandrasiri', 'Koteshwor'
+    ],
+    'Birgunj': [
+      'Simara', 'Kalaiya', 'Jeetpur', 'Parwanipur', 'Gandak', 'Pipra', 'Ghantaghar'
+    ]
+  };
+  
+  return droppingPointsByCity[toCity] || droppingPointsByCity['Birgunj'];
+};
+
+/**
+ * Get boarding and dropping points for a specific journey direction
+ * Useful for two-way trips where points need to be swapped for return journey
+ * @param {string} fromCity - Origin city
+ * @param {string} toCity - Destination city
+ * @param {boolean} isReturnJourney - Whether this is the return leg of a two-way trip
+ * @returns {Object} - Object with boardingPoints and droppingPoints arrays
+ */
+const getJourneyPoints = (fromCity, toCity, isReturnJourney = false) => {
+  // For return journey, swap the cities to get correct boarding/dropping points
+  const effectiveFromCity = isReturnJourney ? toCity : fromCity;
+  const effectiveToCity = isReturnJourney ? fromCity : toCity;
+  
+  return {
+    boardingPoints: getBoardingPoints(effectiveFromCity),
+    droppingPoints: getDroppingPoints(effectiveToCity),
+    fromCity: effectiveFromCity,
+    toCity: effectiveToCity
+  };
 };
 
 /**
@@ -2081,7 +2119,7 @@ const loginUser = async (email, password) => {
     
     // Ensure we're not using the wrong domain
     if (loginUrl.includes('sonatraveltours.com')) {
-      console.error('❌ LOGIN URL USING WRONG DOMAIN:', loginUrl);
+      console.error('LOGIN URL USING WRONG DOMAIN:', loginUrl);
       throw new Error('Invalid API configuration - login URL points to frontend domain');
     }
     
@@ -2176,6 +2214,7 @@ export default {
   getBusTypes,
   getBoardingPoints,
   getDroppingPoints,
+  getJourneyPoints, // New function for two-way trip boarding/dropping points
   getBusDetails,
   bookSeats,
   getAvailableSeats,

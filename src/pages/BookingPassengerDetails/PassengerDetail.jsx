@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import api from '../../services/api';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import BusListingHeader from '../../components/common/BusListingHeader';
@@ -129,9 +130,22 @@ const PassengerDetail = () => {
   "Garuda", "Gaur", "Gauradaha", "Ghodaghodi", "Godawari",
   "Gokarneshwor", "Gorkha", "Gulariya", "Gulariya", "Gulmi",];
 
+  // Dynamic boarding and dropping options based on journey direction
+  const getDynamicBoardingDroppingOptions = () => {
+    const fromCity = searchParams?.from || 'Kathmandu';
+    const toCity = searchParams?.to || 'Birgunj';
+    const isReturnJourney = activeTab === 'return';
+    
+    // Get journey points from API - this handles the switching logic
+    const journeyPoints = api.getJourneyPoints(fromCity, toCity, isReturnJourney);
+    
+    return {
+      boardingOptions: journeyPoints.boardingPoints,
+      droppingOptions: journeyPoints.droppingPoints
+    };
+  };
 
-  const boardingOptions = ['Banepa','Sanga','Palanse','Nalinchowk','Bhaktapur','Jagati','Sallaghari','Bhatbhateni,Thimi','SS Chowk','Sagbari','Kaushaltar','Lokanthali','Jadibuti','Tinkune','Airport','Gaushala','Chabahil','GopiKrishna','Sukedhara','Dhumbarahi','ChappalKarkhana','Chakrapath','Basundhara','Samakhusi','Gangabu','Buspark','Machapokhari','Balaju','Banasthali','Sitapaila','Kalanki (Narayani Petrol Pump)','Swyambhu','Naikap', 'Satungal','Gurjudhare','Chandrasiri','Sallaghari', 'Koteshwor','Airport','Gaushala','Chabahil'];
-  const droppingOptions = ['Simara','Kalaiya', 'Jeetpur', 'Parwanipur','Gandak','Pipra','Ghantaghar'];
+  const { boardingOptions, droppingOptions } = getDynamicBoardingDroppingOptions();
 
   const steps = ['Seat Details', 'Passenger Details', 'Payment'];
 
