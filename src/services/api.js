@@ -178,7 +178,6 @@ const getAvailableSeats = async (busId, date, destination = "kathmandu") => {
     };
 
   } catch (error) {
-    console.error('Failed to fetch real seat data:', error);
     
    
   }
@@ -262,7 +261,6 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
     return [];
   } else {
     // API returned unexpected structure
-    console.error('API response has unexpected structure:', result);
     throw new Error(`Invalid API response structure. Expected success=true and data array, got: ${JSON.stringify(result)}`);
   }
 };
@@ -325,7 +323,6 @@ const searchBuses = async (searchParams) => {
     return processSuccessfulResponse(result, fromCity, toCity);
     
   } catch (error) {
-    console.error('🚌 Bus search API error:', error);
     
     // HTTP interceptor will handle authentication errors automatically
     if (error.message === 'AUTHENTICATION_REQUIRED') {
@@ -360,7 +357,6 @@ const initiatePayment = async (amount, instrumentCode) => {
     
     // Validate base URL to ensure it's not using frontend domain
     if (!baseUrl || baseUrl.includes('sonatraveltours.com')) {
-      console.error('❌ Invalid payment base URL configuration:', baseUrl);
       throw new Error('Payment API base URL is not configured correctly');
     }
     
@@ -393,7 +389,6 @@ const initiatePayment = async (amount, instrumentCode) => {
         result = { message: 'Empty response from server' };
       }
     } catch (parseError) {
-      console.error('💳 Failed to parse JSON response:', parseError);
       result = { 
         message: 'Invalid JSON response from server',
         rawResponse: responseText 
@@ -526,12 +521,10 @@ const getPaymentInstruments = async () => {
     
     // Validate base URL to ensure it's not using frontend domain
     if (!baseUrl || baseUrl.includes('sonatraveltours.com')) {
-      console.error('❌ Invalid payment base URL configuration:', baseUrl);
       throw new Error('Payment API base URL is not configured correctly');
     }
     
     const url = `${baseUrl}/payment/get-all-payment-instruments`;
-    console.log('💳 Using payment instruments URL:', url);
     
     // Use HTTP interceptor for authentication and request handling
     const response = await authenticatedFetch(url, {
@@ -550,7 +543,6 @@ const getPaymentInstruments = async () => {
         result = { message: 'Empty response from payment instruments API' };
       }
     } catch (parseError) {
-      console.error('💳 Failed to parse payment instruments JSON:', parseError);
       result = { message: 'Invalid JSON response', rawResponse: responseText };
     }
 
@@ -565,7 +557,6 @@ const getPaymentInstruments = async () => {
       } else if (Array.isArray(result)) {
         rawInstruments = result;
       } else {
-        console.log('💳 Unexpected response format, using fallback');
         return {
           success: true,
           data: getFallbackPaymentInstruments(),
@@ -600,10 +591,7 @@ const getPaymentInstruments = async () => {
         data: instruments
       };
     } else {
-      console.error('💳 Payment instruments API failed:', response.status, result);
-      
       // Return fallback instruments on API failure
-      console.log('💳 Using fallback payment instruments due to API failure');
       return {
         success: true,
         data: getFallbackPaymentInstruments(),
@@ -795,14 +783,10 @@ const getFallbackPaymentInstruments = () => {
  */
 const getServiceCharge = async (amount, instrumentCode) => {
   try {
-    console.log('Step 3: Getting service charge for:', instrumentCode);
-    console.log('Service charge parameters:', { amount, instrumentCode });
-    
     // Check for authentication token using the enhanced utility function
     const authCheck = checkAuthentication();
     
     if (!authCheck.isAuthenticated) {
-      console.warn('No authentication found for service charge, using default');
       // Return default service charge instead of failing
       const defaultServiceCharge = Math.round(amount * 0.02); // 2% default
       return {
@@ -811,8 +795,6 @@ const getServiceCharge = async (amount, instrumentCode) => {
         fallback: true
       };
     }
-    
-    console.log(`Using authentication from ${authCheck.source}`);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -825,19 +807,13 @@ const getServiceCharge = async (amount, instrumentCode) => {
       instrumentCode: instrumentCode
     };
     
-    console.log('Service charge request:', requestBody);
-    
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/get-service-charge`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(requestBody)
     });
 
-    console.log('Service charge response status:', response.status, response.statusText);
-    console.log('Service charge response headers:', Object.fromEntries(response.headers.entries()));
-
     const responseText = await response.text();
-    console.log('Service charge raw response:', responseText);
 
     let result;
     try {
@@ -847,7 +823,6 @@ const getServiceCharge = async (amount, instrumentCode) => {
         result = { message: 'Empty response from service charge API' };
       }
     } catch (parseError) {
-      console.error('Failed to parse service charge JSON:', parseError);
       result = { 
         message: 'Invalid JSON response from service charge API',
         rawResponse: responseText 
@@ -869,7 +844,6 @@ const getServiceCharge = async (amount, instrumentCode) => {
       } else if (result.data && typeof result.data.serviceCharge === 'number') {
         serviceCharge = result.data.serviceCharge;
       } else {
-        console.warn('Service charge not found in response, using default');
         serviceCharge = Math.round(amount * 0.02); // 2% default
       }
       
@@ -879,7 +853,6 @@ const getServiceCharge = async (amount, instrumentCode) => {
         data: result.data || result
       };
     } else if (response.status === 401) {
-      console.error('Authentication failed - 401 Unauthorized for service charge');
       // Return default service charge instead of failing
       const defaultServiceCharge = Math.round(amount * 0.02); // 2% default
       return {
@@ -889,7 +862,6 @@ const getServiceCharge = async (amount, instrumentCode) => {
         message: 'Using default service charge due to authentication issue'
       };
     } else {
-      console.error('Service charge API failed:', response.status, result);
       // Return default service charge instead of failing
       const defaultServiceCharge = Math.round(amount * 0.02); // 2% default
       return {
@@ -900,7 +872,6 @@ const getServiceCharge = async (amount, instrumentCode) => {
       };
     }
   } catch (error) {
-    console.error('Get service charge error:', error);
     // Return default service charge instead of failing
     const defaultServiceCharge = Math.round(amount * 0.02); // 2% default
     return {
@@ -920,14 +891,10 @@ const getServiceCharge = async (amount, instrumentCode) => {
  */
 const checkPaymentStatus = async (seatInfo, paymentInfo) => {
   try {
-    console.log('Step 5: Checking payment status...');
-    console.log('Payment check parameters:', { seatInfo, paymentInfo });
-    
     // Check for authentication token
     const authCheck = checkAuthentication();
     
     if (!authCheck.isAuthenticated) {
-      console.error('Authentication required for payment status check');
       return {
         success: false,
         message: authCheck.error || 'Authentication required to check payment status.',
@@ -935,8 +902,6 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
         requiresAuth: true
       };
     }
-    
-    console.log(`Using authentication from ${authCheck.source}`);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -949,8 +914,6 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
       paymentInfo: paymentInfo
     };
     
-    console.log('Payment status check request:', requestBody);
-    
     // Payment status check removed - using NPS flow instead
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/check-status`, {
       method: 'POST',
@@ -958,11 +921,7 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('Payment status response status:', response.status, response.statusText);
-    console.log('Payment status response headers:', Object.fromEntries(response.headers.entries()));
-
     const responseText = await response.text();
-    console.log('Payment status raw response:', responseText);
 
     let result;
     try {
@@ -972,14 +931,13 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
         result = { message: 'Empty response from payment status API' };
       }
     } catch (parseError) {
-      console.error('Failed to parse payment status JSON:', parseError);
       result = { 
         message: 'Invalid JSON response from payment status API',
         rawResponse: responseText 
       };
     }
     
-    console.log('Payment status parsed response:', result);
+    
 
     if (response.ok) {
       // Check for different response formats
@@ -1000,7 +958,6 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
         };
       }
     } else if (response.status === 401) {
-      console.error('Authentication failed - 401 Unauthorized for payment status check');
       return {
         success: false,
         message: 'Authentication required. Please log in to check payment status.',
@@ -1009,7 +966,6 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
         requiresAuth: true
       };
     } else {
-      console.error('Payment status check API failed:', response.status, result);
       return {
         success: false,
         message: result.message || result.error || `HTTP ${response.status}: Failed to check payment status`,
@@ -1018,7 +974,6 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
       };
     }
   } catch (error) {
-    console.error('Payment status check error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred during payment status check',
@@ -1041,8 +996,6 @@ const checkPaymentStatus = async (seatInfo, paymentInfo) => {
  */
 const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additionalParams = {}) => {
   try {
-    console.log('💳 Redirecting to Nepal Payment Gateway with data:', paymentData);
-    
     // Gateway URL
     const gatewayUrl = "https://gateway.nepalpayment.com/payment/index";
     
@@ -1057,12 +1010,6 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
     // Check for authentication token
     const authCheck = checkAuthentication();
     const authToken = authCheck.isAuthenticated ? authCheck.token : '';
-    
-    if (authCheck.isAuthenticated) {
-      console.log('💳 Using authentication token from', authCheck.source);
-    } else {
-      console.warn('💳 No authentication token found! Payment might fail.');
-    }
     
     // Add required parameters from initiate-payment response
     // Using the EXACT field names required by Nepal Payment Gateway (case sensitive)
@@ -1086,23 +1033,8 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
       )
     };
 
-    // Log the instrument code being used for debugging
-  
-    
     // Validate the instrument code
     const validation = validateInstrumentCode(params.InstrumentCode);
-  
-    
-    // If no instrument code is provided, warn about potential redirect to selection page
-    if (!params.InstrumentCode) {
-      console.warn('💳 No InstrumentCode provided - NPS gateway will show payment method selection page');
-      console.warn('💳 To bypass selection page, pass instrumentCode in paymentData or additionalParams');
-    } else if (validation.isValid) {
-      
-    } else {
-      console.warn('💳 Invalid InstrumentCode:', validation.message);
-      console.warn('💳 Recommendation:', validation.recommendation);
-    }
     
     // Add all parameters to form
     Object.keys(params).forEach(key => {
@@ -1115,24 +1047,18 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
       }
     });
     
-    
     // Debug the payment request
     debugNpsPaymentRequest(form, gatewayUrl);
     
     // Add form to body and submit
     document.body.appendChild(form);
-   
     form.submit();
     
     // Return true to indicate the redirect is in progress
     return true;
   } catch (error) {
-    console.error('💳 Failed to redirect to payment gateway:', error);
-    
       // Attempt to use direct fetch with correct content type as fallback
       try {
-        console.log('💳 Attempting fallback redirect method with correct content type...');
-        
         // Get authentication token for fallback method
         const authCheck = checkAuthentication();
         const authToken = authCheck.isAuthenticated ? authCheck.token : '';
@@ -1146,9 +1072,6 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
         formData.append('ProcessId', paymentData.processId || '');
         formData.append('InstrumentCode', paymentData.instrumentCode || additionalParams.instrumentCode || '');
         formData.append('TransactionRemarks', additionalParams.remarks || 'Bus ticket booking');
-        
-        console.log('💳 Fallback using InstrumentCode:', paymentData.instrumentCode || additionalParams.instrumentCode || 'None');
-        console.log('💳 Attempting direct fetch with x-www-form-urlencoded...');
         
         // Create a new hidden form for manual submission
         const manualForm = document.createElement('form');
@@ -1176,23 +1099,11 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
         
         // Add form to body and submit
         document.body.appendChild(manualForm);
-        console.log('💳 Submitting form with content type: application/x-www-form-urlencoded');
-        
-        // Debug the form data being sent
-        const formDataObj = {};
-        for (let i = 0; i < manualForm.elements.length; i++) {
-          const input = manualForm.elements[i];
-          if (input.name) {
-            formDataObj[input.name] = input.value;
-          }
-        }
-        console.log('Form data being submitted:', formDataObj);
         
         // Submit the form
         manualForm.submit();
         return true;
     } catch (fallbackError) {
-      console.error('💳 Fallback redirect also failed:', fallbackError);
       return false;
     }
   }
@@ -1209,8 +1120,6 @@ const redirectToPaymentGateway = (paymentData, successUrl, failureUrl, additiona
  */
 const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumentCode, successUrl, failureUrl) => {
   try {
-    console.log('Getting payment redirect URL...');
-    
     // Check for authentication token using the utility function
     const authCheck = checkAuthentication();
     
@@ -1220,9 +1129,6 @@ const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumen
     
     if (authCheck.isAuthenticated) {
       headers.Authorization = `Bearer ${authCheck.token}`;
-      console.log(`Adding authorization header from ${authCheck.source}`);
-    } else {
-      console.log('No authentication token found for payment redirect URL');
     }
     
     // Construct URL with query parameters for GET request as shown in your attachment
@@ -1232,8 +1138,6 @@ const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumen
     });
     
     const url = `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/onepg?${params.toString()}`;
-    
-    console.log('Redirect URL:', url);
     
     // For redirect payments, we typically just return the constructed URL
     // The user will be redirected to this URL which handles the payment flow
@@ -1248,7 +1152,6 @@ const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumen
     };
     
   } catch (error) {
-    console.error('Get payment redirect URL error:', error);
     return {
       success: false,
       message: error.message || 'Failed to generate payment redirect URL'
@@ -1263,8 +1166,6 @@ const getPaymentRedirectUrl = async (merchantTransactionId, processId, instrumen
  */
 const checkNPSTransactionStatus = async (merchantTxnId) => {
   try {
-    console.log('Checking NPS transaction status for:', merchantTxnId);
-    
     // Check for authentication token
     const authCheck = checkAuthentication();
     
@@ -1275,9 +1176,7 @@ const checkNPSTransactionStatus = async (merchantTxnId) => {
     
     if (authCheck.isAuthenticated) {
       headers.Authorization = `Bearer ${authCheck.token}`;
-      console.log(`Adding authorization header from ${authCheck.source}`);
     } else {
-      console.log('No authentication token found for NPS status check');
       throw new Error('Authentication required. Please login first.');
     }
     
@@ -1289,8 +1188,6 @@ const checkNPSTransactionStatus = async (merchantTxnId) => {
       // Signature will be generated by backend if needed
     };
     
-    console.log('NPS status check request:', requestBody);
-    
     // Use the CheckTransactionStatus endpoint
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/CheckTransactionStatus`, {
       method: 'POST',
@@ -1298,17 +1195,12 @@ const checkNPSTransactionStatus = async (merchantTxnId) => {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('NPS status response status:', response.status);
-
     let result;
     try {
       result = await response.json();
     } catch (parseError) {
-      console.error('Failed to parse NPS status JSON:', parseError);
       result = { message: 'Invalid response from NPS status API' };
     }
-    
-    console.log('NPS status response:', result);
 
     if (response.ok && result.success) {
       // NPS returns status codes: 000=Success, 001/002=Pending, others=Failed
@@ -1333,7 +1225,6 @@ const checkNPSTransactionStatus = async (merchantTxnId) => {
       };
     }
   } catch (error) {
-    console.error('NPS transaction status check error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred during NPS status check',
@@ -1350,8 +1241,6 @@ const checkNPSTransactionStatus = async (merchantTxnId) => {
  */
 const updatePaymentStatus = async (paymentInfo, status) => {
   try {
-    console.log('Updating payment status:', status);
-    
     // Check for authentication token
     const authCheck = checkAuthentication();
     
@@ -1361,9 +1250,7 @@ const updatePaymentStatus = async (paymentInfo, status) => {
     
     if (authCheck.isAuthenticated) {
       headers.Authorization = `Bearer ${authCheck.token}`;
-      console.log(`Adding authorization header from ${authCheck.source}`);
     } else {
-      console.log('No authentication token found for payment status update');
       throw new Error('Authentication required. Please login first.');
     }
     
@@ -1378,8 +1265,6 @@ const updatePaymentStatus = async (paymentInfo, status) => {
       remarks: paymentInfo.remarks || `Payment ${status.toLowerCase()}`
     };
     
-    console.log('Payment status update request:', requestBody);
-    
     // Use the seat/payment endpoint like Flutter setPayment
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/seat/payment`, {
       method: 'POST',
@@ -1387,18 +1272,13 @@ const updatePaymentStatus = async (paymentInfo, status) => {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('Payment status update response:', response.status);
-
     let result;
     try {
       result = await response.json();
     } catch (parseError) {
-      console.error('Failed to parse payment status update JSON:', parseError);
       result = { message: 'Invalid response from server' };
     }
     
-    console.log('Payment status update result:', result);
-
     if (response.ok && result.success) {
       return {
         success: true,
@@ -1414,7 +1294,6 @@ const updatePaymentStatus = async (paymentInfo, status) => {
       };
     }
   } catch (error) {
-    console.error('Update payment status error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred during payment status update',
@@ -1430,8 +1309,6 @@ const updatePaymentStatus = async (paymentInfo, status) => {
  */
 const bookTickets = async (bookingInfo) => {
   try {
-    console.log('Booking tickets after successful payment...');
-    
     // Check for authentication token
     const authCheck = checkAuthentication();
     
@@ -1441,9 +1318,7 @@ const bookTickets = async (bookingInfo) => {
     
     if (authCheck.isAuthenticated) {
       headers.Authorization = `Bearer ${authCheck.token}`;
-      console.log(`Adding authorization header from ${authCheck.source}`);
     } else {
-      console.log('No authentication token found for ticket booking');
       throw new Error('Authentication required. Please login first.');
     }
     
@@ -1501,9 +1376,6 @@ const bookTickets = async (bookingInfo) => {
       passengersList: passengersList
     };
     
-    console.log('Ticket booking request (supporting two-way trips with passenger duplicates):', requestBody);
-    console.log('Passengers list contains:', passengersList.length, 'entries (includes departure + return for two-way trips)');
-    
     // Use the /seat endpoint exactly as specified
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/seat`, {
       method: 'POST',
@@ -1511,17 +1383,12 @@ const bookTickets = async (bookingInfo) => {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('Ticket booking response status:', response.status);
-
     let result;
     try {
       result = await response.json();
     } catch (parseError) {
-      console.error('Failed to parse ticket booking JSON:', parseError);
       result = { message: 'Invalid response from server' };
     }
-    
-    console.log('Ticket booking response:', result);
 
     if (response.ok && result.success) {
       return {
@@ -1543,7 +1410,6 @@ const bookTickets = async (bookingInfo) => {
       };
     }
   } catch (error) {
-    console.error('Book tickets error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred during ticket booking',
@@ -1559,8 +1425,6 @@ const bookTickets = async (bookingInfo) => {
  */
 const getMyBookings = async (params = {}) => {
   try {
-    console.log('Fetching user booking history...');
-    
     // Check for authentication token
     const authCheck = checkAuthentication();
     
@@ -1570,9 +1434,7 @@ const getMyBookings = async (params = {}) => {
     
     if (authCheck.isAuthenticated) {
       headers.Authorization = `Bearer ${authCheck.token}`;
-      console.log(`Adding authorization header from ${authCheck.source}`);
     } else {
-      console.log('No authentication token found for booking history');
       throw new Error('Authentication required. Please login first.');
     }
     
@@ -1585,24 +1447,18 @@ const getMyBookings = async (params = {}) => {
     });
     
     const url = `${import.meta.env.VITE_API_BASE_URL}/bookings?${queryParams.toString()}`;
-    console.log('Booking history URL:', url);
     
     const response = await fetch(url, {
       method: 'GET',
       headers: headers
     });
 
-    console.log('Booking history response status:', response.status);
-
     let result;
     try {
       result = await response.json();
     } catch (parseError) {
-      console.error('Failed to parse booking history JSON:', parseError);
       result = { message: 'Invalid response from server' };
     }
-    
-    console.log('Booking history response:', result);
 
     if (response.ok && result.success) {
       return {
@@ -1622,7 +1478,6 @@ const getMyBookings = async (params = {}) => {
       };
     }
   } catch (error) {
-    console.error('Get booking history error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred while fetching booking history',
@@ -1641,12 +1496,9 @@ const getMyBookings = async (params = {}) => {
  */
 const handleNPSPaymentCallback = async (callbackData, bookingDetails) => {
   try {
-    console.log('Handling NPS payment callback...', callbackData);
-    
     const { MerchantTxnId, GatewayTxnId } = callbackData;
     
     // Step 1: Check NPS transaction status
-    console.log('Step 1: Checking NPS transaction status...');
     const statusResult = await checkNPSTransactionStatus(MerchantTxnId);
     
     if (!statusResult.success) {
@@ -1656,7 +1508,6 @@ const handleNPSPaymentCallback = async (callbackData, bookingDetails) => {
     const { StatusCode, Message } = statusResult.data;
     
     // Step 2: Update payment status based on NPS response
-    console.log('Step 2: Updating payment status...');
     const paymentInfo = {
       merchantTransactionId: MerchantTxnId,
       gatewayTransactionId: GatewayTxnId || statusResult.data.GatewayTransactionId,
@@ -1678,7 +1529,6 @@ const handleNPSPaymentCallback = async (callbackData, bookingDetails) => {
     
     if (paymentStatus === 'SUCCESS') {
       // Step 3: Book tickets for successful payment
-      console.log('Step 3: Booking tickets...');
       const ticketBookingInfo = {
         ...bookingDetails,
         merchantTransactionId: MerchantTxnId,
@@ -1703,7 +1553,6 @@ const handleNPSPaymentCallback = async (callbackData, bookingDetails) => {
         };
       } else {
         // Payment successful but booking failed
-        console.error('Payment successful but ticket booking failed:', bookingResult.message);
         return {
           success: false,
           status: 'BOOKING_FAILED',
@@ -1719,7 +1568,6 @@ const handleNPSPaymentCallback = async (callbackData, bookingDetails) => {
       }
     } else if (paymentStatus === 'FAILED') {
       // Step 3: Handle payment failure - release seats
-      console.log('Step 3: Handling payment failure...');
       
       return {
         success: false,
@@ -1748,7 +1596,6 @@ const handleNPSPaymentCallback = async (callbackData, bookingDetails) => {
     }
     
   } catch (error) {
-    console.error('NPS payment callback handling error:', error);
     return {
       success: false,
       status: 'ERROR',
@@ -1766,8 +1613,6 @@ const handleNPSPaymentCallback = async (callbackData, bookingDetails) => {
  */
 const confirmSeatBooking = async (seatInfo, paymentInfo) => {
   try {
-    console.log('Confirming seat booking via complete NPS flow...');
-    
     // Use the complete NPS payment flow instead of simple seat booking
     const callbackData = {
       MerchantTxnId: paymentInfo.merchantTransactionId || paymentInfo.merchantTxnId,
@@ -1799,8 +1644,6 @@ const confirmSeatBooking = async (seatInfo, paymentInfo) => {
       remarks: paymentInfo.remarks || 'Bus ticket booking via NPS gateway'
     };
     
-    console.log('Processing complete NPS payment flow...');
-    
     // Use the complete NPS payment callback handler
     const result = await handleNPSPaymentCallback(callbackData, bookingDetails);
     
@@ -1820,7 +1663,6 @@ const confirmSeatBooking = async (seatInfo, paymentInfo) => {
       };
     }
   } catch (error) {
-    console.error('Confirm seat booking error:', error);
     return {
       success: false,
       message: error.message || 'Network error occurred during seat booking',
