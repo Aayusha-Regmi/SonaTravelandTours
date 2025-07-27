@@ -345,7 +345,15 @@ const initiatePayment = async (amount, instrumentCode) => {
       console.log('💳 Using instrument code:', instrumentCode);
     }
 
-    const url = `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV;
+    
+    // Validate base URL to ensure it's not using frontend domain
+    if (!baseUrl || baseUrl.includes('sonatraveltours.com')) {
+      console.error('❌ Invalid payment base URL configuration:', baseUrl);
+      throw new Error('Payment API base URL is not configured correctly');
+    }
+    
+    const url = `${baseUrl}/payment/initiate-payment`;
     console.log('💳 Using API URL:', url);
     
     // Prepare request body with optional instrument code
@@ -514,7 +522,16 @@ const getPaymentInstruments = async () => {
   try {
     console.log('💳 Step 2: Getting payment instruments...');
     
-    const url = `${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/get-all-payment-instruments`;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV;
+    
+    // Validate base URL to ensure it's not using frontend domain
+    if (!baseUrl || baseUrl.includes('sonatraveltours.com')) {
+      console.error('❌ Invalid payment base URL configuration:', baseUrl);
+      throw new Error('Payment API base URL is not configured correctly');
+    }
+    
+    const url = `${baseUrl}/payment/get-all-payment-instruments`;
+    console.log('💳 Using payment instruments URL:', url);
     
     // Use HTTP interceptor for authentication and request handling
     const response = await authenticatedFetch(url, {
@@ -1953,118 +1970,6 @@ const checkAuthentication = () => {
   return { isAuthenticated: false, token: null, source: null };
 };
 
-// Debug helpers for browser console
-if (typeof window !== 'undefined') {
-  window.checkAuth = checkAuthentication;
-  window.migrateTokens = migrateAuthTokens;
-  window.debugAuth = () => {
-    console.log('Authentication Debug Information:');
-    console.log('Using centralized auth utility:');
-    console.log('getAuthToken():', getAuthToken());
-    console.log('isAuthenticated():', isAuthenticated());
-    console.log('localStorage.authToken:', localStorage.getItem('authToken'));
-    console.log('localStorage.token:', localStorage.getItem('token'));
-    console.log('localStorage.loginSuccess:', localStorage.getItem('loginSuccess'));
-    console.log('localStorage.userRole:', localStorage.getItem('userRole'));
-    console.log('sessionStorage.authToken:', sessionStorage.getItem('authToken'));
-    console.log('sessionStorage.token:', sessionStorage.getItem('token'));
-    
-    const authCheck = checkAuthentication();
-    console.log('Authentication Check Result:', authCheck);
-    
-    // Try to decode JWT token if present
-    const currentToken = getAuthToken();
-    if (currentToken) {
-      try {
-        const tokenParts = currentToken.split('.');
-        if (tokenParts.length === 3) {
-          const payload = JSON.parse(atob(tokenParts[1]));
-          console.log('JWT Token Payload:', payload);
-          console.log('Token Expiry:', new Date(payload.exp * 1000));
-          console.log('Current Time:', new Date());
-          console.log('Token Valid:', payload.exp * 1000 > Date.now());
-        }
-      } catch (e) {
-        console.log('Failed to decode JWT token:', e.message);
-      }
-    }
-    
-    return authCheck;
-  };
-
-  // Test payment API authentication
-  window.testPaymentAuth = async () => {
-    console.log('Testing Payment API Authentication');
-    
-    const authCheck = checkAuthentication();
-    if (!authCheck.isAuthenticated) {
-      console.log('Not authenticated');
-      return false;
-    }
-    
-    console.log('Using token from:', authCheck.source);
-    console.log('Token preview:', authCheck.token.substring(0, 20) + '...');
-    
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV}/payment/initiate-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${authCheck.token}`
-        },
-        body: JSON.stringify({ amount: 1000 })
-      });
-      
-      console.log('Payment API Status:', response.status, response.statusText);
-      console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
-      
-      const text = await response.text();
-      console.log('Raw Response:', text);
-      
-      if (response.status === 401) {
-        console.log('401 Unauthorized - Token rejected by payment API');
-        
-        // Check if token is expired
-        try {
-          const tokenParts = authCheck.token.split('.');
-          if (tokenParts.length === 3) {
-            const payload = JSON.parse(atob(tokenParts[1]));
-            const isExpired = payload.exp * 1000 <= Date.now();
-            console.log('Token expired:', isExpired);
-            if (isExpired) {
-              console.log('Token has expired - need to re-authenticate');
-            } else {
-              console.log('Token is valid but rejected - check API endpoint or token format');
-            }
-          }
-        } catch (e) {
-          console.log('Could not analyze token expiration');
-        }
-      } else if (response.ok) {
-        console.log('Payment API authentication successful');
-        try {
-          const data = JSON.parse(text);
-          console.log('Response data:', data);
-        } catch (e) {
-          console.log('Response not JSON');
-        }
-      }
-      
-      return { status: response.status, ok: response.ok, text };
-    } catch (error) {
-      console.error('Payment API test failed:', error);
-      return false;
-    }
-  };
-  
-  console.log('Debug helpers loaded:');
-  console.log('- window.checkAuth() - Check authentication status');
-  console.log('- window.debugAuth() - Full authentication debug info');
-  console.log('- window.migrateTokens() - Migrate authToken to token');
-  console.log('- window.testPaymentAuth() - Test payment API authentication');
-}
-
 /**
  * Get applied coupons for the current user
  * @returns {Promise<Array>} Array of applied coupons
@@ -2149,6 +2054,120 @@ const testAPIEndpoints = async () => {
   }
 };
 
+/**
+ * User Authentication Functions
+ */
+
+/**
+ * Login user with email and password
+ * @param {string} email - User email
+ * @param {string} password - User password
+ * @returns {Promise} - Promise resolving to login result
+ */
+const loginUser = async (email, password) => {
+  try {
+    console.log('🔐 Attempting user login...');
+    
+    // Clear any existing authentication state first
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('loginSuccess');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('token');
+    
+    // Use the correct API URL for login - NEVER use frontend domain
+    const loginUrl = API_URLS.AUTH.LOGIN;
+    console.log('🔐 Login URL:', loginUrl);
+    
+    // Ensure we're not using the wrong domain
+    if (loginUrl.includes('sonatraveltours.com')) {
+      console.error('❌ LOGIN URL USING WRONG DOMAIN:', loginUrl);
+      throw new Error('Invalid API configuration - login URL points to frontend domain');
+    }
+    
+    // Direct fetch without authentication interceptor for login
+    const response = await fetch(loginUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ email, password })
+    });
+    
+    console.log('🔐 Login response status:', response.status);
+    console.log('🔐 Login response headers:', Object.fromEntries(response.headers.entries()));
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('🔐 Login failed with status:', response.status);
+      console.error('🔐 Error response:', errorText);
+      throw new Error(`Login failed: ${response.status} ${response.statusText}. ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('🔐 Login successful:', result);
+    
+    // Extract token from response
+    const token = result.token || result.accessToken || result.authToken || result.data?.token;
+    
+    if (token) {
+      // Store token in both locations for compatibility
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('token', token);
+      localStorage.setItem('loginSuccess', 'true');
+      
+      // Store user info if available
+      if (result.user || result.data?.user) {
+        const user = result.user || result.data.user;
+        localStorage.setItem('userRole', user.role || 'user');
+        localStorage.setItem('userName', user.name || user.fullName || '');
+        localStorage.setItem('userEmail', user.email || '');
+      }
+      
+      console.log('🔐 Token stored successfully');
+      return {
+        success: true,
+        data: result,
+        token: token,
+        message: 'Login successful'
+      };
+    } else {
+      console.error('🔐 No token found in response:', result);
+      throw new Error('No authentication token received from server');
+    }
+    
+  } catch (error) {
+    console.error('🔐 Login error:', error);
+    return {
+      success: false,
+      message: error.message || 'Login failed',
+      error: error.name
+    };
+  }
+};
+
+/**
+ * Logout user and clear authentication
+ */
+const logoutUser = () => {
+  // Clear all authentication data
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('token');
+  localStorage.removeItem('loginSuccess');
+  localStorage.removeItem('userRole');
+  localStorage.removeItem('userName');
+  localStorage.removeItem('userEmail');
+  sessionStorage.removeItem('authToken');
+  sessionStorage.removeItem('token');
+  
+  console.log('🔐 User logged out successfully');
+  return {
+    success: true,
+    message: 'Logged out successfully'
+  };
+};
+
 export default {
   searchBuses,
   getRoutes,
@@ -2189,6 +2208,8 @@ export default {
   // Authentication utilities
   checkAuthentication,
   migrateAuthTokens,
+  loginUser,
+  logoutUser,
   
   // Fallback utilities
   getFallbackPaymentInstruments,

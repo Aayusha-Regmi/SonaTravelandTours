@@ -167,7 +167,8 @@ class HttpInterceptor {
       'maps.googleapis.com',
       'api.open-meteo.com',
       'openweathermap.org',
-      'formsubmit.co'
+      'formsubmit.co',
+      'gateway.nepalpayment.com'
     ];
     
     // Don't intercept excluded APIs
@@ -175,15 +176,21 @@ class HttpInterceptor {
       return false;
     }
     
-    // Check if it's a relative API call or matches our API base URLs
+    // Don't intercept the frontend domain - only intercept our API domains
+    if (url.includes('sonatraveltours.com')) {
+      console.warn('🚫 Frontend domain detected in API call, skipping interceptor:', url);
+      return false;
+    }
+    
+    // Only intercept URLs that match our actual API base URLs
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    const paymentBaseUrl = import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV || '';
+    
     return (
-      url.startsWith('/api/') ||
-      url.includes('/payment/') ||
-      url.includes('/seat/') ||
-      url.includes(import.meta.env.VITE_API_BASE_URL || '') ||
-      url.includes(import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV || '') ||
-      // Add more API patterns as needed
-      url.match(/\/(api|payment|seat|auth|user)\//)
+      url.includes(apiBaseUrl) ||
+      url.includes(paymentBaseUrl) ||
+      // Only intercept URLs that are actually on our API domains
+      url.includes('execute-api.us-east-1.amazonaws.com')
     );
   }
 
@@ -211,9 +218,12 @@ class HttpInterceptor {
       return;
     }
     
-    // Don't handle session expiry for login/auth endpoints
-    if (url.includes('/login') || url.includes('/signup') || url.includes('/otp')) {
-      console.log('Auth endpoint detected, skipping session expiry handling');
+    // Don't handle session expiry for login/auth endpoints or frontend domain URLs
+    if (url.includes('/login') || 
+        url.includes('/signup') || 
+        url.includes('/otp') ||
+        url.includes('sonatraveltours.com')) {
+      console.log('Auth endpoint or frontend domain detected, skipping session expiry handling');
       return;
     }
     
@@ -296,9 +306,22 @@ class HttpInterceptor {
    * @returns {Promise} Fetch promise
    */
   async authenticatedFetch(url, options = {}) {
+    // Skip authentication checks for login/auth endpoints
+    const isAuthEndpoint = url.includes('/login') || 
+                          url.includes('/auth/login') || 
+                          url.includes('/signup') || 
+                          url.includes('/auth/signup') ||
+                          url.includes('/otp') ||
+                          url.includes('/forgot-password');
+    
+    if (isAuthEndpoint) {
+      console.log('🚫 Skipping authentication for auth endpoint:', url);
+      return fetch(url, options);
+    }
+
     // Pre-check authentication for critical operations
     if (!isAuthenticated()) {
-      console.warn('🚫 Pre-flight authentication check failed');
+      console.warn('🚫 Pre-flight authentication check failed for:', url);
       const authError = new Error('AUTHENTICATION_REQUIRED');
       authError.status = 401;
       authError.preCheck = true;
