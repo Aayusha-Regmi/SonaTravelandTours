@@ -18,10 +18,6 @@ const PassengerDetail = () => {
   // 🔥 FIX: Get selected seats from navigation state - supporting separate departure and return seats
   const { selectedSeats, returnSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails, tripType = 'oneWay', returnBusData, returnTravelDate } = location.state || {};
   
-  // Debug: Log search parameters to verify routing data
-  console.log('🔍 PassengerDetail received searchParams:', searchParams);
-  console.log('🔍 Current tripType:', tripType);
-  
   // 🔥 FIX: Create passengers array based on actual selected seats (separate for departure and return)
   const [passengers, setPassengers] = useState([]);
   const [returnPassengers, setReturnPassengers] = useState([]);
@@ -45,13 +41,6 @@ const PassengerDetail = () => {
     
     // Get journey points from API - this handles the switching logic
     const journeyPoints = api.getJourneyPoints(fromCity, toCity, isReturnJourney);
-    
-    console.log(`🚌 Journey points for ${activeTab} tab:`, {
-      boardingPoints: journeyPoints.boardingPoints.slice(0, 3),
-      droppingPoints: journeyPoints.droppingPoints.slice(0, 3),
-      effectiveFromCity: journeyPoints.fromCity,
-      effectiveToCity: journeyPoints.toCity
-    });
     
     return {
       boardingOptions: journeyPoints.boardingPoints,
@@ -85,7 +74,6 @@ const PassengerDetail = () => {
       }));
       
       setPassengers(initialPassengers);
-      console.log('Departure passengers initialized:', initialPassengers);
     }
     
     // Initialize return passengers for two-way trips based on actual return seats

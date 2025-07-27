@@ -24,7 +24,6 @@ export const getCurrentUser = () => {
       message: userMessage
     };
   } catch (error) {
-    console.error('Error getting current user:', error);
     return null;
   }
 };
@@ -33,9 +32,7 @@ export const getCurrentUser = () => {
 export const storeSearchData = (searchData) => {
   try {
     localStorage.setItem('pendingSearchData', JSON.stringify(searchData));
-    console.log('Search data stored:', searchData);
   } catch (error) {
-    console.error('Error storing search data:', error);
   }
 };
 
@@ -43,9 +40,7 @@ export const storeSearchData = (searchData) => {
 export const storePageState = (pageState) => {
   try {
     localStorage.setItem('pendingPageState', JSON.stringify(pageState));
-    console.log('Page state stored:', pageState);
   } catch (error) {
-    console.error('Error storing page state:', error);
   }
 };
 
@@ -59,7 +54,6 @@ export const getAndClearSearchData = () => {
     }
     return null;
   } catch (error) {
-    console.error('Error retrieving search data:', error);
     return null;
   }
 };
@@ -74,7 +68,6 @@ export const getAndClearPageState = () => {
     }
     return null;
   } catch (error) {
-    console.error('Error retrieving page state:', error);
     return null;
   }
 };
@@ -115,7 +108,6 @@ export const redirectToLogin = (returnPath = null, searchData = null, pageState 
   
   // Store the complete path
   localStorage.setItem('returnPath', pathToStore);
-  console.log('Return path stored:', pathToStore);
   
   return loginUrl;
 };
@@ -125,9 +117,7 @@ export const getAndClearReturnPath = () => {
   const returnPath = localStorage.getItem('returnPath');
   if (returnPath) {
     localStorage.removeItem('returnPath');
-    console.log('Return path retrieved and cleared:', returnPath);
     return returnPath;
   }
-  console.log('No return path found');
   return null; // Return null instead of '/' to distinguish between no path and home path
 };

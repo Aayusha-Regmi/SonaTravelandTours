@@ -35,12 +35,6 @@ export const setAuthToken = (token) => {
   localStorage.setItem('loginSession', 'active');
   localStorage.setItem('loginTime', Date.now().toString());
   localStorage.setItem('recentLogin', 'true');
-  
-  console.log('✅ Token set successfully:', {
-    tokenPreview: token.substring(0, 20) + '...',
-    sessionStatus: 'active',
-    loginTime: new Date().toISOString()
-  });
 };
 
 /**
@@ -68,13 +62,10 @@ export const isTokenExpired = () => {
   // Let the server handle token expiry validation
   const token = getAuthToken();
   if (!token) {
-    console.log('⚠️ No token found, treating as expired');
     return true;
   }
   
   // For now, assume token is valid if it exists
-  // Server will return 401 if token is actually expired
-  console.log('� Token exists, assuming valid (server will validate)');
   return false;
 };
 
@@ -103,7 +94,6 @@ export const isAuthenticated = () => {
   const token = getAuthToken();
   
   if (!token) {
-    console.log('❌ No token found, user not authenticated');
     return false;
   }
   
@@ -112,12 +102,10 @@ export const isAuthenticated = () => {
   const recentLogin = localStorage.getItem('recentLogin');
   
   if (loginSession === 'active' && recentLogin === 'true') {
-    console.log('✅ User is authenticated (active session)');
     return true;
   }
   
   // Token exists, assume valid (let server validate)
-  console.log('✅ User is authenticated with token');
   return true;
 };
 

@@ -161,7 +161,6 @@ const getAvailableSeats = async (busId, date, destination = "kathmandu") => {
     }
 
     const result = await response.json();
-    console.log('Seat details API response:', result);
 
     // Extract booked seat numbers from API response
     const bookedSeatNumbers = result.data ? result.data.map(booking => booking.seatNumber) : [];
@@ -212,17 +211,11 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
   // Check if the response has the expected structure
   if (result.success && result.data && Array.isArray(result.data)) {
     if (result.data.length === 0) {
-      console.log('API returned empty data - no buses found');
       return [];
     }
 
     // Transform API response to match our component's expected format
     const transformedBuses = result.data.map((bus, index) => {
-      // DEBUG: Log raw API data
-      console.log('Raw bus data from API:', bus);
-      console.log('Original availableSeats:', bus.availableSeats);
-      console.log('Original bookedSeats:', bus.bookedSeats);
-      
       // Parse comma-separated strings into arrays
       const facilitiesArray = bus.facilities ? bus.facilities.split(',').map(f => f.trim()) : [];
       const routesArray = bus.routes ? bus.routes.split(',').map(r => r.trim()) : [];
@@ -258,20 +251,14 @@ const processSuccessfulResponse = (result, fromCity, toCity) => {
       };
 
       // DEBUG: Log transformed data
-      console.log('✅ COMPARISON:');
-      console.log('   Postman shows: availableSeats=35, bookedSeats=8');
-      console.log('   API returned:', bus.availableSeats, bus.bookedSeats);
-      console.log('   Transformed to:', transformedBus.availableSeats, transformedBus.bookedSeats);
       
       return transformedBus;  // ← RETURN THE TRANSFORMED OBJECT
     });
 
-    console.log('Transformed bus data:', transformedBuses);
     return transformedBuses;
     
   } else if (result.success && (!result.data || result.data.length === 0)) {
     // API returned success but no data
-    console.log('API returned empty data array');
     return [];
   } else {
     // API returned unexpected structure
@@ -306,13 +293,6 @@ const searchBuses = async (searchParams) => {
       }
     }
     
-    console.log('🚌 Bus Search API Request:', {
-      fromCity,
-      toCity,
-      originalDate: date,
-      formattedDate: apiDate
-    });
-
     const requestBody = {
       destination: toCity,
       origin: fromCity,
@@ -340,8 +320,6 @@ const searchBuses = async (searchParams) => {
     }
 
     const result = await response.json();
-    console.log('🚌 Bus Search API Response:', result);
-    console.log('🚌 Number of buses returned:', result.data ? result.data.length : 0);
 
     // Process the successful response and return
     return processSuccessfulResponse(result, fromCity, toCity);
@@ -378,11 +356,6 @@ const getRoutes = async () => {
  */
 const initiatePayment = async (amount, instrumentCode) => {
   try {
-    console.log('💳 Step 1: Initiating payment for amount:', amount);
-    if (instrumentCode) {
-      console.log('💳 Using instrument code:', instrumentCode);
-    }
-
     const baseUrl = import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV;
     
     // Validate base URL to ensure it's not using frontend domain
@@ -392,7 +365,6 @@ const initiatePayment = async (amount, instrumentCode) => {
     }
     
     const url = `${baseUrl}/payment/initiate-payment`;
-    console.log('💳 Using API URL:', url);
     
     // Prepare request body with optional instrument code
     const requestBody = { amount };
@@ -410,12 +382,8 @@ const initiatePayment = async (amount, instrumentCode) => {
       body: JSON.stringify(requestBody)
     });
 
-    console.log('💳 Response status:', response.status, response.statusText);
-    console.log('💳 Response headers:', Object.fromEntries(response.headers.entries()));
-    
     // Get response text first to see what the server is actually returning
     const responseText = await response.text();
-    console.log('💳 Raw response text:', responseText);
     
     let result;
     try {
@@ -432,8 +400,6 @@ const initiatePayment = async (amount, instrumentCode) => {
       };
     }
     
-    console.log('💳 Parsed payment initiation response:', result);
-
     if (response.ok) {
       return {
         success: true,
@@ -456,8 +422,6 @@ const initiatePayment = async (amount, instrumentCode) => {
       };
     }
   } catch (error) {
-    console.error('💳 Payment initiation error:', error);
-    
     // HTTP interceptor will handle authentication errors automatically
     if (error.message === 'AUTHENTICATION_REQUIRED') {
       return {
@@ -558,8 +522,6 @@ const checkPaymentStatusOnePG = async (merchantTxnId, gatewayTxnId) => {
  */
 const getPaymentInstruments = async () => {
   try {
-    console.log('💳 Step 2: Getting payment instruments...');
-    
     const baseUrl = import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV;
     
     // Validate base URL to ensure it's not using frontend domain
@@ -580,13 +542,7 @@ const getPaymentInstruments = async () => {
       }
     });
 
-    console.log('💳 Payment instruments response status:', response.status);
-    console.log('💳 Payment instruments response headers:', Object.fromEntries(response.headers.entries()));
-
-    const responseText = await response.text();
-    console.log('💳 Payment instruments raw response:', responseText);
-
-    let result;
+    const responseText = await response.text();    let result;
     try {
       if (responseText) {
         result = JSON.parse(responseText);
@@ -597,8 +553,6 @@ const getPaymentInstruments = async () => {
       console.error('💳 Failed to parse payment instruments JSON:', parseError);
       result = { message: 'Invalid JSON response', rawResponse: responseText };
     }
-    
-    console.log('💳 Payment instruments parsed response:', result);
 
     if (response.ok) {
       // Try different response formats
@@ -619,8 +573,6 @@ const getPaymentInstruments = async () => {
         };
       }
       
-      console.log('💳 Raw payment instruments from API:', rawInstruments);
-      
       // Map API response to our expected format
       const instruments = rawInstruments.map((instrument, index) => ({
         instrumentCode: instrument.InstrumentCode || `UNKNOWN_${index}`,
@@ -634,11 +586,8 @@ const getPaymentInstruments = async () => {
         description: `Pay with ${instrument.InstrumentName || instrument.InstitutionName}`
       }));
       
-      console.log('💳 Mapped payment instruments:', instruments);
-      
       // If no instruments found, use fallback
       if (!instruments || instruments.length === 0) {
-        console.log('💳 No payment instruments from API, using fallback');
         return {
           success: true,
           data: getFallbackPaymentInstruments(),
@@ -662,8 +611,6 @@ const getPaymentInstruments = async () => {
       };
     }
   } catch (error) {
-    console.error('💳 Get payment instruments error:', error);
-    
     // HTTP interceptor will handle authentication errors automatically
     if (error.message === 'AUTHENTICATION_REQUIRED') {
       return {
@@ -675,7 +622,6 @@ const getPaymentInstruments = async () => {
     }
     
     // Return fallback instruments on network error
-    console.log('💳 Using fallback payment instruments due to network error');
     return {
       success: true,
       data: getFallbackPaymentInstruments(),
@@ -690,24 +636,15 @@ const getPaymentInstruments = async () => {
  * @param {string} gatewayUrl - The gateway URL
  */
 const debugNpsPaymentRequest = (form, gatewayUrl) => {
-  console.group('💳 NPS PAYMENT GATEWAY REQUEST DETAILS');
-  console.log('🔹 Gateway URL:', gatewayUrl);
-  console.log('🔹 HTTP Method:', form.method);
-  console.log('🔹 Content Type:', form.enctype);
-  
   const formData = Object.fromEntries(
     Array.from(form.elements).map(el => [el.name, el.value])
   );
-  console.log('🔹 Form Parameters:', formData);
   
   // Highlight the instrument code specifically
   const instrumentCodeValue = formData.InstrumentCode;
   if (instrumentCodeValue) {
-    console.log('🔹  InstrumentCode in form:', instrumentCodeValue);
     const validation = validateInstrumentCode(instrumentCodeValue);
-    console.log('🔹 Validation:', validation);
   } else {
-    console.log('🔹  InstrumentCode NOT found in form - NPS will show selection page');
   }
   
   // Create a cURL command for debugging
@@ -716,10 +653,6 @@ const debugNpsPaymentRequest = (form, gatewayUrl) => {
     Array.from(form.elements)
       .map(el => `  -d "${el.name}=${encodeURIComponent(el.value)}"`)
       .join(' \\\n');
-  
-  console.log('🔹 Equivalent cURL command:');
-  console.log(curlCommand);
-  console.groupEnd();
 };
 
 /**

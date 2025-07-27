@@ -49,7 +49,6 @@ class UserActionTracker {
    */
   setTrackingEnabled(enabled) {
     this.isTracking = enabled;
-    console.log('User action tracking:', enabled ? 'enabled' : 'disabled');
   }
 
   /**
@@ -76,13 +75,6 @@ class UserActionTracker {
     this.actions.push(action);
     this.lastActivity = Date.now();
     this.saveActions();
-
-    console.log('🎯 User action tracked:', {
-      type,
-      id: action.id,
-      url: action.pathname,
-      timestamp: new Date(action.timestamp).toLocaleTimeString()
-    });
   }
 
   /**
@@ -101,7 +93,6 @@ class UserActionTracker {
     };
 
     this.savePageState();
-    console.log('📄 Page state tracked:', Object.keys(state));
   }
 
   /**
@@ -223,8 +214,6 @@ class UserActionTracker {
     Object.values(STORAGE_KEYS).forEach(key => {
       localStorage.removeItem(key);
     });
-
-    console.log('🧹 All user actions and state cleared');
   }
 
   /**
@@ -235,7 +224,6 @@ class UserActionTracker {
     const cutoff = Date.now() - (hours * 60 * 60 * 1000);
     this.actions = this.actions.filter(action => action.timestamp > cutoff);
     this.saveActions();
-    console.log('🧹 Old actions cleared');
   }
 
   /**
@@ -369,11 +357,6 @@ export const getTrackingSummary = () => userActionTracker.getTrackingSummary();
 if (typeof window !== 'undefined') {
   window.userActionTracker = userActionTracker;
   window.debugUserActions = () => {
-    console.log('User Action Tracker Debug:');
-    console.log('Summary:', userActionTracker.getTrackingSummary());
-    console.log('Recent Actions:', userActionTracker.getRecentActions(10));
-    console.log('Page State:', userActionTracker.getStoredPageState());
-    console.log('Navigation State:', userActionTracker.getStoredNavigationState());
     return userActionTracker.getTrackingSummary();
   };
 }

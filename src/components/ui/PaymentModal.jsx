@@ -76,7 +76,6 @@ const PaymentModal = ({
       // Store in both sessionStorage and localStorage for redundancy
       sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
       localStorage.setItem('currentBookingData', JSON.stringify(bookingData));
-      console.log('💾 Booking data stored immediately on modal open for callback safety');
       
       // Set up session expiry handler for this modal
       setSessionExpiredCallback(() => {
@@ -178,9 +177,6 @@ const PaymentModal = ({
       return;
     }
     
-    console.log('🔄 Payment instrument selected:', instrument.name);
-    console.log('💰 Initiating payment for amount:', totalPrice);
-    
     setSelectedInstrument(instrument);
     setIsLoading(true);
     setStep(2); // Show processing screen
@@ -202,8 +198,6 @@ const PaymentModal = ({
       
       // Call initiate-payment API with instrument code
       const paymentInitiated = await api.initiatePayment(totalPrice, instrument.instrumentCode);
-      
-      console.log('📞 Payment initiation response:', paymentInitiated);
       
       if (paymentInitiated.success) {
         setPaymentTransaction(paymentInitiated.data);
@@ -260,9 +254,7 @@ const PaymentModal = ({
         );
         
         if (redirected) {
-          console.log('Redirecting to payment gateway...');
         } else {
-          console.error('Failed to redirect to payment gateway');
           // Fallback to polling as before
           pollPaymentStatus(paymentInitiated.data);
         }

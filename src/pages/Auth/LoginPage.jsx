@@ -38,8 +38,6 @@ const LoginPage = () => {
     logSessionStatus('LoginPage Load');
     
     if (location.state) {
-      console.log('LoginPage: Navigation state received:', location.state);
-      
       // Handle regular success messages
       if (location.state.message) {
         setSuccessMessage(location.state.message);
@@ -50,16 +48,12 @@ const LoginPage = () => {
           (location.state.message && location.state.message.toLowerCase().includes('session'))) {
         setSessionMessage(location.state.message || 'Your session has expired. Please login again.');
         setSuccessMessage(''); // Clear success message if it's a session expiry
-        console.log('LoginPage: Session expiry message set:', location.state.message);
       }
       
       // Handle redirect messages from payment or other protected pages
       if (location.state.redirectMessage) {
         setSessionMessage(location.state.redirectMessage);
-        console.log('LoginPage: Redirect message set:', location.state.redirectMessage);
       }
-    } else {
-      console.log('LoginPage: No navigation state received');
     }
   }, [location.state]);
 
@@ -133,33 +127,16 @@ const LoginPage = () => {
     setRoleMessage('');    try {
       const inputType = detectInputType(formData.emailOrPhone);
       
-      console.log('=== INPUT DETECTION DEBUG ===');
-      console.log('Original input:', formData.emailOrPhone);
-      console.log('Input type detected:', inputType);
-      console.log('Is email?', inputType === 'email');
-      console.log('Cleaned phone digits:', formData.emailOrPhone.replace(/\D/g, ''));
-      
       const emailValue = inputType === 'email' 
         ? formData.emailOrPhone  // Keep email as string
         : parseInt(formData.emailOrPhone.replace(/\D/g, ''), 10);  // Convert phone to integer
       
-      console.log('Email field value:', emailValue);
-      console.log('Email field type:', typeof emailValue);
-      console.log('==============================');
-
       const loginData = {
         password: formData.password,
         email: emailValue
-      };console.log('=== LOGIN DEBUG INFO ===');
-      console.log('Environment Variables:');
-      console.log('  VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
-      console.log('  VITE_AUTH_LOGIN_ENDPOINT:', import.meta.env.VITE_AUTH_LOGIN_ENDPOINT);
-      console.log('API URL:', API_URLS.AUTH.LOGIN);
-      console.log('Login Data:', { ...loginData, password: '[HIDDEN]' });
-      console.log('========================');      // API call to login endpoint
-      console.log('Making request to:', API_URLS.AUTH.LOGIN);
-      
-      //sending login request to the server
+      };
+
+      // API call to login endpoint
       const response = await fetch(API_URLS.AUTH.LOGIN, {
         method: 'POST',
         headers: {
@@ -167,22 +144,12 @@ const LoginPage = () => {
           'Accept': 'application/json',
         },
         body: JSON.stringify(loginData)
-      });      console.log('Response Status:', response.status);
-      console.log('Response OK:', response.ok);
-      console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
+      });
 
       let result;
       try {
         result = await response.json();
-        console.log('=== API RESPONSE DEBUG ===');
-        console.log('Response Body:', result);
-        console.log('Success:', result.success);
-        console.log('Status Code:', result.statusCode);
-        console.log('Message:', result.message);
-        console.log('Data:', result.data);
-        console.log('========================');
       } catch (parseError) {
-        console.error('Failed to parse response as JSON:', parseError);
         setErrors({ 
           general: 'Server returned invalid response. Please try again later.' 
         });
@@ -192,7 +159,6 @@ const LoginPage = () => {
         // Check if we have a successful response based on your API structure
         if (result.success && result.statusCode === 200) {
           // Login successful
-          console.log('Login successful:', result.message);
           
           // Store authentication token using enhanced token management
           if (result.data && result.data.token) {
@@ -201,25 +167,17 @@ const LoginPage = () => {
             
             // Set the new token with proper expiry
             setAuthToken(result.data.token);
-            console.log('✅ Token stored successfully with expiry');
             
             // Verify token was set correctly
             const storedToken = localStorage.getItem('authToken');
             const storedExpiry = localStorage.getItem('tokenExpiry');
-            console.log('🔍 Token verification after login:', {
-              hasToken: !!storedToken,
-              tokenPreview: storedToken ? storedToken.substring(0, 20) + '...' : 'null',
-              expiry: storedExpiry ? new Date(parseInt(storedExpiry)).toISOString() : 'null'
-            });
             
             // Decode JWT token to check user role
             try {
               const token = result.data.token;
               const payload = JSON.parse(atob(token.split('.')[1]));
-              console.log('Token payload:', payload);
               
               const userRole = payload.role || payload.user_type || 'user';
-              console.log('User role:', userRole);
                 // Check role-based access
               if (userRole === 'user' || userRole === 'customer') {
                 // Allow user/customer to proceed
@@ -232,22 +190,16 @@ const LoginPage = () => {
                 const searchData = getAndClearSearchData();
                 const pageState = getAndClearPageState();
                 
-                console.log('Post-login navigation - Return path:', returnPath);
-                console.log('Post-login navigation - Search data:', searchData);
-                console.log('Post-login navigation - Page state:', pageState);
-                
                 setIsLoading(false);
                 
                 // Clear login session after a delay to prevent session monitor interference
                 setTimeout(() => {
                   localStorage.removeItem('loginSession');
                   localStorage.removeItem('recentLogin');
-                  console.log('Login session cleared after successful navigation');
                 }, 5000);
                 
                 // Priority 1: If user was on a specific page (not home), return them there with all state
                 if (returnPath && returnPath !== '/' && returnPath !== '/login') {
-                  console.log('Redirecting to return path:', returnPath);
                   
                   // Special handling for search results page
                   if (returnPath.includes('/search-results')) {
@@ -273,7 +225,6 @@ const LoginPage = () => {
                 } else if (searchData && (returnPath === '/' || !returnPath)) {
                   // Priority 2: If user was on home page with search data, or has search data but no return path
                   // This means user was in middle of searching on home page
-                  console.log('Redirecting to home with search data:', searchData);
                   navigate('/', {
                     state: {
                       fromLogin: true,
@@ -283,7 +234,6 @@ const LoginPage = () => {
                   });
                 } else {
                   // Priority 3: Normal login or return to home page without search data
-                  console.log('Normal login, redirecting to home');
                   navigate('/', {
                     state: {
                       fromLogin: true
@@ -309,7 +259,6 @@ const LoginPage = () => {
                 setIsLoading(false);
               }
             } catch (tokenError) {
-              console.error('Error decoding token:', tokenError);
               setErrors({ 
                 general: 'Authentication token is invalid. Please try logging in again.' 
               });
@@ -324,7 +273,6 @@ const LoginPage = () => {
           }
         } else {
           // API returned 200 but success is false
-          console.log('Login failed:', result.message);
           setErrors({ 
             general: result.message || 'Login failed. Please check your credentials.' 
           });
@@ -332,7 +280,6 @@ const LoginPage = () => {
         }
       } else {
         // Login failed - show API error
-        console.log('Login failed with status:', response.status);
         
         let errorMessage = 'Login failed. Please check your credentials.';
         
@@ -360,10 +307,6 @@ const LoginPage = () => {
         setErrors({ general: errorMessage });
         setIsLoading(false);
       }    } catch (err) {
-      console.error('Login error details:', err);
-      console.error('Error name:', err.name);
-      console.error('Error message:', err.message);
-      
       let errorMessage = 'Network error. Please check your connection and try again.';
       
       // Handle different types of network errors
@@ -388,7 +331,6 @@ const LoginPage = () => {
 
   const handleGoogleSignIn = () => {
     // TODO: Implement Google Sign In
-    console.log('Google Sign In clicked');
   };
 
   return (
@@ -463,7 +405,7 @@ const LoginPage = () => {
               {roleMessage.includes('counter') && (
                 <div className="text-blue-600 text-sm">
                   <a 
-                    href="/counter" 
+                    href="https://manage.sonatraveltours.com/" 
                     className="underline hover:text-blue-800"
                     target="_blank"
                     rel="noopener noreferrer"

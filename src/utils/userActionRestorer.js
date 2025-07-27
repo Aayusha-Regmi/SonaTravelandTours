@@ -87,15 +87,8 @@ class UserActionRestorer {
       const context = userActionTracker.getRestorationContext();
       
       if (!context.hasContent) {
-        console.log('ℹ️ No user actions to restore');
         return false;
       }
-
-      console.log('📋 Restoration context:', {
-        actionsCount: context.actions.length,
-        hasPageState: Object.keys(context.pageState).length > 0,
-        hasNavigationState: !!context.navigationState
-      });
 
       // Sort actions by priority and timestamp
       const sortedActions = this.sortActionsByPriority(context.actions);
