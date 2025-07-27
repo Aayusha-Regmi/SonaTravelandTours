@@ -193,15 +193,16 @@ const PassengerDetail = () => {
         email: sourcePassenger.email,
         phoneNumber: sourcePassenger.phoneNumber,
         cityOfResidence: sourcePassenger.cityOfResidence,
-        boardingPlace: sourcePassenger.boardingPlace,
-        droppingPlace: sourcePassenger.droppingPlace,
+        // For return journey, switch boarding and dropping places
+        boardingPlace: sourcePassenger.droppingPlace,
+        droppingPlace: sourcePassenger.boardingPlace,
         applyToAll: false // Reset apply to all for return journey
       }));
       
       setReturnPassengers(copiedPassengers);
       setReturnErrors({}); // Clear return errors
       
-      toast.success(`Applied ${sourcePassenger.fullName || 'Passenger'} details to all return passengers`, {
+      toast.success(`Applied ${sourcePassenger.fullName || 'Passenger'} details to all return passengers (with switched boarding/dropping points)`, {
         position: "top-right",
         autoClose: 2000,
       });
@@ -235,15 +236,16 @@ const PassengerDetail = () => {
         email: sourcePassenger.email,
         phoneNumber: sourcePassenger.phoneNumber,
         cityOfResidence: sourcePassenger.cityOfResidence,
-        boardingPlace: sourcePassenger.boardingPlace,
-        droppingPlace: sourcePassenger.droppingPlace,
+        // For return journey, switch boarding and dropping places
+        boardingPlace: sourcePassenger.droppingPlace,
+        droppingPlace: sourcePassenger.boardingPlace,
         applyToAll: false
       }));
       
       setReturnPassengers(copiedPassengers);
       setReturnErrors({}); // Clear return errors
       
-      toast.success(`Applied Seat ${sourcePassenger.id} passenger details to all return passengers`, {
+      toast.success(`Applied Seat ${sourcePassenger.id} passenger details to all return passengers (with switched boarding/dropping points)`, {
         position: "top-right",
         autoClose: 2000,
       });
