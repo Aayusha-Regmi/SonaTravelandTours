@@ -46,17 +46,52 @@ const NowBookingSection = () => {
   const handleBookNow = (booking) => {
     console.log(`Booking ticket for route:`, booking);
     
-    // For special promotional card, navigate directly to search-results
+    // For special promotional card, navigate to search-results with proper search params
     if (booking.isSpecial) {
+      const searchParams = {
+        from: booking.origin || 'Kathmandu',
+        to: booking.destination || 'Birgunj',
+        fromCity: booking.origin || 'Kathmandu',
+        toCity: booking.destination || 'Birgunj',
+        date: new Date().toLocaleDateString('en-US', { 
+          month: '2-digit', 
+          day: '2-digit', 
+          year: 'numeric' 
+        }),
+        tripType: 'oneWay'
+      };
+      
       const element = document.getElementById(`booking-card-${booking.id}`);
       if (element) {
         element.style.transform = 'scale(0.95)';
         setTimeout(() => {
           element.style.transform = 'scale(1)';
-          navigate('/search-results');
+          navigate('/search-results', {
+            state: {
+              searchParams: searchParams,
+              fromAutoSelect: true,
+              selectedRoute: {
+                origin: booking.origin || 'Kathmandu',
+                destination: booking.destination || 'Birgunj',
+                price: booking.price,
+                busType: booking.busType || 'Luxury'
+              }
+            }
+          });
         }, 150);
       } else {
-        navigate('/search-results');
+        navigate('/search-results', {
+          state: {
+            searchParams: searchParams,
+            fromAutoSelect: true,
+            selectedRoute: {
+              origin: booking.origin || 'Kathmandu',
+              destination: booking.destination || 'Birgunj',
+              price: booking.price,
+              busType: booking.busType || 'Luxury'
+            }
+          }
+        });
       }
       return;
     }
