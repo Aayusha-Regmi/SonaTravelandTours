@@ -576,16 +576,17 @@ const SearchForm = () => {
             <button
               type="button"
               onClick={handleSwapLocations}
-              className="w-full h-[60px] xs:h-[70px] sm:h-[75px] rounded-xl bg-gradient-to-r from-gray-500 to-gray-400 hover:from-gray-600 hover:to-gray-500 shadow-[0_8px_25px_rgba(107,114,128,0.4)] transition-all duration-300 flex items-center justify-center backdrop-blur-sm border border-white/30 group"
+              className="w-full h-[60px] xs:h-[70px] sm:h-[75px] rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 active:from-orange-500 active:to-orange-400 shadow-[0_8px_25px_rgba(59,130,246,0.4)] hover:shadow-[0_12px_35px_rgba(59,130,246,0.5)] active:shadow-[0_15px_40px_rgba(251,146,60,0.4)] transition-all duration-300 flex items-center justify-center backdrop-blur-sm border border-white/50 group"
               disabled={!formData.from && !formData.to}
             >
               <svg 
-                className="w-5 h-5 text-white transform group-hover:rotate-180 transition-transform duration-300 mr-2" 
+                className="w-5 h-5 text-white transform group-hover:rotate-180 group-active:rotate-180 transition-transform duration-300 mr-2" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
+                strokeWidth={2}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m0-4l4-4" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m0-4l4-4" />
               </svg>
               <span className="text-white font-medium text-sm">Swap Locations</span>
             </button>
@@ -654,7 +655,7 @@ const SearchForm = () => {
           </div>
           
           {/* Overlay Swap Button - Positioned between FROM and TO fields - Hidden on mobile */}
-          <div className={`absolute top-1/2 transform -translate-y-1/2 z-20 hidden md:block lg:block xl:block order-6 lg:order-5 xl:order-5 ${
+          <div className={`absolute top-1/2 transform -translate-y-1/2 z-[9999999] hidden md:block lg:block xl:block order-6 lg:order-5 xl:order-5 ${
             tripType === 'twoWay' 
               ? 'left-[60%] -translate-x-1/2' 
               : 'left-[50%] -translate-x-1/2'
@@ -662,9 +663,10 @@ const SearchForm = () => {
             <button
               type="button"
               onClick={handleSwapLocations}
-              className="w-10 h-10 xl:w-12 xl:h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 shadow-[0_8px_25px_rgba(251,146,60,0.4)] hover:shadow-[0_12px_35px_rgba(251,146,60,0.5)] transition-all duration-300 flex items-center justify-center backdrop-blur-sm border-2 xl:border-4 border-white group"
+              className="w-10 h-10 xl:w-12 xl:h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 shadow-[0_8px_25px_rgba(251,146,60,0.4)] hover:shadow-[0_12px_35px_rgba(251,146,60,0.5)] transition-all duration-300 flex items-center justify-center backdrop-blur-sm border-2 xl:border-4 border-white group relative z-[9999999]"
               disabled={!formData.from && !formData.to}
               title="Swap locations"
+              style={{ zIndex: 9999999 }}
             >
               <svg 
                 className="w-4 h-4 xl:w-5 xl:h-5 text-white transform group-hover:rotate-180 transition-transform duration-300" 
