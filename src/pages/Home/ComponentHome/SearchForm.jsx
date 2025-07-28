@@ -453,17 +453,17 @@ const SearchForm = () => {
         )}
 
         {/* Search Form */}
-        <div className={`grid gap-3 xs:gap-4 sm:gap-6 lg:gap-8 items-end relative ${
+        <div className={`grid gap-3 xs:gap-4 sm:gap-6 md:gap-8 lg:gap-8 items-end relative ${
           tripType === 'twoWay' 
-            ? 'grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-5' 
-            : 'grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4'
+            ? 'grid-cols-1 xs:grid-cols-1 sm:grid-cols-1 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5' 
+            : 'grid-cols-1 xs:grid-cols-1 sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4'
         }`}>
           {/* Date Field(s) */}
           {tripType === 'twoWay' ? (
             <>
               {/* Departure Date */}
-              <div className="xs:col-span-1 lg:col-span-1 relative z-[2147483647]">
-                <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 border border-white/60 h-[70px] xs:h-[75px] sm:h-[80px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
+              <div className="xs:col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1 relative z-[2147483647] w-full">
+                <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 md:p-5 lg:p-5 border border-white/60 h-[60px] xs:h-[70px] sm:h-[75px] md:h-[85px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300 w-full">
                   <label className="text-gray-800 text-[10px] xs:text-xs font-bold mb-1 xs:mb-2 uppercase tracking-wider">DATE</label>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center flex-1 relative z-[2147483647]">
@@ -486,8 +486,8 @@ const SearchForm = () => {
               </div>
 
               {/* Return Date */}
-              <div className="xs:col-span-1 lg:col-span-1 relative z-[2147483646]">
-                <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 border border-white/60 h-[70px] xs:h-[75px] sm:h-[80px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
+              <div className="xs:col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1 relative z-[2147483646] w-full">
+                <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 md:p-5 lg:p-5 border border-white/60 h-[60px] xs:h-[70px] sm:h-[75px] md:h-[85px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300 w-full">
                   <label className="text-gray-800 text-[10px] xs:text-xs font-bold mb-1 xs:mb-2 uppercase tracking-wider">RETURN</label>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center flex-1 relative z-[2147483646]">
@@ -517,8 +517,8 @@ const SearchForm = () => {
             </>
           ) : (
             /* Single Date for One Way */
-            <div className="xs:col-span-1 lg:col-span-1 relative z-[2147483647]">
-              <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 border border-white/60 h-[70px] xs:h-[75px] sm:h-[80px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
+            <div className="xs:col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1 relative z-[2147483647] w-full">
+              <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 md:p-5 lg:p-5 border border-white/60 h-[60px] xs:h-[70px] sm:h-[75px] md:h-[85px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300 w-full">
                 <label className="text-gray-800 text-[10px] xs:text-xs font-bold mb-1 xs:mb-2 uppercase tracking-wider">DATE</label>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center flex-1 relative z-[2147483647]">
@@ -542,8 +542,8 @@ const SearchForm = () => {
           )}
 
           {/* From Field */}
-          <div className="xs:col-span-1 lg:col-span-1 relative z-[999998]">
-            <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 border border-white/60 h-[70px] xs:h-[75px] sm:h-[80px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
+          <div className="xs:col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1 relative z-[999998] w-full">
+            <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 border border-white/60 h-[60px] xs:h-[70px] sm:h-[75px] md:h-[85px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300 w-full">
               <label className="text-gray-800 text-[10px] xs:text-xs font-bold mb-1 xs:mb-2 uppercase tracking-wider">FROM</label>
               <div className="flex items-center justify-between">
                 <div className="flex items-center flex-1 relative z-[999998]">
@@ -572,28 +572,29 @@ const SearchForm = () => {
           </div>
 
           {/* Mobile Swap Button - Visible only on mobile devices, positioned between From and To */}
-          <div className="xs:col-span-2 lg:hidden order-3">
+          <div className="xs:col-span-1 sm:col-span-1 md:hidden lg:hidden xl:hidden order-3 w-full">
             <button
               type="button"
               onClick={handleSwapLocations}
-              className="w-full h-[50px] rounded-xl bg-gradient-to-r from-gray-500 to-gray-400 hover:from-gray-600 hover:to-gray-500 shadow-[0_8px_25px_rgba(107,114,128,0.4)] transition-all duration-300 flex items-center justify-center backdrop-blur-sm border border-white/30 group"
+              className="w-full h-[60px] xs:h-[70px] sm:h-[75px] rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 active:from-orange-500 active:to-orange-400 shadow-[0_8px_25px_rgba(59,130,246,0.4)] hover:shadow-[0_12px_35px_rgba(59,130,246,0.5)] active:shadow-[0_15px_40px_rgba(251,146,60,0.4)] transition-all duration-300 flex items-center justify-center backdrop-blur-sm border border-white/50 group"
               disabled={!formData.from && !formData.to}
             >
               <svg 
-                className="w-5 h-5 text-white transform group-hover:rotate-180 transition-transform duration-300 mr-2" 
+                className="w-5 h-5 text-white transform group-hover:rotate-180 group-active:rotate-180 transition-transform duration-300 mr-2" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
+                strokeWidth={2}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m0-4l4-4" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m0-4l4-4" />
               </svg>
               <span className="text-white font-medium text-sm">Swap Locations</span>
             </button>
           </div>
 
           {/* To Field */}
-          <div className="xs:col-span-1 lg:col-span-1 relative z-[999997] order-4 lg:order-3">
-            <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 border border-white/60 h-[70px] xs:h-[75px] sm:h-[80px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300">
+          <div className="xs:col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1 relative z-[999997] order-4 lg:order-3 w-full">
+            <div className="backdrop-blur-lg bg-white/50 rounded-xl xs:rounded-2xl p-3 xs:p-4 sm:p-5 border border-white/60 h-[60px] xs:h-[70px] sm:h-[75px] md:h-[85px] lg:h-[85px] flex flex-col justify-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-white/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] transition-all duration-300 w-full">
               <label className="text-gray-800 text-[10px] xs:text-xs font-bold mb-1 xs:mb-2 uppercase tracking-wider">TO</label>
               <div className="flex items-center justify-between">
                 <div className="flex items-center flex-1 relative z-[999997]">
@@ -622,10 +623,10 @@ const SearchForm = () => {
           </div>
 
           {/* Search Button */}
-          <div className="xs:col-span-2 lg:col-span-1 order-5 lg:order-4">
+          <div className="xs:col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1 order-5 lg:order-4 xl:order-4 w-full">
             <Button 
               onClick={handleSearch}
-              className={`h-[70px] xs:h-[75px] sm:h-[80px] lg:h-[85px] w-full rounded-xl xs:rounded-2xl flex items-center justify-center ${
+              className={`h-[60px] xs:h-[70px] sm:h-[75px] md:h-[85px] lg:h-[85px] w-full rounded-xl xs:rounded-2xl flex items-center justify-center ${
                 isLoading 
                   ? 'bg-gradient-to-r from-orange-600 to-orange-500' 
                   : 'bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500'
@@ -654,7 +655,7 @@ const SearchForm = () => {
           </div>
           
           {/* Overlay Swap Button - Positioned between FROM and TO fields - Hidden on mobile */}
-          <div className={`absolute top-1/2 transform -translate-y-1/2 z-20 hidden lg:block order-6 lg:order-5 ${
+          <div className={`absolute top-1/2 transform -translate-y-1/2 z-[9999999] hidden md:block lg:block xl:block order-6 lg:order-5 xl:order-5 ${
             tripType === 'twoWay' 
               ? 'left-[60%] -translate-x-1/2' 
               : 'left-[50%] -translate-x-1/2'
@@ -662,9 +663,10 @@ const SearchForm = () => {
             <button
               type="button"
               onClick={handleSwapLocations}
-              className="w-10 h-10 xl:w-12 xl:h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 shadow-[0_8px_25px_rgba(251,146,60,0.4)] hover:shadow-[0_12px_35px_rgba(251,146,60,0.5)] transition-all duration-300 flex items-center justify-center backdrop-blur-sm border-2 xl:border-4 border-white group"
+              className="w-10 h-10 xl:w-12 xl:h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 shadow-[0_8px_25px_rgba(251,146,60,0.4)] hover:shadow-[0_12px_35px_rgba(251,146,60,0.5)] transition-all duration-300 flex items-center justify-center backdrop-blur-sm border-2 xl:border-4 border-white group relative z-[9999999]"
               disabled={!formData.from && !formData.to}
               title="Swap locations"
+              style={{ zIndex: 9999999 }}
             >
               <svg 
                 className="w-4 h-4 xl:w-5 xl:h-5 text-white transform group-hover:rotate-180 transition-transform duration-300" 
@@ -789,7 +791,7 @@ const SearchForm = () => {
           }
         }
         
-        /* Medium devices (768px to 1024px) - Tablets */
+        /* Medium devices (768px to 1024px) - Tablets including iPad */
         @media (min-width: 768px) and (max-width: 1024px) {
           .date-picker-dropdown,
           .location-dropdown-list,
@@ -798,30 +800,27 @@ const SearchForm = () => {
           .react-datepicker-popper,
           [role="listbox"],
           [data-dropdown="true"] {
-            position: fixed !important;
+            position: absolute !important;
             z-index: 2147483647 !important;
-            left: 20px !important;
-            right: 20px !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-            max-width: calc(100vw - 40px) !important;
-            max-height: 70vh !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            transform: none !important;
+            max-width: 100% !important;
+            max-height: 250px !important;
+            margin-top: 8px !important;
             background: rgba(255, 255, 255, 0.98) !important;
-            backdrop-filter: blur(30px) !important;
-            border-radius: 20px !important;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 0 9999px rgba(0, 0, 0, 0.5) !important;
-            border: 2px solid rgba(255, 255, 255, 0.8) !important;
-            padding: 16px !important;
-            margin: 0 !important;
+            backdrop-filter: blur(20px) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            padding: 8px !important;
             overflow-y: auto !important;
           }
           
           .react-datepicker {
-            left: 50% !important;
-            top: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            max-width: 350px !important;
-            max-height: 400px !important;
+            position: absolute !important;
+            z-index: 2147483647 !important;
           }
         }
         
@@ -868,8 +867,8 @@ const SearchForm = () => {
           contain: none !important;
         }
         
-        /* Mobile scroll lock when dropdown is open */
-        @media (max-width: 1024px) {
+        /* Mobile scroll lock when dropdown is open - exclude tablets */
+        @media (max-width: 767px) {
           body.dropdown-open {
             overflow: hidden !important;
             position: fixed !important;
@@ -877,8 +876,8 @@ const SearchForm = () => {
           }
         }
         
-        /* Enhanced accessibility and touch targets for mobile */
-        @media (max-width: 1024px) {
+        /* Enhanced accessibility and touch targets for mobile only */
+        @media (max-width: 767px) {
           .date-picker input,
           .location-dropdown input,
           [data-dropdown-trigger="true"] {
@@ -887,8 +886,8 @@ const SearchForm = () => {
           }
         }
         
-        /* Backdrop overlay for mobile dropdowns */
-        @media (max-width: 1024px) {
+        /* Backdrop overlay for mobile dropdowns only */
+        @media (max-width: 767px) {
           .dropdown-backdrop {
             position: fixed !important;
             top: 0 !important;
@@ -901,8 +900,8 @@ const SearchForm = () => {
           }
         }
         
-        /* Enhanced dropdown items for all mobile sizes */
-        @media (max-width: 1024px) {
+        /* Enhanced dropdown items for mobile only */
+        @media (max-width: 767px) {
           .location-dropdown-list li,
           .dropdown-menu li,
           [role="option"] {
@@ -980,13 +979,13 @@ const SearchForm = () => {
         
         @media (min-width: 768px) and (max-width: 1024px) {
           .grid-cols-1 {
-            gap: 1.25rem !important;
+            gap: 1.5rem !important;
           }
           
           .backdrop-blur-lg {
-            padding: 1rem !important;
+            padding: 1.25rem !important;
             height: auto !important;
-            min-height: 70px !important;
+            min-height: 80px !important;
           }
           
           .text-xs {
@@ -996,10 +995,15 @@ const SearchForm = () => {
           .text-sm {
             font-size: 0.875rem !important;
           }
+          
+          /* Ensure desktop-like behavior on tablets */
+          .hidden.md\\:block {
+            display: block !important;
+          }
         }
         
-        /* Prevent zoom on input focus for iOS */
-        @media screen and (max-width: 1024px) {
+        /* Prevent zoom on input focus for iOS mobile only */
+        @media screen and (max-width: 767px) {
           input[type="text"],
           input[type="date"],
           select,
@@ -1012,8 +1016,8 @@ const SearchForm = () => {
           }
         }
         
-        /* Enhance touch targets for better mobile interaction */
-        @media (max-width: 1024px) {
+        /* Enhance touch targets for better mobile interaction only */
+        @media (max-width: 767px) {
           button,
           .date-picker,
           .location-dropdown,
