@@ -1234,12 +1234,98 @@ const checkNPSTransactionStatus = async (merchantTxnId) => {
 };
 
 /**
+ * Transform booking details into seatInfoList format for two-way bookings
+ * @param {Object} bookingDetails - Booking information
+ * @returns {Array} - Array of seatInfo objects for each journey leg
+ */
+const transformBookingToSeatInfoList = (bookingDetails) => {
+  const seatInfoList = [];
+  
+  // Handle passengers array (for two-way bookings)
+  if (bookingDetails.passengers && Array.isArray(bookingDetails.passengers)) {
+    // Group passengers by journey (departure/return)
+    const journeyGroups = {};
+    
+    bookingDetails.passengers.forEach(passenger => {
+      const journeyKey = `${passenger.travelDate}-${passenger.vesselId || passenger.busId}`;
+      
+      if (!journeyGroups[journeyKey]) {
+        journeyGroups[journeyKey] = {
+          dateOfTravel: passenger.travelDate,
+          busId: parseInt(passenger.vesselId || passenger.busId),
+          passengersList: []
+        };
+      }
+      
+      journeyGroups[journeyKey].passengersList.push({
+        passengerName: passenger.fullName || passenger.passengerName || passenger.name,
+        contactNumber: passenger.phoneNumber || passenger.contactNumber || passenger.phone,
+        seatNo: passenger.seatNumber || passenger.seatNo,
+        origin: passenger.origin || 'kathmandu',
+        destination: passenger.destination || 'birgunj',
+        gender: (passenger.gender || 'male').toLowerCase(),
+        boardingLocation: passenger.boardingLocation,
+        deboardingLocation: passenger.deboardingLocation,
+        residence: passenger.residence || 'nepali',
+        email: passenger.email || passenger.emailId || ''
+      });
+    });
+    
+    // Convert groups to array
+    seatInfoList.push(...Object.values(journeyGroups));
+  } else if (bookingDetails.passengersList && Array.isArray(bookingDetails.passengersList)) {
+    // Handle single journey with passengers list
+    seatInfoList.push({
+      dateOfTravel: bookingDetails.travelDate || bookingDetails.dateOfTravel,
+      busId: parseInt(bookingDetails.vesselId || bookingDetails.busId),
+      passengersList: bookingDetails.passengersList.map(passenger => ({
+        passengerName: passenger.fullName || passenger.passengerName || passenger.name,
+        contactNumber: passenger.phoneNumber || passenger.contactNumber || passenger.phone,
+        seatNo: passenger.seatNumber || passenger.seatNo,
+        origin: passenger.origin || bookingDetails.origin || 'kathmandu',
+        destination: passenger.destination || bookingDetails.destination || 'birgunj',
+        gender: (passenger.gender || 'male').toLowerCase(),
+        boardingLocation: passenger.boardingLocation || bookingDetails.boardingLocation,
+        deboardingLocation: passenger.deboardingLocation || bookingDetails.onboardingLocation,
+        residence: passenger.residence || 'nepali',
+        email: passenger.email || passenger.emailId || ''
+      }))
+    });
+  } else {
+    // Handle legacy single passenger booking
+    const selectedSeatsArray = Array.isArray(bookingDetails.selectedSeats) 
+      ? bookingDetails.selectedSeats 
+      : [bookingDetails.selectedSeats];
+    
+    seatInfoList.push({
+      dateOfTravel: bookingDetails.travelDate,
+      busId: parseInt(bookingDetails.vesselId || bookingDetails.busId),
+      passengersList: selectedSeatsArray.map(seat => ({
+        passengerName: bookingDetails.passengerName || bookingDetails.fullName,
+        contactNumber: bookingDetails.contactNumber || bookingDetails.phoneNumber,
+        seatNo: seat,
+        origin: bookingDetails.origin || 'kathmandu',
+        destination: bookingDetails.destination || 'birgunj',
+        gender: (bookingDetails.gender || 'male').toLowerCase(),
+        boardingLocation: bookingDetails.boardingLocation,
+        deboardingLocation: bookingDetails.onboardingLocation,
+        residence: 'nepali',
+        email: bookingDetails.emailId || bookingDetails.email || ''
+      }))
+    });
+  }
+  
+  return seatInfoList;
+};
+
+/**
  * Update payment status using setPayment endpoint (like Flutter setPayment)
  * @param {Object} paymentInfo - Payment information including transaction IDs
  * @param {string} status - Payment status (SUCCESS, FAILED, PENDING)
+ * @param {Object} seatInfo - Seat booking information (optional, for compatibility)
  * @returns {Promise} - Promise resolving to payment update result
  */
-const updatePaymentStatus = async (paymentInfo, status) => {
+const updatePaymentStatus = async (paymentInfo, status, seatInfo = null) => {
   try {
     // Check for authentication token
     const authCheck = checkAuthentication();
@@ -1254,16 +1340,53 @@ const updatePaymentStatus = async (paymentInfo, status) => {
       throw new Error('Authentication required. Please login first.');
     }
     
-    // Prepare request body matching Flutter setPayment format
-    const requestBody = {
-      merchantTransactionId: paymentInfo.merchantTransactionId,
-      gatewayTransactionId: paymentInfo.gatewayTransactionId,
-      amount: paymentInfo.amount,
-      paymentStatus: status,
-      paymentMethod: paymentInfo.paymentMethod || 'NPS',
-      transactionDate: new Date().toISOString(),
-      remarks: paymentInfo.remarks || `Payment ${status.toLowerCase()}`
-    };
+    let requestBody;
+    
+    // Check if this is a two-way booking with seatInfoList
+    if (seatInfo && seatInfo.seatInfoList && Array.isArray(seatInfo.seatInfoList)) {
+      // Two-way booking format with seatInfoList array
+      requestBody = {
+        seatInfoList: seatInfo.seatInfoList,
+        paymentInfo: {
+          merchantTransactionId: paymentInfo.merchantTransactionId
+        }
+      };
+    } else if (seatInfo && (seatInfo.passengers || seatInfo.passengersList)) {
+      // Transform booking details to seatInfoList format for two-way bookings
+      const seatInfoList = transformBookingToSeatInfoList(seatInfo);
+      
+      if (seatInfoList.length > 1) {
+        // Two-way booking detected
+        requestBody = {
+          seatInfoList: seatInfoList,
+          paymentInfo: {
+            merchantTransactionId: paymentInfo.merchantTransactionId
+          }
+        };
+      } else {
+        // One-way booking format (existing format)
+        requestBody = {
+          merchantTransactionId: paymentInfo.merchantTransactionId,
+          gatewayTransactionId: paymentInfo.gatewayTransactionId,
+          amount: paymentInfo.amount,
+          paymentStatus: status,
+          paymentMethod: paymentInfo.paymentMethod || 'NPS',
+          transactionDate: new Date().toISOString(),
+          remarks: paymentInfo.remarks || `Payment ${status.toLowerCase()}`
+        };
+      }
+    } else {
+      // One-way booking format (existing format)
+      requestBody = {
+        merchantTransactionId: paymentInfo.merchantTransactionId,
+        gatewayTransactionId: paymentInfo.gatewayTransactionId,
+        amount: paymentInfo.amount,
+        paymentStatus: status,
+        paymentMethod: paymentInfo.paymentMethod || 'NPS',
+        transactionDate: new Date().toISOString(),
+        remarks: paymentInfo.remarks || `Payment ${status.toLowerCase()}`
+      };
+    }
     
     // Use the seat/payment endpoint like Flutter setPayment
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/seat/payment`, {
@@ -1525,7 +1648,7 @@ const handleNPSPaymentCallback = async (callbackData, bookingDetails) => {
       paymentStatus = 'FAILED';
     }
     
-    const paymentUpdateResult = await updatePaymentStatus(paymentInfo, paymentStatus);
+    const paymentUpdateResult = await updatePaymentStatus(paymentInfo, paymentStatus, bookingDetails);
     
     if (paymentStatus === 'SUCCESS') {
       // Step 3: Book tickets for successful payment
@@ -1684,14 +1807,10 @@ const migrateAuthTokens = () => {
       localStorage.setItem('token', currentToken);
       localStorage.setItem('authToken', currentToken);
       localStorage.setItem('loginSuccess', 'true');
-      console.log('Token migration completed using centralized auth');
-    } else {
-      console.log('No token found during migration');
     }
     
     return true;
   } catch (error) {
-    console.error('Token migration failed:', error);
     return false;
   }
 };
@@ -1746,13 +1865,9 @@ const checkAuthentication = () => {
   const token = getAuthToken();
   
   if (token) {
-    console.log('Found authentication token');
-    
     // Validate the token
     const validation = validateJWTToken(token);
     if (!validation.isValid) {
-      console.log('Token validation failed:', validation.reason);
-      
       // Clear invalid tokens
       localStorage.removeItem('authToken');
       localStorage.removeItem('token');
@@ -1768,7 +1883,6 @@ const checkAuthentication = () => {
       };
     }
     
-    console.log('Token validation passed');
     return { 
       isAuthenticated: true, 
       token: token, 
@@ -1778,8 +1892,6 @@ const checkAuthentication = () => {
   }
   
   // No token found in any storage
-  
-  console.log('No authentication token found');
   return { isAuthenticated: false, token: null, source: null };
 };
 
@@ -1803,7 +1915,6 @@ const getAppliedCoupons = async () => {
       throw new Error('Invalid response format for applied coupons');
     }
   } catch (error) {
-    console.error('Error fetching applied coupons:', error);
     throw error;
   }
 };
@@ -1812,8 +1923,6 @@ const getAppliedCoupons = async () => {
  * Diagnostic function to test API endpoints
  */
 const testAPIEndpoints = async () => {
-  console.log('Testing API endpoints...');
-  
   const endpoints = [
     {
       name: 'Payment API Base URL',
@@ -1834,8 +1943,6 @@ const testAPIEndpoints = async () => {
   
   for (const endpoint of endpoints) {
     try {
-      console.log(`Testing ${endpoint.name}: ${endpoint.url}`);
-      
       if (endpoint.method) {
         // Get authentication for API calls
         const authCheck = checkAuthentication();
@@ -1851,18 +1958,10 @@ const testAPIEndpoints = async () => {
           body: endpoint.body ? JSON.stringify(endpoint.body) : undefined
         });
         
-        console.log(`${endpoint.name} - Status: ${response.status} ${response.statusText}`);
-        
-        if (response.ok) {
-          console.log(`${endpoint.name} - Working`);
-        } else {
-          console.log(`${endpoint.name} - Failed: ${response.status}`);
-        }
-      } else {
-        console.log(`${endpoint.name} - URL: ${endpoint.url}`);
+        // API testing completed silently for production
       }
     } catch (error) {
-      console.log(`${endpoint.name} - Error: ${error.message}`);
+      // Handle API testing errors silently for production
     }
   }
 };
@@ -1879,8 +1978,6 @@ const testAPIEndpoints = async () => {
  */
 const loginUser = async (email, password) => {
   try {
-    console.log('🔐 Attempting user login...');
-    
     // Clear any existing authentication state first
     localStorage.removeItem('authToken');
     localStorage.removeItem('token');
@@ -1890,11 +1987,9 @@ const loginUser = async (email, password) => {
     
     // Use the correct API URL for login - NEVER use frontend domain
     const loginUrl = API_URLS.AUTH.LOGIN;
-    console.log('🔐 Login URL:', loginUrl);
     
     // Ensure we're not using the wrong domain
     if (loginUrl.includes('sonatraveltours.com')) {
-      console.error('LOGIN URL USING WRONG DOMAIN:', loginUrl);
       throw new Error('Invalid API configuration - login URL points to frontend domain');
     }
     
@@ -1908,18 +2003,12 @@ const loginUser = async (email, password) => {
       body: JSON.stringify({ email, password })
     });
     
-    console.log('🔐 Login response status:', response.status);
-    console.log('🔐 Login response headers:', Object.fromEntries(response.headers.entries()));
-    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('🔐 Login failed with status:', response.status);
-      console.error('🔐 Error response:', errorText);
       throw new Error(`Login failed: ${response.status} ${response.statusText}. ${errorText}`);
     }
     
     const result = await response.json();
-    console.log('🔐 Login successful:', result);
     
     // Extract token from response
     const token = result.token || result.accessToken || result.authToken || result.data?.token;
@@ -1938,7 +2027,6 @@ const loginUser = async (email, password) => {
         localStorage.setItem('userEmail', user.email || '');
       }
       
-      console.log('🔐 Token stored successfully');
       return {
         success: true,
         data: result,
@@ -1946,12 +2034,10 @@ const loginUser = async (email, password) => {
         message: 'Login successful'
       };
     } else {
-      console.error('🔐 No token found in response:', result);
       throw new Error('No authentication token received from server');
     }
     
   } catch (error) {
-    console.error('🔐 Login error:', error);
     return {
       success: false,
       message: error.message || 'Login failed',
@@ -1974,7 +2060,6 @@ const logoutUser = () => {
   sessionStorage.removeItem('authToken');
   sessionStorage.removeItem('token');
   
-  console.log('🔐 User logged out successfully');
   return {
     success: true,
     message: 'Logged out successfully'
@@ -2008,6 +2093,7 @@ export default {
   // NPS Payment Flow Functions (matching Flutter app)
   checkNPSTransactionStatus,
   updatePaymentStatus,
+  transformBookingToSeatInfoList,
   bookTickets,
   getMyBookings,
   handleNPSPaymentCallback,

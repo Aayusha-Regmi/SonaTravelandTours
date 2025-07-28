@@ -21,12 +21,14 @@ const SearchResultsPage = () => {
   // Get search results and params from location state
   const { searchResults = [], searchParams = {}, fromLogin = false } = location.state || {};
   
-  console.log('🔍 SearchResults initialized with:', {
+  // 🔧 DEBUG: Log search results data
+  console.log('🔧 SearchResultsPage DEBUG - Navigation state:', {
     searchResults: searchResults.length,
     searchParams,
-    fromLogin,
-    tripTypeFromParams: searchParams.tripType
+    fromLogin
   });
+  
+  
   
   const [tripType, setTripType] = useState(searchParams.tripType || 'oneWay');
   const [activeTab, setActiveTab] = useState('departure'); // New state for two-way tab navigation
@@ -36,6 +38,11 @@ const SearchResultsPage = () => {
     date: searchParams.date || '',
     returnDate: searchParams.returnDate || '' // Use return date from search params
   });
+  
+  // 🔧 DEBUG: Log formData whenever it changes
+  useEffect(() => {
+    console.log('🔧 SearchResultsPage DEBUG - formData updated:', formData);
+  }, [formData]);
   
   // Set default values or values from search params
   const [fromLocation, setFromLocation] = useState(searchParams.fromCity || 'Birgunj');
@@ -88,26 +95,21 @@ const SearchResultsPage = () => {
   const performSearch = useCallback(async (searchParams, source = 'unknown') => {
     // Prevent multiple simultaneous searches
     if (isSearchingRef.current) {
-      console.log(' Search already in progress, skipping...');
+      
       return;
     }
 
     // Check if search params actually changed
     const searchKey = `${searchParams.fromCity}-${searchParams.toCity}-${searchParams.date}`;
     if (lastSearchParamsRef.current === searchKey && tripType === 'oneWay') {
-      console.log(' Same search parameters, skipping duplicate search');
+     
       return;
     }
 
     isSearchingRef.current = true;
     lastSearchParamsRef.current = searchKey;
 
-    console.log(` ========== PERFORMING SEARCH (${source.toUpperCase()}) ==========`);
-    console.log(' Search Parameters:', searchParams);
-    console.log(' Trip Type:', tripType);
-    console.log(' Source:', source);
-    console.log(' Form Data returnDate:', formData.returnDate);
-    console.log(' SearchParams returnDate:', searchParams.returnDate);
+    
 
     setIsLoading(true);
     setError(null);
@@ -139,13 +141,13 @@ const SearchResultsPage = () => {
         date: departureApiDate
       };
 
-      console.log(' Departure API Request:', departureApiParams);
+     
       const startTime = performance.now();
       
       const departureBusData = await api.searchBuses(departureApiParams);
       
       const endTime = performance.now();
-      console.log(` Departure API Response in ${Math.round(endTime - startTime)}ms:`, departureBusData);
+     
 
       if (!departureBusData || !Array.isArray(departureBusData)) {
         throw new Error('Invalid departure API response format');
@@ -158,9 +160,7 @@ const SearchResultsPage = () => {
 
       // For two-way trips, also search for return journey
       if (tripType === 'twoWay' && (formData.returnDate || searchParams.returnDate)) {
-        console.log(' Searching for return journey...');
-        console.log(' Return date from formData:', formData.returnDate);
-        console.log(' Return date from searchParams:', searchParams.returnDate);
+        
         setIsLoadingReturn(true);
 
         const returnDateToUse = formData.returnDate || searchParams.returnDate;
@@ -176,13 +176,13 @@ const SearchResultsPage = () => {
             date: returnApiDate
           };
 
-          console.log('📤 Return API Request:', returnApiParams);
+          
           const returnStartTime = performance.now();
           
           const returnBusData = await api.searchBuses(returnApiParams);
           
           const returnEndTime = performance.now();
-          console.log(`📥 Return API Response in ${Math.round(returnEndTime - returnStartTime)}ms:`, returnBusData);
+          
 
           if (!returnBusData || !Array.isArray(returnBusData)) {
             console.warn('Invalid return API response, setting empty array');
@@ -199,12 +199,12 @@ const SearchResultsPage = () => {
       }
 
       if (departureBusData.length === 0) {
-        console.log('📭 No departure buses found');
+       
         setError('No buses found for this route and date.');
         return;
       }
 
-      console.log(`✅ ${source} search successful - updating UI with ${departureBusData.length} departure buses`);
+      
       setError(null);
 
       // Update URL state
@@ -221,10 +221,9 @@ const SearchResultsPage = () => {
         replace: true
       });
 
-      console.log(`🏁 ========== ${source.toUpperCase()} SEARCH COMPLETED ==========`);
 
     } catch (error) {
-      console.error(`❌ ${source} search error:`, error);
+      console.error(` ${source} search error:`, error);
       setError(`Search failed: ${error.message}`);
       setAllBusResults([]);
       setBusResults([]);
@@ -239,7 +238,7 @@ const SearchResultsPage = () => {
 
   // DEBOUNCED SEARCH TRIGGER
   const triggerSearch = useCallback((searchParams, source = 'auto', delay = 300) => {
-    console.log(`🕐 Scheduling ${source} search in ${delay}ms...`);
+   
     
     // Clear existing timeout
     if (searchTimeoutRef.current) {
@@ -255,19 +254,13 @@ const SearchResultsPage = () => {
   // Initial fetch on component mount
   useEffect(() => {
     const fetchInitialData = async () => {
-      console.log('🏁 fetchInitialData called with:', {
-        searchResultsLength: searchResults.length,
-        fromLogin,
-        searchParams,
-        tripType,
-        formData
-      });
+      
       
       if (searchResults.length > 0) {
-        console.log('✅ Using existing search results from navigation');
+       
         // For two-way trips, still need to search for return if we have return date
         if (tripType === 'twoWay' && (searchParams.returnDate || formData.returnDate)) {
-          console.log('🔄 Existing results but need return search for two-way');
+        
           const searchData = {
             fromCity: searchParams.fromCity || formData.from,
             toCity: searchParams.toCity || formData.to,
@@ -280,7 +273,7 @@ const SearchResultsPage = () => {
       }
 
       if (fromLogin && searchParams.from && searchParams.to && searchParams.date) {
-        console.log('🔄 Auto-searching after login');
+       
         const searchData = {
           fromCity: searchParams.from,
           toCity: searchParams.to,
@@ -350,7 +343,7 @@ const SearchResultsPage = () => {
   // UPDATED handleInputChange - IMMEDIATE API CALLS
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(`📝 Input change: ${name} = ${value} (source: ${e.isTrusted ? 'user' : 'programmatic'})`);
+   
 
     // Special logic for departure date in two-way trip
     if (name === 'date' && tripType === 'twoWay' && formData.returnDate) {
@@ -413,9 +406,7 @@ const SearchResultsPage = () => {
       }
     } else if (name === 'date') {
       setTravelDate(value);
-      console.log('🗓️ Date change detected:');
-      console.log('   New date:', value);
-      console.log('   Is user interaction:', e.isTrusted);
+    
       // Trigger search immediately for date change if we have locations
       if ((formData.from || fromLocation) && (formData.to || toLocation) && value) {
         const searchParams = {
@@ -459,7 +450,7 @@ const SearchResultsPage = () => {
     const newFrom = formData.to;
     const newTo = formData.from;
     
-    console.log('🔄 Swapping locations:', newFrom, '↔', newTo);
+   
     
     setFormData(prevData => ({
       ...prevData,
@@ -484,18 +475,17 @@ const SearchResultsPage = () => {
 
   // SIMPLIFIED handleSearchAgain - IMMEDIATE API CALL
   const handleSearchAgain = async () => {
-    console.log('🔄 ========== MANUAL SEARCH AGAIN CLICKED ==========');
-    console.log('📥 Current form data:', formData);
+   
     
     // Validation
     if (!formData.from || !formData.to || !formData.date) {
-      console.log('❌ Validation failed: Missing required fields');
+    
       setError('Please fill in all required fields');
       return;
     }
     
     if (tripType === 'twoWay' && !formData.returnDate) {
-      console.log('❌ Validation failed: Missing return date for two-way trip');
+
       const errorMessage = 'Enter Return date';
       setError(errorMessage);
       toast.error(errorMessage, {
@@ -510,12 +500,12 @@ const SearchResultsPage = () => {
     }
     
     if (formData.from === formData.to) {
-      console.log('❌ Validation failed: Same departure and destination');
+     
       setError('Departure and destination cannot be the same');
       return;
     }
     
-    console.log('✅ Validation passed - triggering immediate search');
+   
     
     const searchParams = {
       fromCity: formData.from,

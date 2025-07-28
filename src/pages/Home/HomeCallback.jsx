@@ -38,7 +38,7 @@ const formatDateForAPI = (dateString) => {
 
 // Enhanced validation function for transaction IDs
 const validateTransactionId = (merchantTxnId) => {
-  console.log('🔍 Validating transaction ID:', merchantTxnId);
+
   
   // Check if transaction ID has been used before (in the last 24 hours)
   const usedTransactions = JSON.parse(localStorage.getItem('usedTransactionIds') || '{}');
@@ -242,36 +242,192 @@ const HomeCallback = () => {
         bookingData = rawBookingData;
       }
       
-      // Construct seat payment data in the exact format expected by the API
-      const seatPaymentData = {
-        seatInfo: {
-          dateOfTravel: formatDateForAPI(bookingData.travelDate), // Fixed: Convert to YYYY-MM-DD format
-          busId: parseInt(bookingData.bookingDetails?.busId) || parseInt(bookingData.busId) || 102,
-          passengersList: (bookingData.passengers || []).map((passenger, index) => {
-            // Generate a more unique seat number if fallback is needed
-            const fallbackSeatNo = passenger.seatNumber || 
-                                  bookingData.selectedSeats?.[index] || 
-                                  `S${Date.now()}-${index + 1}`;
-            
-            return {
-              passengerName: passenger.fullName || passenger.name || `Passenger ${index + 1}`,
-              contactNumber: String(passenger.phoneNumber || passenger.phone || "9999999999"), // Fixed: Keep as string, not parseInt
-              seatNo: passenger.id || fallbackSeatNo,
-              origin: (bookingData.searchParams?.fromCity || bookingData.searchParams?.from || "Birgunj").toLowerCase(), // Fixed: Lowercase
-              destination: (bookingData.searchParams?.toCity || bookingData.searchParams?.to || "Kathmandu").toLowerCase(), // Fixed: Lowercase
+      // 🔧 DEBUG: Log date information immediately after parsing
+      console.log('🔧 DEBUG: Date information in booking data:', {
+        travelDate: bookingData.travelDate,
+        returnTravelDate: bookingData.returnTravelDate,
+        returnDate: bookingData.returnDate,
+        searchParams: bookingData.searchParams,
+        formData: bookingData.formData,
+        hasFormDataReturnDate: bookingData.formData?.returnDate,
+        hasSearchParamsReturnDate: bookingData.searchParams?.returnDate
+      });
+      
+      // Check if this is a two-way booking by analyzing the data structure
+      // Method 1: Check if we have separate returnPassengers array (new format from PassengerDetail)
+      const hasReturnPassengers = bookingData.returnPassengers && bookingData.returnPassengers.length > 0;
+      const hasReturnSeats = bookingData.returnSeats && bookingData.returnSeats.length > 0;
+      const isTripTypeTwoWay = bookingData.tripType === 'twoWay';
+      
+      // Method 2: Check if passengers array has mixed travel dates/bus IDs (old format)
+      const hasMixedPassengerData = bookingData.passengers && bookingData.passengers.length > 0 && 
+        bookingData.passengers.some(p => p.travelDate !== bookingData.passengers[0].travelDate ||
+                                         p.busId !== bookingData.passengers[0].busId ||
+                                         p.vesselId !== bookingData.passengers[0].vesselId);
+      
+      // 🚨 FIXED: Prioritize tripType check for explicit two-way bookings
+      const isTwoWayBooking = isTripTypeTwoWay || hasReturnPassengers || hasReturnSeats || hasMixedPassengerData;
+      
+      console.log('🔍 Two-way booking detection:', {
+        hasReturnPassengers,
+        hasReturnSeats,
+        isTripTypeTwoWay,
+        hasMixedPassengerData,
+        isTwoWayBooking,
+        departureSeats: bookingData.selectedSeats?.length || 0,
+        returnSeats: bookingData.returnSeats?.length || 0,
+        travelDate: bookingData.travelDate,
+        returnTravelDate: bookingData.returnTravelDate,
+        busData: bookingData.bookingDetails,
+        returnBusData: bookingData.returnBusData,
+        rawBookingData: Object.keys(bookingData)
+      });
+      
+      // 🚨 FORCE DEBUG: If tripType is twoWay, log the complete data structure
+      if (bookingData.tripType === 'twoWay') {
+        console.log('🚨 DETECTED TWO-WAY TRIP! Complete booking data:', bookingData);
+      }
+      
+      let seatPaymentData;
+      
+      if (isTwoWayBooking) {
+        // Two-way booking: Use seatInfoList format
+        console.log('🔄 Processing two-way booking with seatInfoList format');
+        const seatInfoList = [];
+        
+        // Always add departure journey for two-way trips
+        if (bookingData.passengers && bookingData.passengers.length > 0) {
+          console.log('➡️ Adding departure journey');
+          // Extract departure bus ID - handle frontend vs API format mismatch
+          const departureBusId = bookingData.busData?.originalData?.busId || // API busId from originalData (integer)
+                                parseInt(bookingData.busData?.id?.replace('bus-', '')) || // Frontend id "bus-101" -> 101
+                                bookingData.busData?.busId || // Direct busId if available
+                                bookingData.bookingDetails?.busId || 
+                                bookingData.busId || 
+                                101; // Default fallback
+          
+          console.log('🔧 DEBUG Departure bus ID extraction:', {
+            'busData (full object)': bookingData.busData,
+            'busData?.originalData?.busId': bookingData.busData?.originalData?.busId,
+            'busData?.id (frontend)': bookingData.busData?.id,
+            'parsed from frontend id': bookingData.busData?.id ? parseInt(bookingData.busData.id.replace('bus-', '')) : null,
+            'busData?.busId': bookingData.busData?.busId,
+            'bookingDetails?.busId': bookingData.bookingDetails?.busId,
+            'finalDepartureBusId': departureBusId,
+            'isUsingFallback': departureBusId === 101
+          });
+          
+          seatInfoList.push({
+            dateOfTravel: formatDateForAPI(bookingData.travelDate),
+            busId: parseInt(departureBusId),
+            passengersList: bookingData.passengers.map(passenger => ({
+              passengerName: passenger.fullName || passenger.name || 'Passenger',
+              contactNumber: String(passenger.phoneNumber || passenger.phone || "9999999999"),
+              seatNo: passenger.id || passenger.seatNumber || 'S1',
+              origin: (bookingData.searchParams?.fromCity || bookingData.searchParams?.from || "kathmandu").toLowerCase(),
+              destination: (bookingData.searchParams?.toCity || bookingData.searchParams?.to || "birgunj").toLowerCase(),
               gender: passenger.gender?.toLowerCase() === 'male' ? 'male' : 
                      passenger.gender?.toLowerCase() === 'female' ? 'female' : 'male',
               boardingLocation: passenger.boardingPlace || "Bus Park",
               deboardingLocation: passenger.droppingPlace || "Kalanki",
               residence: passenger.cityOfResidence || "nepali",
-              email: passenger.email || `passenger${index + 1}@sonabus.com`
-            };
-          })
-        },
-        paymentInfo: {
-          merchantTransactionId: merchantTxnId
+              email: passenger.email || `passenger@sonabus.com`
+            }))
+          });
         }
-      };
+        
+        // Add return journey if available
+        if (bookingData.returnPassengers && bookingData.returnPassengers.length > 0) {
+          console.log('⬅️ Adding return journey');
+          console.log('🔧 DEBUG Return bus data structure:', JSON.stringify(bookingData.returnBusData, null, 2));
+          console.log('🔧 DEBUG Return travel date sources:', {
+            returnTravelDate: bookingData.returnTravelDate,
+            returnDate: bookingData.returnDate,
+            travelDate: bookingData.travelDate,
+            finalChoice: bookingData.returnTravelDate || bookingData.returnDate || bookingData.travelDate
+          });
+          
+          // Extract return bus ID - handle frontend vs API format mismatch
+          const returnBusId = bookingData.returnBusData?.originalData?.busId || // API busId from originalData (integer)
+                             parseInt(bookingData.returnBusData?.id?.replace('bus-', '')) || // Frontend id "bus-101" -> 101
+                             bookingData.returnBusData?.busId || // Direct busId if available
+                             bookingData.returnBusData?.data?.[0]?.busId || // Handle array format
+                             bookingData.returnBookingDetails?.busId ||
+                             bookingData.returnBusId ||
+                             102; // Default fallback
+          
+          console.log('🔧 DEBUG Return bus ID extraction:', {
+            'returnBusData (full object)': bookingData.returnBusData,
+            'returnBusData?.originalData?.busId': bookingData.returnBusData?.originalData?.busId,
+            'returnBusData?.id (frontend)': bookingData.returnBusData?.id,
+            'parsed from frontend id': bookingData.returnBusData?.id ? parseInt(bookingData.returnBusData.id.replace('bus-', '')) : null,
+            'returnBusData?.busId': bookingData.returnBusData?.busId,
+            'finalReturnBusId': returnBusId,
+            'isUsingFallback': returnBusId === 102
+          });
+          
+          seatInfoList.push({
+            dateOfTravel: formatDateForAPI(bookingData.returnTravelDate || bookingData.returnDate || bookingData.travelDate),
+            busId: parseInt(returnBusId),
+            passengersList: bookingData.returnPassengers.map(passenger => ({
+              passengerName: passenger.fullName || passenger.name || 'Passenger',
+              contactNumber: String(passenger.phoneNumber || passenger.phone || "9999999999"),
+              seatNo: passenger.id || passenger.seatNumber || 'S1',
+              origin: (bookingData.searchParams?.toCity || bookingData.searchParams?.to || "birgunj").toLowerCase(), // Swapped for return
+              destination: (bookingData.searchParams?.fromCity || bookingData.searchParams?.from || "kathmandu").toLowerCase(), // Swapped for return
+              gender: passenger.gender?.toLowerCase() === 'male' ? 'male' : 
+                     passenger.gender?.toLowerCase() === 'female' ? 'female' : 'male',
+              boardingLocation: passenger.boardingPlace || "Bus Park",
+              deboardingLocation: passenger.droppingPlace || "Kalanki",
+              residence: passenger.cityOfResidence || "nepali",
+              email: passenger.email || `passenger@sonabus.com`
+            }))
+          });
+        } else if (isTripTypeTwoWay) {
+          // If tripType is twoWay but no returnPassengers, create a placeholder or log warning
+          console.log('⚠️ Two-way trip detected but no return passengers found. This might be incomplete data.');
+        }
+        
+        seatPaymentData = {
+          seatInfoList: seatInfoList,
+          paymentInfo: {
+            merchantTransactionId: merchantTxnId
+          }
+        };
+        
+        console.log('✅ Created two-way booking with seatInfoList format:', seatPaymentData);
+      } else {
+        // One-way booking: Use seatInfo format
+        seatPaymentData = {
+          seatInfo: {
+            dateOfTravel: formatDateForAPI(bookingData.travelDate), // Fixed: Convert to YYYY-MM-DD format
+            busId: parseInt(bookingData.bookingDetails?.busId) || parseInt(bookingData.busId) || 102,
+            passengersList: (bookingData.passengers || []).map((passenger, index) => {
+              // Generate a more unique seat number if fallback is needed
+              const fallbackSeatNo = passenger.seatNumber || 
+                                    bookingData.selectedSeats?.[index] || 
+                                    `S${Date.now()}-${index + 1}`;
+              
+              return {
+                passengerName: passenger.fullName || passenger.name || `Passenger ${index + 1}`,
+                contactNumber: String(passenger.phoneNumber || passenger.phone || "9999999999"), // Fixed: Keep as string, not parseInt
+                seatNo: passenger.id || fallbackSeatNo,
+                origin: (bookingData.searchParams?.fromCity || bookingData.searchParams?.from || "Birgunj").toLowerCase(), // Fixed: Lowercase
+                destination: (bookingData.searchParams?.toCity || bookingData.searchParams?.to || "Kathmandu").toLowerCase(), // Fixed: Lowercase
+                gender: passenger.gender?.toLowerCase() === 'male' ? 'male' : 
+                       passenger.gender?.toLowerCase() === 'female' ? 'female' : 'male',
+                boardingLocation: passenger.boardingPlace || "Bus Park",
+                deboardingLocation: passenger.droppingPlace || "Kalanki",
+                residence: passenger.cityOfResidence || "nepali",
+                email: passenger.email || `passenger${index + 1}@sonabus.com`
+              };
+            })
+          },
+          paymentInfo: {
+            merchantTransactionId: merchantTxnId
+          }
+        };
+      }
       
       // 🚨 EXACT JSON FOR POSTMAN TESTING 🚨
       console.log('🔥 COPY THIS JSON FOR POSTMAN:');
@@ -284,10 +440,25 @@ const HomeCallback = () => {
       console.log(' DEBUG: Authentication check before API call');
       console.log(' Auth token exists:', !!localStorage.getItem('authToken') || !!sessionStorage.getItem('authToken'));
       console.log(' Seat payment data validation:');
-      console.log('- Travel date format:', seatPaymentData.seatInfo.dateOfTravel);
-      console.log('- Bus ID type:', typeof seatPaymentData.seatInfo.busId, seatPaymentData.seatInfo.busId);
-      console.log('- Passengers count:', seatPaymentData.seatInfo.passengersList.length);
+      
+      if (isTwoWayBooking) {
+        console.log('🔄 TWO-WAY BOOKING DETECTED');
+        console.log('- Booking format: seatInfoList (two-way)');
+        console.log('- Number of journeys:', seatPaymentData.seatInfoList.length);
+        seatPaymentData.seatInfoList.forEach((journey, index) => {
+          console.log(`- Journey ${index + 1}: ${journey.dateOfTravel}, Bus ID: ${journey.busId}, Passengers: ${journey.passengersList.length}`);
+        });
+      } else {
+        console.log('➡️ ONE-WAY BOOKING DETECTED');
+        console.log('- Booking format: seatInfo (one-way)');
+        console.log('- Travel date format:', seatPaymentData.seatInfo.dateOfTravel);
+        console.log('- Bus ID type:', typeof seatPaymentData.seatInfo.busId, seatPaymentData.seatInfo.busId);
+        console.log('- Passengers count:', seatPaymentData.seatInfo.passengersList.length);
+      }
+      
       console.log('- Merchant transaction ID:', seatPaymentData.paymentInfo.merchantTransactionId);
+      
+      console.log('🚀 Final request body to /seat/payment API:', JSON.stringify(seatPaymentData, null, 2));
       
       const result = await paymentService.processSeatPayment(seatPaymentData);
       

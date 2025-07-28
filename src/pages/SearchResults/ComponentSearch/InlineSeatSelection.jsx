@@ -93,7 +93,7 @@ const InlineSeatSelection = ({
         } else {
           currentTravelDate = new Date().toISOString().split('T')[0];
         }
-        console.log('Current travel date:', currentTravelDate);
+      
         let destination = searchParams.toCity || searchParams.to || busData.route?.to || busData.destination || busData.arrivalLocation || 'kathmandu';
         destination = destination.toLowerCase().trim();
         
@@ -111,11 +111,7 @@ const InlineSeatSelection = ({
           destination: destination
         };
         
-        console.log('SEAT API REQUEST:', {
-          url: apiUrl,
-          method: 'POST',
-          requestData: requestBody
-        });
+       
         
         const response = await fetch(apiUrl, {
           method: 'POST',
@@ -137,14 +133,9 @@ const InlineSeatSelection = ({
             .filter(seat => seat && /^[A-Z]\d+$/.test(seat));
         }
         
-        console.log('SEAT API RESPONSE:', {
-          status: response.status,
-          success: data.success,
-          bookedSeats: bookedSeatNumbers,
-          message: data.message
-        });
         
-        console.log('SETTING BOOKED SEATS:', bookedSeatNumbers);
+        
+        
         setBookedSeats(bookedSeatNumbers);
         
         // Complete the loading progress
@@ -156,8 +147,8 @@ const InlineSeatSelection = ({
         }, 200);
         
       } catch (error) {
-        console.error('❌ SEAT API ERROR:', error.message);
-        console.log('Error loading seat data - showing all seats as available');
+        console.error(' SEAT API ERROR:', error.message);
+        
         
         // On error, show all seats as available instead of mock data
         setBookedSeats([]);
@@ -181,14 +172,7 @@ const InlineSeatSelection = ({
   
   // Generate seat configuration based on bus data
   useEffect(() => {
-    console.log('UPDATING SEAT CONFIGURATION');
-    console.log('Bus data received:', busData);
-    console.log('Bus ID from params:', busId);
-    console.log('Booked seats from API:', bookedSeats);
-    console.log('Checking specific seats:');
-    console.log('   A5 booked?', bookedSeats.includes('A5'));
-    console.log('   A7 booked?', bookedSeats.includes('A7'));
-    console.log('   S1 booked?', bookedSeats.includes('S1'));
+
 
     // Professional seat layout - Better centered with increased x-gaps to cover full card width
     // Card width: ~900px, seat group width: ~750px, center offset: (900-750)/2 = ~75px
@@ -257,8 +241,7 @@ const InlineSeatSelection = ({
 
 
     
-    console.log('Generated seat config for A5:', config.row5.find(seat => seat.id === 'A5'));
-    console.log('Generated seat config for A7:', config.row5.find(seat => seat.id === 'A7'));
+   
     
     setSeatConfig(config);
     
@@ -269,12 +252,7 @@ const InlineSeatSelection = ({
     
     setAvailableSeatsCount(availableCount);
     
-    console.log('Seat Statistics:');
-    console.log('   Total seats:', totalSeats);
-    console.log('   Booked seats count:', bookedSeatsCount);
-    console.log('   Available seats count:', availableCount);
-    console.log('   Bus data available seats:', busData.availableSeats);
-    console.log('SEAT CONFIGURATION COMPLETED');
+   
   }, [busId, busData, bookedSeats]);
 
   // Calculate available seats and update price when selectedSeats change
@@ -286,7 +264,7 @@ const InlineSeatSelection = ({
   }, [selectedSeats, seatConfig]);
 
   useEffect(() => {
-    console.log('Bus data is missing or incomplete:', busData);
+   
   }, [busData, bookedSeats]); // Add bookedSeats as dependency
 
   const handleSeatClick = (seatId, seatType) => {
@@ -306,11 +284,13 @@ const InlineSeatSelection = ({
       if (activeTab === 'departure') {
         setDepartureSeats(newSelectedSeats);
         if (newSelectedSeats.length > 0) {
+         
           setDepartureBusData(busData);
         }
       } else {
         setReturnSeats(newSelectedSeats);
         if (newSelectedSeats.length > 0) {
+         
           setReturnBusData(busData);
         }
       }
@@ -345,16 +325,23 @@ const InlineSeatSelection = ({
       }
     }
 
-    console.log('🎯 Proceeding to passenger details with data:', {
-      selectedSeats: tripType === 'twoWay' ? departureSeats : selectedSeats,
-      busData: tripType === 'twoWay' ? departureBusData : busData,
-      returnSeats: tripType === 'twoWay' ? returnSeats : null,
-      returnBusData: tripType === 'twoWay' ? returnBusData : null,
-      searchParams,
-      travelDate,
-      totalPrice: tripType === 'twoWay' ? (departureSeats.length * seatPrice) + (returnSeats.length * seatPrice) : totalPrice
-    });
+   
 
+   
+
+   
+    
+    // FORCE the departure date to always be from searchParams.date for two-way trips
+    const finalTravelDate = tripType === 'twoWay' 
+      ? (searchParams.date || searchParams.fromDate || formData.date || travelDate)
+      : travelDate;
+    const finalReturnDate = tripType === 'twoWay' 
+      ? (searchParams.returnDate || formData.returnDate || searchParams.to_date || searchParams.toDate) 
+      : null;
+    
+   
+
+  
     // 🔥 FIX: Navigate with complete data structure
     navigate('/passenger-detail', {
       state: {
@@ -362,9 +349,9 @@ const InlineSeatSelection = ({
         busData: tripType === 'twoWay' ? departureBusData : busData,                    // Complete bus information
         returnSeats: tripType === 'twoWay' ? returnSeats : null,        // Return seats for two-way trips
         returnBusData: tripType === 'twoWay' ? returnBusData : null,    // Return bus data for two-way trips
-        returnTravelDate: tripType === 'twoWay' ? formData.returnDate : null, // Return travel date
+        returnTravelDate: finalReturnDate, // Use calculated return date
         searchParams: searchParams,          // Search parameters (from/to cities, etc.)
-        travelDate: travelDate,              // Travel date
+        travelDate: finalTravelDate,         // Use calculated departure date
         totalPrice: tripType === 'twoWay' ? (departureSeats.length * seatPrice) + (returnSeats.length * seatPrice) : totalPrice,              // Total calculated price
         seatPrice: seatPrice,                // Price per seat (2000)
         tripType: tripType,                  // Trip type (oneWay/twoWay)

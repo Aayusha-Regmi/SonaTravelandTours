@@ -82,7 +82,7 @@ class UserActionRestorer {
    */
   async restoreUserActions(navigate) {
     try {
-      console.log('🔄 Starting user action restoration...');
+     
       
       const context = userActionTracker.getRestorationContext();
       
@@ -100,14 +100,14 @@ class UserActionRestorer {
         const strategy = this.restorationStrategies.get(action.type);
         if (strategy) {
           try {
-            console.log(`🔄 Restoring action: ${action.type}`);
+           
             const result = await strategy.handler(action, context, navigate);
             if (result) {
               restorationSuccess = true;
               break; // Stop after first successful restoration
             }
           } catch (error) {
-            console.error(`❌ Failed to restore action ${action.type}:`, error);
+            console.error(` Failed to restore action ${action.type}:`, error);
           }
         }
       }
@@ -122,7 +122,7 @@ class UserActionRestorer {
 
       return restorationSuccess;
     } catch (error) {
-      console.error('❌ User action restoration failed:', error);
+      console.error(' User action restoration failed:', error);
       return false;
     }
   }
@@ -163,7 +163,7 @@ class UserActionRestorer {
         return false;
       }
 
-      console.log('🔍 Restoring search form with data:', formData);
+     
       
       // Navigate directly to search results page with search form data
       // The SearchResultsPage will automatically perform the search with the provided parameters

@@ -16,7 +16,15 @@ const PaymentModal = ({
   bookingDetails, 
   searchParams,
   selectedCategory,
-  onPaymentSuccess 
+  onPaymentSuccess,
+  tripType = 'oneWay',
+  returnPassengers = [],
+  returnSeats = [],
+  returnBusData = {},
+  returnTravelDate = '',
+  originalPrice,
+  discount,
+  promoCode
 }) => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: instruments, 2: success
@@ -63,6 +71,16 @@ const PaymentModal = ({
   // Initialize payment modal when opened
   useEffect(() => {
     if (isOpen) {
+      console.log('💳 PaymentModal received props:', {
+        tripType,
+        returnPassengers: returnPassengers?.length || 0,
+        returnSeats: returnSeats?.length || 0,
+        returnBusData,
+        returnTravelDate,
+        travelDate,
+        busData: bookingDetails
+      });
+      
       // Store booking data immediately when modal opens (fix for callback storage issue)
       const bookingData = {
         totalPrice: totalPrice,
@@ -70,8 +88,15 @@ const PaymentModal = ({
         selectedSeats: selectedSeats,
         travelDate: travelDate,
         bookingDetails: bookingDetails,
-        searchParams: searchParams
+        searchParams: searchParams,
+        tripType: tripType,
+        returnPassengers: returnPassengers,
+        returnSeats: returnSeats,
+        returnBusData: returnBusData,
+        returnTravelDate: returnTravelDate
       };
+      
+      console.log('💾 PaymentModal storing booking data:', bookingData);
       
       // Store in both sessionStorage and localStorage for redundancy
       sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
@@ -190,11 +215,16 @@ const PaymentModal = ({
         travelDate: travelDate,
         bookingDetails: bookingDetails,
         searchParams: searchParams,
-        selectedInstrument: instrument
+        selectedInstrument: instrument,
+        tripType: tripType,
+        returnPassengers: returnPassengers,
+        returnSeats: returnSeats,
+        returnBusData: returnBusData,
+        returnTravelDate: returnTravelDate
       };
       sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
       
-      console.log('📞 Calling initiate-payment API...');
+     
       
       // Call initiate-payment API with instrument code
       const paymentInitiated = await api.initiatePayment(totalPrice, instrument.instrumentCode);
@@ -234,7 +264,7 @@ const PaymentModal = ({
           remarks: `Booking for ${selectedSeats.join(', ')} on ${travelDate}`
         };
         
-        console.log('Saving booking details for callback:', bookingDetailsForCallback);
+
         sessionStorage.setItem('pendingBookingDetails', JSON.stringify(bookingDetailsForCallback));
         
         // Redirect to Nepal Payment Gateway with the data from initiate-payment

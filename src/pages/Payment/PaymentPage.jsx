@@ -1768,6 +1768,11 @@ const PaymentPage = () => {
             originalPrice={totalPrice}
             discount={discountAmount}
             promoCode={promoCode}
+            tripType={tripType}
+            returnPassengers={returnPassengers}
+            returnSeats={returnSeats}
+            returnBusData={returnBusData}
+            returnTravelDate={returnTravelDate}
           />
         );
       })()}

@@ -43,16 +43,15 @@ const PhoneSignupPage = () => {
   const handleSendCode = async (e) => {
     e.preventDefault();
     
-    console.log('=== SEND OTP DEBUG START ===');
-    console.log('Phone number input:', phoneNumber);
+
     
     // Validate phone number
     const phoneError = validatePhoneNumber(phoneNumber);
-    console.log('Validation result:', phoneError);
+
     
     if (phoneError) {
       setError(phoneError);
-      console.log('Validation failed, stopping');
+    
       return;
     }
 
@@ -62,12 +61,7 @@ const PhoneSignupPage = () => {
     try {      // Clean phone number (remove any formatting)
       const cleanedPhone = phoneNumber.replace(/\D/g, '');
       
-      console.log('Cleaned phone:', cleanedPhone);
-      console.log('API URL:', API_URLS.AUTH.SEND_OTP);
-      console.log('Request payload:', {
-        mobileNumber: cleanedPhone,
-        action: 'signup'
-      });
+    
         // API call to send OTP
       const response = await fetch(API_URLS.AUTH.SEND_OTP, {
         method: 'POST',
@@ -80,9 +74,7 @@ const PhoneSignupPage = () => {
           action: 'signup'
         })
       });const result = await response.json();
-      console.log('Send OTP Response:', result);
-      console.log('Response Status:', response.status);
-      console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
+      
 
       if (response.ok && result.success) {
         // Navigate to OTP verification page
@@ -135,13 +127,13 @@ const PhoneSignupPage = () => {
       setError(errorMessage);
     } finally {
       setIsLoading(false);
-      console.log('=== SEND OTP DEBUG END ===');
+     
     }
   };
 
   const handleGoogleSignIn = () => {
     // TODO: Implement Google Sign In
-    console.log('Google Sign In clicked');
+
   };
 
   return (

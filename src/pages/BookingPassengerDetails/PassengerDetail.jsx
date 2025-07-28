@@ -18,6 +18,24 @@ const PassengerDetail = () => {
   // 🔥 FIX: Get selected seats from navigation state - supporting separate departure and return seats
   const { selectedSeats, returnSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails, tripType = 'oneWay', returnBusData, returnTravelDate } = location.state || {};
   
+  // 🔧 DEBUG: Log all received data immediately
+  console.log('🔧 PassengerDetail RECEIVED DATA:', {
+    travelDate,
+    returnTravelDate,
+    busData: busData?.id || busData?.busId,
+    returnBusData: returnBusData?.id || returnBusData?.busId,
+    tripType,
+    selectedSeats,
+    returnSeats,
+    locationState: location.state
+  });
+
+  // 🔧 DEBUG: Log complete bus data structures
+  console.log('🔧 PassengerDetail COMPLETE BUS DATA:', {
+    'busData': busData,
+    'returnBusData': returnBusData
+  });
+  
   // 🔥 FIX: Create passengers array based on actual selected seats (separate for departure and return)
   const [passengers, setPassengers] = useState([]);
   const [returnPassengers, setReturnPassengers] = useState([]);
@@ -32,12 +50,7 @@ const PassengerDetail = () => {
     const toCity = searchParams?.toCity || searchParams?.to || 'Birgunj';
     const isReturnJourney = activeTab === 'return';
     
-    console.log(`🚌 Calculating boarding/dropping options for ${activeTab} tab:`, {
-      fromCity,
-      toCity,
-      isReturnJourney,
-      searchParams: searchParams
-    });
+   
     
     // Get journey points from API - this handles the switching logic
     const journeyPoints = api.getJourneyPoints(fromCity, toCity, isReturnJourney);
@@ -58,7 +71,13 @@ const PassengerDetail = () => {
     const departureSeats = selectedSeats || [];
     const returnSeatsArray = returnSeats || [];
     
-    console.log('Initializing passengers:', { departureSeats, returnSeatsArray, tripType });
+    console.log('🎯 PassengerDetail useEffect - Seats data:', {
+      departureSeats,
+      returnSeatsArray,
+      tripType,
+      returnTravelDate,
+      returnBusData
+    });
     
     if (departureSeats.length > 0) {
       const initialPassengers = departureSeats.map(seatId => ({
@@ -91,6 +110,8 @@ const PassengerDetail = () => {
       }));
       setReturnPassengers(initialReturnPassengers);
       console.log('Return passengers initialized:', initialReturnPassengers);
+      console.log('Return travel date:', returnTravelDate);
+      console.log('Return bus data:', returnBusData);
     }
     
     // If no seats selected, redirect back
@@ -540,7 +561,11 @@ const PassengerDetail = () => {
         selectedSeats,
         returnSeats,
         travelDate,
-        totalPrice
+        returnTravelDate,
+        busData,
+        returnBusData,
+        totalPrice,
+        tripType
       });
       
       // Calculate total price based on actual seat selections
@@ -548,30 +573,41 @@ const PassengerDetail = () => {
       const returnSeatsArray = returnSeats || [];
       const calculatedTotalPrice = (departureSeats.length * seatPrice) + (returnSeatsArray.length * seatPrice);
       
+      // Debug log the complete state being passed
+      const stateToPass = {
+        passengers: passengers,          // Departure passenger details
+        returnPassengers: tripType === 'twoWay' ? returnPassengers : null, // Return passenger details
+        selectedSeats: selectedSeats,    // Departure seat numbers
+        returnSeats: returnSeats,        // Return seat numbers
+        busData: busData,               // Bus information
+        returnBusData: returnBusData,   // Return bus information
+        searchParams: searchParams,      // Search parameters
+        travelDate: travelDate,         // Travel date
+        returnTravelDate: returnTravelDate, // Return travel date
+        totalPrice: tripType === 'twoWay' ? calculatedTotalPrice : totalPrice, // Total booking price
+        seatPrice: seatPrice,           // Price per seat
+        tripType: tripType,             // Trip type
+        bookingDetails: {
+          ...bookingDetails,
+          totalSeats: departureSeats.length + (returnSeatsArray.length || 0),
+          departureSeats: departureSeats.length,
+          returnSeats: returnSeatsArray.length,
+          farePerSeat: seatPrice,
+          totalFare: tripType === 'twoWay' ? calculatedTotalPrice : totalPrice
+        }
+      };
+      
+      console.log('🚀 PassengerDetail -> Payment navigation state:', stateToPass);
+      console.log('🔧 DEBUG: Date values being passed to payment:', {
+        travelDate,
+        returnTravelDate,
+        tripType,
+        areEqual: travelDate === returnTravelDate
+      });
+      
       // 🔥 FIX: Pass all booking data to payment page with correct seat information
       navigate('/payment', {
-        state: {
-          passengers: passengers,          // Departure passenger details
-          returnPassengers: tripType === 'twoWay' ? returnPassengers : null, // Return passenger details
-          selectedSeats: selectedSeats,    // Departure seat numbers
-          returnSeats: returnSeats,        // Return seat numbers
-          busData: busData,               // Bus information
-          returnBusData: returnBusData,   // Return bus information
-          searchParams: searchParams,      // Search parameters
-          travelDate: travelDate,         // Travel date
-          returnTravelDate: returnTravelDate, // Return travel date
-          totalPrice: tripType === 'twoWay' ? calculatedTotalPrice : totalPrice, // Total booking price
-          seatPrice: seatPrice,           // Price per seat
-          tripType: tripType,             // Trip type
-          bookingDetails: {
-            ...bookingDetails,
-            totalSeats: departureSeats.length + (returnSeatsArray.length || 0),
-            departureSeats: departureSeats.length,
-            returnSeats: returnSeatsArray.length,
-            farePerSeat: seatPrice,
-            totalFare: tripType === 'twoWay' ? calculatedTotalPrice : totalPrice
-          }
-        }
+        state: stateToPass
       });
     } else {
       toast.error('Please fill in all required fields correctly', {
