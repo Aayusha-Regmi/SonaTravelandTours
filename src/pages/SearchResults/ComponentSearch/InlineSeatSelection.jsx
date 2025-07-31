@@ -55,8 +55,11 @@ const InlineSeatSelection = ({
         setSelectedSeats(returnSeats);
         setTotalPrice(returnSeats.length * (seatPrice + vatAmount));
       }
+    } else {
+      // Handle oneWay case to keep dependency array consistent
+      setTotalPrice(selectedSeats.length * (seatPrice + vatAmount));
     }
-  }, [departureSeats, returnSeats, activeTab, tripType, seatPrice, vatAmount]);
+  }, [departureSeats, returnSeats, activeTab, tripType, seatPrice, vatAmount, selectedSeats]);
   
   // This useEffect will refresh booked seats whenever:
   // - busData changes (different bus selected)
@@ -147,7 +150,7 @@ const InlineSeatSelection = ({
         }, 200);
         
       } catch (error) {
-        console.error('SEAT API ERROR:', error.message);
+        // Silent error handling - no sensitive information logged
         
         
         // On error, show all seats as available instead of mock data
@@ -393,7 +396,7 @@ const InlineSeatSelection = ({
     
       return response;
     } catch (error) {
-      console.error('Error booking seats:', error);
+      // Silent error handling - no sensitive information logged
       return { success: false, error: error.message };
     }
   };

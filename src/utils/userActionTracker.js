@@ -263,14 +263,30 @@ class UserActionTracker {
   }
 
   /**
+   * Safe JSON stringify that handles circular references
+   */
+  safeStringify(obj) {
+    const seen = new WeakSet();
+    return JSON.stringify(obj, (key, val) => {
+      if (val != null && typeof val === "object") {
+        if (seen.has(val)) {
+          return {};
+        }
+        seen.add(val);
+      }
+      return val;
+    });
+  }
+
+  /**
    * Save actions to localStorage
    */
   saveActions() {
     try {
-      localStorage.setItem(STORAGE_KEYS.PENDING_ACTIONS, JSON.stringify(this.actions));
+      localStorage.setItem(STORAGE_KEYS.PENDING_ACTIONS, this.safeStringify(this.actions));
       localStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY, this.lastActivity.toString());
     } catch (error) {
-      console.error('Error saving actions:', error);
+      // Silent error handling - no sensitive information logged
     }
   }
 
@@ -279,9 +295,9 @@ class UserActionTracker {
    */
   savePageState() {
     try {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_PAGE_STATE, JSON.stringify(this.pageState));
+      localStorage.setItem(STORAGE_KEYS.CURRENT_PAGE_STATE, this.safeStringify(this.pageState));
     } catch (error) {
-      console.error('Error saving page state:', error);
+      // Silent error handling - no sensitive information logged
     }
   }
 

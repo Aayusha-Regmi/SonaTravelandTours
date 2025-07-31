@@ -293,7 +293,7 @@ const PaymentPage = () => {
         
         // Handle 404 errors specifically for deployed environment
         if (response.status === 404) {
-          console.error('404 Error - API endpoint not found:', API_URLS.COUPONS.APPLY_DISCOUNT);
+          // Silent handling - API endpoint not found
           toast.error('Coupon service is currently unavailable. Please try again later.');
           setIsApplyingCoupon(false);
           return;
