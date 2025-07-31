@@ -252,35 +252,30 @@ const UnifiedSections = () => {
     const fetchOffers = async () => {
       try {
         setIsLoadingOffers(true);
-        console.log('Fetching offers from:', API_URLS.COUPONS.GET_COUPONS);
+       
         
         const response = await fetch(API_URLS.COUPONS.GET_COUPONS);
-        console.log('Response status:', response.status);
+       
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('Full API response:', data);
+     
         
         if (data.success && data.data) {
-          console.log('Raw offers data:', data.data);
-          console.log('Number of offers received:', data.data.length);
+         
           
           // Filter active offers only (temporarily disabled for debugging)
           const now = new Date();
-          console.log('Current date:', now.toISOString());
+         
           
           const activeOffers = data.data.filter(offer => {
             const initDate = new Date(offer.couponInitDate);
             const expDate = new Date(offer.couponExpDate);
             
-            console.log(`Offer ${offer.couponCode}:`, {
-              initDate: initDate.toISOString(),
-              expDate: expDate.toISOString(),
-              isActive: now >= initDate && now <= expDate
-            });
+           
             
             // Exclude SonaTest coupon from trending offers
             if (offer.couponCode === 'SonaTest') {
@@ -292,16 +287,15 @@ const UnifiedSections = () => {
             // return now >= initDate && now <= expDate; // Re-enable this later
           });
           
-          console.log('Active offers after filtering:', activeOffers);
-          console.log('Number of active offers:', activeOffers.length);
+         
           
           // Show only first 4 offers for home page
           const homeOffers = activeOffers.slice(0, 4);
-          console.log('Home offers (first 4):', homeOffers);
+         
           
           setOffers(homeOffers);
         } else {
-          console.log('API response structure issue:', data);
+        
           setOffers([]);
         }
       } catch (error) {

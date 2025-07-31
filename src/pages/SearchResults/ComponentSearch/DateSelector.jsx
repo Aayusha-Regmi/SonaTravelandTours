@@ -229,7 +229,7 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate, tr
           isReturnSelection = true;
         } else {
           // Prevent selecting return date before or same as departure
-          console.log('Cannot select return date before or same as departure date');
+         
           return;
         }
       } else {
@@ -283,7 +283,7 @@ const DateSelector = ({ onDateChange, initialDate, departureDate, returnDate, tr
       if (onDateChange) {
         // Pass additional info about selection type
         const action = needsReturnReset ? 'resetReturn' : (isReturnSelection ? 'returnDate' : 'departureDate');
-        console.log('📅 DateSelector action:', action, 'for date:', formattedDate);
+       
         onDateChange(formattedDate, dateItem.fullDate, action);
         setTimeout(() => {
           setIsSearching(false);

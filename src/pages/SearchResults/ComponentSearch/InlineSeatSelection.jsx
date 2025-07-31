@@ -43,7 +43,7 @@ const InlineSeatSelection = ({
   
   // Get dynamic seat price from bus data, fallback to 2000
   const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
-  const seatPrice = busseatPrice - 0.13*busseatPrice;
+  const seatPrice = busseatPrice - (0.13*busseatPrice);
   const vatAmount = busseatPrice*0.13;
   // Update seat selection when seats change
   useEffect(() => {
@@ -210,7 +210,7 @@ const InlineSeatSelection = ({
       // Row 3 - Middle section (aisle space) - Centered vertically
       row3: [
         { id: 'S2', type: bookedSeats.includes('S2') ? 'booked' : 'available', position: { x: 50 + centerOffset, y: 160 } },
-        { id: 'A17', type: bookedSeats.includes('A19') ? 'booked' : 'available', position: { x: 740 + centerOffset, y: 160 } },
+        { id: 'A17', type: bookedSeats.includes('A17') ? 'booked' : 'available', position: { x: 740 + centerOffset, y: 160 } },
       ],
 
       // Row 4 - Lower deck front row - Aligned with upper deck

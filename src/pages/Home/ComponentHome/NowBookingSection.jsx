@@ -44,7 +44,7 @@ const NowBookingSection = () => {
     }
   ];
   const handleBookNow = (booking) => {
-    console.log(`Booking ticket for route:`, booking);
+   
     
     // For special promotional card, navigate to search-results with proper search params
     if (booking.isSpecial) {
