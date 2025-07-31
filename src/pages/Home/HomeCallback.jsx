@@ -529,7 +529,7 @@ const HomeCallback = () => {
           setError('Payment got failed. Please try again.');
         } else {
           setPaymentStatus('booking_failed');
-          setError('Booking failed after successful payment. Please contact support.');
+          setError('Booking got failed. Please contact support.');
         }
       }
     } catch (error) {

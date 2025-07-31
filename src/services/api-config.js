@@ -43,9 +43,10 @@ const apiConfig = {
     
     // Payment endpoints - NPS 3-step payment flow
     payment: {
-      getInstruments: '/payment/instruments', // Step 1: Fetch payment methods
-      initiate: '/payment/initiate',          // Step 2: Initiate payment
-      complete: '/payment/complete',          // Step 3: Complete payment verification
+      getInstruments: '/payment/get-all-payment-instruments', // Step 1: Fetch payment methods
+      initiate: '/payment/initiate-payment',          // Step 2: Initiate payment
+      complete: '/payment/complete',  
+      servicecharge: '/payment/get-service-charge'       // Step 3: Complete payment verification
     },
     
     // Route endpoints
@@ -75,7 +76,27 @@ const apiConfig = {
   // Get base URL based on current environment
   getBaseUrl: () => {
     const env = apiConfig.getEnvironment();
-    return import.meta.env.VITE_API_BASE_URL || apiConfig.baseUrls[env] || apiConfig.baseUrls.development;
+    const viteApiUrl = import.meta.env.VITE_API_BASE_URL;
+    const configUrl = apiConfig.baseUrls[env];
+    const fallbackUrl = apiConfig.baseUrls.production; // Use production as fallback instead of development
+    
+    let finalUrl = viteApiUrl || configUrl || fallbackUrl;
+    
+    // 🚨 Safety check: Never use frontend URL - always force production API
+    if (!finalUrl || 
+        finalUrl.includes('sonatraveltours.com') || 
+        finalUrl.includes('localhost') || 
+        finalUrl.includes('127.0.0.1') ||
+        !finalUrl.includes('amazonaws.com')) {
+      console.warn('⚠️ Invalid or missing base URL detected:', finalUrl);
+      console.warn('⚠️ Environment:', env);
+      console.warn('⚠️ VITE_API_BASE_URL:', viteApiUrl);
+      console.warn('⚠️ Forcing production API URL');
+      finalUrl = 'https://6le3z7icgf.execute-api.us-east-1.amazonaws.com/prod';
+    }
+    
+    console.log('🔧 API Config - Final base URL:', finalUrl);
+    return finalUrl;
   },
   
   // Build full URL for an endpoint

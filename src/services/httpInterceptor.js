@@ -6,10 +6,11 @@
 import { getAuthToken, isAuthenticated, clearAuthToken } from '../utils/authToken';
 import { toast } from 'react-toastify';
 import userActionTracker, { ACTION_TYPES, createRestorationPayload } from '../utils/userActionTracker';
+import apiConfig from './api-config.js';
 
 class HttpInterceptor {
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV || '';
+    this.baseURL = apiConfig.getBaseUrl();
     this.sessionExpiredCallback = null;
     this.setupInterceptors();
   }
@@ -80,12 +81,8 @@ class HttpInterceptor {
         modifiedOptions.headers['Accept'] = 'application/json';
       }
       
-      console.log(' HTTP Interceptor - Request:', {
-        url,
-        method: modifiedOptions.method || 'GET',
-        hasAuth: !!token,
-        tokenPreview: token ? `${token.substring(0, 20)}...` : 'None'
-      });
+      
+    
     }
     
     return modifiedOptions;
@@ -104,16 +101,9 @@ class HttpInterceptor {
       return response;
     }
 
-    console.log('🔌 HTTP Interceptor - Response:', {
-      url,
-      status: response.status,
-      statusText: response.statusText,
-      isAuth: this.isAuthenticationError(response)
-    });
-
+    
     // Handle authentication errors
     if (this.isAuthenticationError(response)) {
-      console.warn(' Authentication error detected by interceptor');
       
       // Clear invalid tokens
       clearAuthToken();
@@ -183,12 +173,10 @@ class HttpInterceptor {
     }
     
     // Only intercept URLs that match our actual API base URLs
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-    const paymentBaseUrl = import.meta.env.VITE_API_BASE_URL_PAYMENT_DEV || '';
+    const apiBaseUrl = apiConfig.getBaseUrl();
     
     return (
       url.includes(apiBaseUrl) ||
-      url.includes(paymentBaseUrl) ||
       // Only intercept URLs that are actually on our API domains
       url.includes('execute-api.us-east-1.amazonaws.com')
     );
@@ -214,7 +202,7 @@ class HttpInterceptor {
     // Check if we're in an active login session - don't interfere
     const loginSession = localStorage.getItem('loginSession');
     if (loginSession === 'active') {
-      console.log('Active login session detected, skipping session expiry handling');
+     
       return;
     }
     
@@ -223,7 +211,7 @@ class HttpInterceptor {
         url.includes('/signup') || 
         url.includes('/otp') ||
         url.includes('sonatraveltours.com')) {
-      console.log('Auth endpoint or frontend domain detected, skipping session expiry handling');
+     
       return;
     }
     
@@ -294,7 +282,7 @@ class HttpInterceptor {
     
     // Check if we're already on login page to avoid infinite loops
     if (window.location.pathname !== loginUrl) {
-      console.log('🔄 Redirecting to login page with restoration context');
+     
       window.location.href = loginUrl;
     }
   }
@@ -315,13 +303,13 @@ class HttpInterceptor {
                           url.includes('/forgot-password');
     
     if (isAuthEndpoint) {
-      console.log('🚫 Skipping authentication for auth endpoint:', url);
+     
       return fetch(url, options);
     }
 
     // Pre-check authentication for critical operations
     if (!isAuthenticated()) {
-      console.warn('🚫 Pre-flight authentication check failed for:', url);
+      
       const authError = new Error('AUTHENTICATION_REQUIRED');
       authError.status = 401;
       authError.preCheck = true;
@@ -349,7 +337,7 @@ class HttpInterceptor {
         lastError = error;
         
         if (error.message === 'AUTHENTICATION_REQUIRED' && attempt < maxRetries) {
-          console.log(`🔄 Retry attempt ${attempt + 1} for ${url}`);
+         
           // Wait briefly before retry
           await new Promise(resolve => setTimeout(resolve, 1000));
           continue;
@@ -402,7 +390,7 @@ class HttpInterceptor {
   cleanup() {
     // Note: In a real application, you'd want to store and restore original fetch
     // This is a simplified implementation
-    console.log('HTTP Interceptor cleanup called');
+   
   }
 }
 

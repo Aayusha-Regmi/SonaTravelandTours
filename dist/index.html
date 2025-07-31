@@ -22,12 +22,25 @@
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+
+// Configure Tawk API to handle CORS issues
+Tawk_API.onLoad = function(){
+  console.log('✅ Tawk.to chat widget loaded successfully');
+};
+
+Tawk_API.onStatusChange = function(status){
+  console.log('📞 Tawk.to status:', status);
+};
+
 (function(){
 var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
 s1.async=true;
 s1.src='https://embed.tawk.to/6837f86a303dc619130d4ba3/1isda4o5c';
 s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
+s1.setAttribute('crossorigin','anonymous');
+s1.onerror = function() {
+  console.warn('⚠️ Tawk.to chat widget failed to load (CORS or network issue) - this is non-critical');
+};
 s0.parentNode.insertBefore(s1,s0);
 })();
 </script>
@@ -187,8 +200,8 @@ s0.parentNode.insertBefore(s1,s0);
       100% { transform: translateY(-80px) rotate(300deg); opacity: 0; }
     }
   </style>
-  <script type="module" crossorigin src="/assets/index-maRK9d7R.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-k_HIeU7f.css">
+  <script type="module" crossorigin src="/assets/index-1XVQ8iGa.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DY6PFtMw.css">
 </head>
 
 <body>

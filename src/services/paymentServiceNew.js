@@ -5,6 +5,18 @@ import { getAuthHeaders } from '../utils/authToken';
 class PaymentService {
   constructor() {
     this.baseUrl = apiConfig.getBaseUrl();
+    
+    
+    // Safety check: Never use frontend URL
+    if (this.baseUrl.includes('sonatraveltours.com') || 
+        this.baseUrl.includes('localhost') || 
+        this.baseUrl.includes('127.0.0.1') ||
+        !this.baseUrl.includes('amazonaws.com')) {
+     
+      this.baseUrl = 'https://6le3z7icgf.execute-api.us-east-1.amazonaws.com/prod';
+    }
+    
+   
   }
 
   async getPaymentInstrumentDetails() {
