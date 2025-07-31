@@ -21,7 +21,7 @@ export const setNavigationRef = (navigationRef) => {
  * Global session expiry handler
  */
 const handleSessionExpiry = (message = 'Session expired. Please login again.') => {
-  console.warn('Session expired, clearing tokens and redirecting to login');
+  // Session expired, clearing tokens and redirecting to login
   
   // Clear all auth tokens
   clearAuthToken();
@@ -59,11 +59,11 @@ const handleSessionExpiry = (message = 'Session expired. Please login again.') =
  * @returns {Promise<Response|null>} - Fetch response or null if session expired
  */
 export const apiFetch = async (url, options = {}, requireAuth = true) => {
-  console.log('API Service: Making request to:', url, 'requireAuth:', requireAuth);
+ 
   
   // Check authentication if required
   if (requireAuth && !isAuthenticated()) {
-    console.log('API Service: Authentication required but user not authenticated');
+    
     handleSessionExpiry('Please login to continue');
     return null;
   }
@@ -78,9 +78,9 @@ export const apiFetch = async (url, options = {}, requireAuth = true) => {
   if (requireAuth) {
     const authHeaders = getAuthHeaders();
     Object.assign(headers, authHeaders);
-    console.log('API Service: Added auth headers');
+   
   } else {
-    console.log('API Service: Skipping auth headers for public endpoint');
+    
   }
 
   try {
@@ -91,7 +91,7 @@ export const apiFetch = async (url, options = {}, requireAuth = true) => {
 
     // Check for 401 Unauthorized
     if (response.status === 401) {
-      console.warn('401 Unauthorized response detected');
+      // 401 Unauthorized response detected
       handleSessionExpiry('Session expired. Please login again.');
       return null;
     }
@@ -102,7 +102,7 @@ export const apiFetch = async (url, options = {}, requireAuth = true) => {
     
     // Check if it's a network error that might indicate session issues
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-      console.warn('Network error - checking authentication');
+      // Network error - checking authentication
       if (requireAuth && !isAuthenticated()) {
         handleSessionExpiry('Session expired. Please login again.');
         return null;
@@ -135,7 +135,7 @@ export const apiPost = async (url, data = null, options = {}, requireAuth = true
  * Login-specific POST request (never requires authentication)
  */
 export const apiLoginPost = async (url, data = null, options = {}) => {
-  console.log('API Service: Making login request to:', url);
+ 
   return apiFetch(url, {
     ...options,
     method: 'POST',

@@ -12,7 +12,7 @@ const PaymentCallback = () => {
   useEffect(() => {
     const processPaymentCallback = async () => {
       try {
-        console.log('Processing NPS payment callback...');
+       
         
         // Extract callback parameters from URL
         const merchantTxnId = searchParams.get('MerchantTxnId');
@@ -20,12 +20,7 @@ const PaymentCallback = () => {
         const status = searchParams.get('Status');
         const message = searchParams.get('Message');
         
-        console.log('Callback parameters:', {
-          merchantTxnId,
-          gatewayTxnId,
-          status,
-          message
-        });
+        
         
         if (!merchantTxnId) {
           throw new Error('Missing transaction ID in callback');
@@ -42,14 +37,14 @@ const PaymentCallback = () => {
         if (bookingDetailsStr) {
           try {
             bookingDetails = JSON.parse(bookingDetailsStr);
-            console.log('Retrieved booking details:', bookingDetails);
+          
           } catch (parseError) {
             console.error('Failed to parse booking details:', parseError);
           }
         }
         
         if (!bookingDetails) {
-          console.warn('No booking details found in session, using minimal data');
+          // No booking details found in session, using minimal data
           bookingDetails = {
             amount: 1000, // Default amount
             passengerName: 'Unknown Passenger',
@@ -65,10 +60,10 @@ const PaymentCallback = () => {
         };
         
         // Process the complete NPS payment flow
-        console.log('Calling handleNPSPaymentCallback...');
+       
         const result = await api.handleNPSPaymentCallback(callbackData, bookingDetails);
         
-        console.log('Payment callback result:', result);
+       
         
         if (result.success) {
           if (result.status === 'SUCCESS') {

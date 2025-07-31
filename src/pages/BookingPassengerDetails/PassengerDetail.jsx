@@ -18,24 +18,9 @@ const PassengerDetail = () => {
   // 🔥 FIX: Get selected seats from navigation state - supporting separate departure and return seats
   const { selectedSeats, returnSeats, busData, searchParams, travelDate, totalPrice, seatPrice, bookingDetails, tripType = 'oneWay', returnBusData, returnTravelDate } = location.state || {};
   
-  // 🔧 DEBUG: Log all received data immediately
-  console.log('🔧 PassengerDetail RECEIVED DATA:', {
-    travelDate,
-    returnTravelDate,
-    busData: busData?.id || busData?.busId,
-    returnBusData: returnBusData?.id || returnBusData?.busId,
-    tripType,
-    selectedSeats,
-    returnSeats,
-    locationState: location.state
-  });
+ 
 
-  // 🔧 DEBUG: Log complete bus data structures
-  console.log('🔧 PassengerDetail COMPLETE BUS DATA:', {
-    'busData': busData,
-    'returnBusData': returnBusData
-  });
-  
+ 
   // 🔥 FIX: Create passengers array based on actual selected seats (separate for departure and return)
   const [passengers, setPassengers] = useState([]);
   const [returnPassengers, setReturnPassengers] = useState([]);
@@ -71,13 +56,7 @@ const PassengerDetail = () => {
     const departureSeats = selectedSeats || [];
     const returnSeatsArray = returnSeats || [];
     
-    console.log('🎯 PassengerDetail useEffect - Seats data:', {
-      departureSeats,
-      returnSeatsArray,
-      tripType,
-      returnTravelDate,
-      returnBusData
-    });
+    
     
     if (departureSeats.length > 0) {
       const initialPassengers = departureSeats.map(seatId => ({
@@ -109,14 +88,12 @@ const PassengerDetail = () => {
         applyToAll: false
       }));
       setReturnPassengers(initialReturnPassengers);
-      console.log('Return passengers initialized:', initialReturnPassengers);
-      console.log('Return travel date:', returnTravelDate);
-      console.log('Return bus data:', returnBusData);
+     
     }
     
     // If no seats selected, redirect back
     if (departureSeats.length === 0 && (tripType === 'oneWay' || returnSeatsArray.length === 0)) {
-      console.error('❌ No selected seats found, redirecting back');
+      console.error('No selected seats found, redirecting back');
       toast.error('No seats selected. Please select seats first.');
       navigate(-1); // Go back to previous page
     }
@@ -213,7 +190,7 @@ const PassengerDetail = () => {
         p.fullName && p.gender && p.phoneNumber && p.cityOfResidence && p.boardingPlace && p.droppingPlace
       ) || passengers[0];
       
-      console.log('Using passenger details from:', sourcePassenger);
+  
       
       // Copy selected passenger's details to all return passengers
       const copiedPassengers = returnPassengers.map(returnPassenger => ({
@@ -476,7 +453,7 @@ const PassengerDetail = () => {
       const setCurrentErrors = activeTab === 'departure' ? setErrors : setReturnErrors;
       const newErrors = { ...currentErrorSet };
       
-      console.log(`Applying passenger ${sourceIndex + 1} (Seat ${sourcePassenger.id}) data to all others`);
+      
       
       for (let i = 0; i < updatedPassengers.length; i++) {
         if (i !== sourceIndex) {
@@ -523,12 +500,12 @@ const PassengerDetail = () => {
         autoClose: 2000,
       });
       
-      console.log('Applied data to all other passengers');
+     
     } else {
       // Uncheck and restore previous data
       updatedPassengers[sourceIndex].applyToAll = checked;
       
-      console.log(`Restoring previous data for other passengers (unchecked from Seat ${updatedPassengers[sourceIndex].id})`);
+      
       
       for (let i = 0; i < updatedPassengers.length; i++) {
         if (i !== sourceIndex && updatedPassengers[i].previousData) {
@@ -547,7 +524,7 @@ const PassengerDetail = () => {
         }
       }
       
-      console.log('Restored previous data for all passengers');
+      
     }
     
     updatePassengers(updatedPassengers);
@@ -555,18 +532,7 @@ const PassengerDetail = () => {
 
   const handleGoToPayment = () => {
     if (validateForm()) {
-      console.log('Proceeding to payment with complete data:', {
-        passengers,
-        returnPassengers,
-        selectedSeats,
-        returnSeats,
-        travelDate,
-        returnTravelDate,
-        busData,
-        returnBusData,
-        totalPrice,
-        tripType
-      });
+      
       
       // Calculate total price based on actual seat selections
       const departureSeats = selectedSeats || [];
@@ -597,13 +563,7 @@ const PassengerDetail = () => {
         }
       };
       
-      console.log('🚀 PassengerDetail -> Payment navigation state:', stateToPass);
-      console.log('🔧 DEBUG: Date values being passed to payment:', {
-        travelDate,
-        returnTravelDate,
-        tripType,
-        areEqual: travelDate === returnTravelDate
-      });
+     
       
       // 🔥 FIX: Pass all booking data to payment page with correct seat information
       navigate('/payment', {

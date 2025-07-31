@@ -22,13 +22,13 @@ const PaymentCallback = () => {
           throw new Error('Invalid NPS payment callback parameters');
         }
 
-        console.log(' Processing NPS callback with params:', paymentParams);
+       
 
         // Process the NPS callback response directly (no backend API call needed)
         const response = await processPaymentCallback();
         
         if (response.success) {
-          console.log(' NPS callback processed successfully');
+         
           setReceiptData({
             ...response.data,
             // Ensure all NPS callback data is included
@@ -42,7 +42,7 @@ const PaymentCallback = () => {
           throw new Error(response.message || 'NPS payment callback processing failed');
         }
       } catch (err) {
-        console.error(' NPS callback error:', err);
+        console.error('NPS callback error:', err);
         setError(err.message || 'An error occurred while processing your payment callback');
         
         // Set basic receipt data with error status from NPS callback

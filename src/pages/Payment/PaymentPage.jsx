@@ -63,6 +63,10 @@ const PaymentPage = () => {
 
   // Check authentication immediately on component mount
   React.useEffect(() => {
+    // Ensure discountAmount is reset on component mount
+    setDiscountAmount(0);
+    setPromoCode('');
+    
     // Track payment page access
     trackAction('PAYMENT_PAGE_ACCESS', {
       hasPassengers: passengers.length > 0,
@@ -265,12 +269,7 @@ const PaymentPage = () => {
         travelDate: formattedTravelDate
       };
       
-      // Debug logging for deployed environment
-      console.log('🔄 Coupon API Request:', {
-        url: API_URLS.COUPONS.APPLY_DISCOUNT,
-        requestBody,
-        hasToken: !!getAuthToken()
-      });
+     
       
       const response = await fetch(API_URLS.COUPONS.APPLY_DISCOUNT, {
         method: 'POST',
@@ -288,7 +287,7 @@ const PaymentPage = () => {
             errorData = JSON.parse(errorText);
           }
         } catch (e) {
-          console.warn('Could not parse error response:', e);
+          // Could not parse error response
           errorData = { message: 'Service unavailable' };
         }
         
@@ -451,7 +450,7 @@ const PaymentPage = () => {
 
     // Special handling for card category - redirect directly to payment gateway
     if (category.id === 'card') {
-      console.log('🔄 Card category selected - processing direct payment...');
+     
       
       try {
         // Get available payment instruments to find a card instrument
@@ -469,7 +468,7 @@ const PaymentPage = () => {
           let selectedCardInstrument;
           if (cardInstruments.length > 0) {
             selectedCardInstrument = cardInstruments[0];
-            console.log('💳 Using first available card instrument:', selectedCardInstrument.name);
+           
           } else {
             // Try predefined card codes in order of preference
             const preferredCardCodes = ['CARD', 'VISA', 'MASTERCARD', 'NCHL', ''];
@@ -478,7 +477,7 @@ const PaymentPage = () => {
               name: 'Credit/Debit Card',
               bankType: 'Card'
             };
-            console.log('💳 No specific card instruments found, using generic card code:', selectedCardInstrument.instrumentCode);
+           
           }
           
           // Store booking data for callback handling
@@ -493,14 +492,12 @@ const PaymentPage = () => {
           };
           sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
           
-          // Initiate payment with the card instrument
-          console.log('💳 Initiating payment for card with amount:', totalPrice);
-          console.log('💳 Using instrument code:', selectedCardInstrument.instrumentCode);
+         
           
           const paymentInitiated = await api.initiatePayment(totalPrice, selectedCardInstrument.instrumentCode);
           
           if (paymentInitiated.success) {
-            console.log('💳 Payment initiated successfully, redirecting to card gateway...');
+           
             
             // Show user-friendly message
             if (selectedCardInstrument.instrumentCode) {
@@ -528,24 +525,24 @@ const PaymentPage = () => {
             );
             
             if (redirected) {
-              console.log('💳 Successfully redirected to card payment gateway');
+             
             } else {
-              console.error('💳 Failed to redirect to card payment gateway');
+              console.error('Failed to redirect to card payment gateway');
               toast.error('Failed to redirect to payment gateway. Please try again.');
             }
             
           } else {
-            console.error('💳 Card payment initiation failed:', paymentInitiated.message);
+            console.error('Card payment initiation failed:', paymentInitiated.message);
             toast.error(`Payment Error: ${paymentInitiated.message || 'Card payment initiation failed'}`);
           }
           
         } else {
-          console.error('💳 Failed to load payment instruments for card processing');
+          console.error('Failed to load payment instruments for card processing');
           toast.error('Failed to load card payment options. Please try again.');
         }
         
       } catch (error) {
-        console.error('💳 Card payment processing error:', error);
+        console.error('Card payment processing error:', error);
         toast.error(`Card Payment Error: ${error.message || 'Failed to process card payment'}`);
       }
       
@@ -566,12 +563,12 @@ const PaymentPage = () => {
       setIsPaymentModalOpen(false);
       
       // Critical: Check and ensure authentication before seat booking
-      console.log('🔐 Verifying authentication before seat booking...');
+      
       
       // Check current authentication status
       const authCheck = api.checkAuthentication();
       if (!authCheck.isAuthenticated) {
-        console.warn('⚠️ Authentication expired during payment - attempting to restore...');
+       
         
         // Try to migrate/restore tokens
         api.migrateAuthTokens();
@@ -579,7 +576,7 @@ const PaymentPage = () => {
         // Check again after migration
         const authCheckAfterMigration = api.checkAuthentication();
         if (!authCheckAfterMigration.isAuthenticated) {
-          console.error('❌ Unable to restore authentication after payment');
+         
           toast.error('Session expired. Please login again to complete your booking. Your payment was successful.');
           
           // Store payment details for later booking completion
@@ -609,7 +606,7 @@ const PaymentPage = () => {
         }
       }
       
-      console.log('✅ Authentication verified - proceeding with seat booking');
+     
       
       // Helper function to format date for API
       const formatDateForAPI = (dateString) => {
@@ -619,7 +616,7 @@ const PaymentPage = () => {
           const date = new Date(dateString);
           return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
         } catch (error) {
-          console.warn('Date formatting error:', error);
+          // Date formatting error
           return new Date().toISOString().split('T')[0];
         }
       };
@@ -654,18 +651,18 @@ const PaymentPage = () => {
         }
       };
 
-      console.log('🎫 Booking departure seats:', JSON.stringify(departureBookingData, null, 2));
+  
       
       // Call seat booking API for departure with retry mechanism
       let departureResult;
       try {
         departureResult = await paymentService.processSeatPayment(departureBookingData);
       } catch (error) {
-        console.error('❌ Departure seat booking failed:', error);
+        console.error('Departure seat booking failed:', error);
         
         // Check if it's an authentication error
         if (error.message === 'AUTHENTICATION_REQUIRED' || error.message.includes('401') || error.message.includes('403')) {
-          console.warn('🔐 Authentication error during seat booking - user needs to re-login');
+          // Authentication error during seat booking - user needs to re-login
           toast.error('Your session expired. Please login again to complete booking. Your payment was successful.');
           
           // Store payment details for completion after re-login
@@ -722,7 +719,7 @@ const PaymentPage = () => {
       
       // For two-way trips: Make second API call for return seats with switched origin/destination
       if (tripType === 'twoWay' && returnBusData && returnTravelDate && returnPassengers && returnSeats) {
-        console.log('🔄 Booking return trip seats (switched origin/destination)...');
+       
         
         const returnBookingData = {
           seatInfo: {
@@ -755,17 +752,17 @@ const PaymentPage = () => {
           }
         };
 
-        console.log('🎫 Booking return seats (same payment, switched route):', JSON.stringify(returnBookingData, null, 2));
+        
         
         // Call seat booking API for return trip (second API call) with error handling
         try {
           returnResult = await paymentService.processSeatPayment(returnBookingData);
         } catch (error) {
-          console.error('❌ Return seat booking failed:', error);
+          console.error(' Return seat booking failed:', error);
           
           // Check if it's an authentication error
           if (error.message === 'AUTHENTICATION_REQUIRED' || error.message.includes('401') || error.message.includes('403')) {
-            console.warn('🔐 Authentication error during return seat booking');
+            // Authentication error during return seat booking
             toast.warning('Departure booking successful, but return booking requires re-authentication. Please login to complete.');
             
             // Store return booking data for completion
@@ -780,7 +777,7 @@ const PaymentPage = () => {
             // but still need user to complete return booking
           } else {
             // For non-auth errors, log but don't fail entire process
-            console.error('❌ Return booking failed with non-auth error:', error);
+            console.error('Return booking failed with non-auth error:', error);
             toast.warning('Departure booking successful, but return booking failed. Please contact support.');
           }
         }
@@ -892,10 +889,10 @@ const PaymentPage = () => {
       const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
       // Calculate base fare from seat price and seats
       const baseFare = Math.round(seatPrice * selectedSeats.length || totalPrice / 1.13);
-      // VAT is 13% of the busseatPrice
-      const vatAmount = Math.round(busseatPrice * 0.13);
+      // VAT is 13% of the busseatPrice per seat, multiplied by number of seats
+      const vatAmount = Math.round(busseatPrice * 0.13 * selectedSeats.length);
       const subtotal = baseFare + vatAmount;
-      const finalPaymentAmount = Math.max(0, subtotal - discountAmount);
+      const finalPaymentAmount = Math.max(0, subtotal - (discountAmount > 0 && promoCode.trim() ? discountAmount : 0));
       
       // Prepare booking data structure exactly as required by the API
       const requestData = {
@@ -1433,7 +1430,7 @@ const PaymentPage = () => {
                   )}
 
                   {/* Show discount if a coupon is applied */}
-                  {discountAmount > 0 && (
+                  {discountAmount > 0 && promoCode.trim() && (
                     <div className="flex justify-between items-center p-3 backdrop-blur-sm bg-gradient-to-r from-red-50/80 to-orange-50/80 rounded-xl border border-red-100/50 hover:shadow-md transition-all duration-200">
                       <div className="flex items-center space-x-2">
                         <span className="text-sm font-medium text-red-700 font-opensans">
@@ -1613,22 +1610,22 @@ const PaymentPage = () => {
                       2300
                     );
                     
-                    // Calculate VAT amount (13% of base fare)
-                    const vatAmount = Math.round(busseatPrice * 0.13);
+                    // Calculate VAT amount (13% of busseatPrice per seat, multiplied by number of seats)
+                    const vatAmount = Math.round(busseatPrice * 0.13 * selectedSeats.length);
                     
                     // Calculate subtotal (base + VAT)
                     subtotal = baseFare + vatAmount;
                   }
                   
-                  // Apply discount if any
-                  const finalAmount = Math.max(0, subtotal - discountAmount);
+                  // Apply discount if any (only if promo code exists)
+                  const finalAmount = Math.max(0, subtotal - (discountAmount > 0 && promoCode.trim() ? discountAmount : 0));
                   
                   return (
                     <div className="backdrop-blur-lg bg-gradient-to-br from-blue-50/90 via-indigo-50/80 to-blue-50/90 rounded-2xl p-5 border border-blue-200/50 shadow-2xl shadow-blue-100/60 hover:shadow-3xl hover:shadow-blue-200/50 transition-all duration-300 transform hover:-translate-y-1">
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent font-opensans">
                           Total Amount
-                          {discountAmount > 0 && (
+                          {discountAmount > 0 && promoCode.trim() && (
                             <span className="text-xs font-normal text-indigo-600 ml-2">
                               (After Discount)
                             </span>
@@ -1750,8 +1747,8 @@ const PaymentPage = () => {
           totalAmount = baseFare + vatAmount;
         }
         
-        // Calculate final amount by subtracting discount from total fare
-        const finalPaymentAmount = Math.max(0, totalAmount - (discountAmount || 0));
+        // Calculate final amount by subtracting discount from total fare (only if promo code exists)
+        const finalPaymentAmount = Math.max(0, totalAmount - (discountAmount > 0 && promoCode.trim() ? discountAmount : 0));
         
         return (
           <PaymentModal

@@ -21,12 +21,7 @@ const SearchResultsPage = () => {
   // Get search results and params from location state
   const { searchResults = [], searchParams = {}, fromLogin = false } = location.state || {};
   
-  // 🔧 DEBUG: Log search results data
-  console.log('🔧 SearchResultsPage DEBUG - Navigation state:', {
-    searchResults: searchResults.length,
-    searchParams,
-    fromLogin
-  });
+
   
   
   
@@ -41,7 +36,7 @@ const SearchResultsPage = () => {
   
   // 🔧 DEBUG: Log formData whenever it changes
   useEffect(() => {
-    console.log('🔧 SearchResultsPage DEBUG - formData updated:', formData);
+
   }, [formData]);
   
   // Set default values or values from search params
@@ -166,7 +161,7 @@ const SearchResultsPage = () => {
         const returnDateToUse = formData.returnDate || searchParams.returnDate;
         const returnApiDate = convertDate(returnDateToUse);
         if (!returnApiDate) {
-          console.warn('Invalid return date, skipping return search');
+          // Invalid return date, skipping return search
           setIsLoadingReturn(false);
         } else {
           // Return journey API call (swap from/to)
@@ -185,7 +180,7 @@ const SearchResultsPage = () => {
           
 
           if (!returnBusData || !Array.isArray(returnBusData)) {
-            console.warn('Invalid return API response, setting empty array');
+            // Invalid return API response, setting empty array
             setReturnBusResults([]);
           } else {
             setReturnBusResults(returnBusData);
@@ -223,7 +218,7 @@ const SearchResultsPage = () => {
 
 
     } catch (error) {
-      console.error(` ${source} search error:`, error);
+      console.error(`${source} search error:`, error);
       setError(`Search failed: ${error.message}`);
       setAllBusResults([]);
       setBusResults([]);
@@ -770,7 +765,7 @@ const SearchResultsPage = () => {
           returnDate={formData.returnDate}
           tripType={tripType}
           onDateChange={(dateString, dateObj, action) => {
-            console.log('📅 DateSelector change:', dateString, 'Action:', action);
+      
             
             // Handle different types of date selection
             if (action === 'returnDate') {

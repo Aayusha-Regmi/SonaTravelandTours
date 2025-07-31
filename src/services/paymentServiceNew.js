@@ -6,17 +6,13 @@ class PaymentService {
   constructor() {
     this.baseUrl = apiConfig.getBaseUrl();
     
-    
     // Safety check: Never use frontend URL
     if (this.baseUrl.includes('sonatraveltours.com') || 
         this.baseUrl.includes('localhost') || 
         this.baseUrl.includes('127.0.0.1') ||
         !this.baseUrl.includes('amazonaws.com')) {
-     
       this.baseUrl = 'https://6le3z7icgf.execute-api.us-east-1.amazonaws.com/prod';
     }
-    
-   
   }
 
   async getPaymentInstrumentDetails() {
@@ -182,20 +178,15 @@ class PaymentService {
       
 
       if (!response.ok) {
-        console.error('❌ Seat payment request failed:', response.status, response.statusText);
+        console.error('Seat payment request failed:', response.status, response.statusText);
         
         // Enhanced error debugging for 500 errors
         if (response.status === 500) {
-          console.error('🚨 SERVER ERROR DETAILS:');
-          console.error('- URL:', response.url);
-          console.error('- Request headers sent:', JSON.stringify({...getAuthHeaders(), 'Content-Type': 'application/json'}, null, 2));
-          console.error('- Request body sent:', JSON.stringify(seatPaymentData, null, 2));
-          
           try {
             const errorText = await response.text();
-            console.error('- Server error response:', errorText);
+            console.error('Server error response:', errorText);
           } catch (e) {
-            console.error('- Could not read server error response');
+            console.error('Could not read server error response');
           }
         }
         
@@ -272,7 +263,7 @@ class PaymentService {
       const seatResult = await this.processSeatPayment(seatPaymentData);
 
       if (!seatResult.success) {
-        console.error('❌ Seat booking failed:', seatResult.error);
+        console.error('Seat booking failed:', seatResult.error);
         return {
           success: false,
           error: 'Seat booking failed after successful payment',
@@ -330,7 +321,7 @@ class PaymentService {
       const initiateResult = await this.initiatePayment(paymentData);
       
       if (!initiateResult.success) {
-        console.error('❌ Payment initiation failed:', initiateResult.error);
+        console.error('Payment initiation failed:', initiateResult.error);
         return { success: false, error: initiateResult.error, step: 'initiate' };
       }
 
@@ -357,7 +348,7 @@ class PaymentService {
         };
         
       } else {
-        console.error('❌ Payment initiation was not successful');
+        console.error('Payment initiation was not successful');
         return { 
           success: false, 
           error: 'Payment initiation was not successful', 
@@ -546,7 +537,7 @@ class PaymentService {
         return result;
       }
     } catch (error) {
-      console.warn(' Could not retrieve stored booking details:', error);
+      // Could not retrieve stored booking details
     }
     
     return {};

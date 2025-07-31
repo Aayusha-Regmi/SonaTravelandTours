@@ -119,7 +119,7 @@ class HttpInterceptor {
         const text = await errorResponse.text();
         errorData = text ? JSON.parse(text) : {};
       } catch (e) {
-        console.warn('Could not parse error response:', e);
+        // Could not parse error response
       }
       
       // Throw custom authentication error
@@ -133,12 +133,6 @@ class HttpInterceptor {
 
     // Handle other HTTP errors
     if (!response.ok) {
-      console.warn(' HTTP error detected by interceptor:', {
-        status: response.status,
-        url,
-        statusText: response.statusText
-      });
-      
       // For non-auth errors, just log and return response
       // Let the calling code handle the error
     }
@@ -168,7 +162,7 @@ class HttpInterceptor {
     
     // Don't intercept the frontend domain - only intercept our API domains
     if (url.includes('sonatraveltours.com')) {
-      console.warn('🚫 Frontend domain detected in API call, skipping interceptor:', url);
+      // Frontend domain detected in API call, skipping interceptor
       return false;
     }
     
@@ -197,7 +191,7 @@ class HttpInterceptor {
    * @param {Object} options - Request options
    */
   handleSessionExpiry(url, options) {
-    console.warn(' Session expired - handling with user action tracking');
+    // Session expired - handling with user action tracking
     
     // Check if we're in an active login session - don't interfere
     const loginSession = localStorage.getItem('loginSession');

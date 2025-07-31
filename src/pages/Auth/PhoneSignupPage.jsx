@@ -111,12 +111,7 @@ const PhoneSignupPage = () => {
         
         setError(errorMessage);
       }    } catch (err) {
-      console.error('=== SEND OTP ERROR ===');
-      console.error('Error object:', err);
-      console.error('Error name:', err.name);
-      console.error('Error message:', err.message);
-      console.error('Error stack:', err.stack);
-      console.error('=== END ERROR DEBUG ===');
+      console.error('Send OTP error:', err.message);
       
       let errorMessage = 'Network error. Please check your connection and try again.';
       

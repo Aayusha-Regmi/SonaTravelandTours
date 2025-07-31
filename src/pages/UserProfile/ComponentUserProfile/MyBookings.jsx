@@ -53,10 +53,7 @@ const MyBookings = () => {
 
   // Split bookings into live and history based on travel date
  const isLiveTicket = (dateString)=>{
-  console.log('🔍 Checking date:', dateString); // Debug log
-  
   if (!dateString) {
-    console.log('❌ No date provided');
     return false;
   }
   
@@ -84,23 +81,13 @@ const MyBookings = () => {
   
   const today= new Date();
   
-  console.log('📅 Original date string:', dateString);
-  console.log('📅 Parsed Ticket Date:', ticketDate);
-  console.log('📅 Today Date:', today);
-  console.log('📅 Is Valid Ticket Date:', !isNaN(ticketDate.getTime()));
-  
   // Check if date is valid
   if (isNaN(ticketDate.getTime())) {
-    console.log('❌ Invalid date format after all parsing attempts:', dateString);
     return false;
   }
   
   today.setHours(0,0,0,0);//resetting time to start of the day
   ticketDate.setHours(0,0,0,0);//resetting time to start of the day
-  
-  console.log('📅 Ticket Date (normalized):', ticketDate);
-  console.log('📅 Today (normalized):', today);
-  console.log('📅 Comparison result (ticketDate >= today):', ticketDate >= today);
 
   return ticketDate>=today;
  }  
@@ -124,28 +111,16 @@ const MyBookings = () => {
   }
  }
 
-
-// Check all possible date fields
-if (bookings.length > 0) {
-  const sample = bookings[0];
- 
-}
-
-
-
+// Filter bookings into live and history
 const liveTickets= bookings.filter(booking => {
   const dateValue = booking.travelDate || booking.dateOfTravel || booking.date || booking.travel_date || booking.departureDate;
-  const isLive = isLiveTicket(dateValue);
- 
-  return isLive;
+  return isLiveTicket(dateValue);
 });
 
 const history = bookings.filter(booking => {
   const dateValue = booking.travelDate || booking.dateOfTravel || booking.date || booking.travel_date || booking.departureDate;
   return !isLiveTicket(dateValue);
 });
-
-
 
   if (loading) {
     return (

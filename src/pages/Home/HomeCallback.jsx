@@ -20,7 +20,7 @@ const formatDateForAPI = (dateString) => {
     
     // Check if date is valid
     if (isNaN(date.getTime())) {
-      console.warn('Invalid date format:', dateString);
+      // Invalid date format
       return new Date().toISOString().split('T')[0]; // Return today's date as fallback
     }
     
@@ -62,13 +62,13 @@ const validateTransactionId = (merchantTxnId) => {
   usedTransactions[merchantTxnId] = now;
   localStorage.setItem('usedTransactionIds', JSON.stringify(usedTransactions));
   
-  console.log('✅ Transaction ID validation passed');
+ 
   return true;
 };
 
 // Function to clear all payment-related storage after successful booking
 const clearPaymentStorage = () => {
-  console.log('🧹 Clearing payment-related storage...');
+ 
   
   // Clear session storage
   sessionStorage.removeItem('pendingBooking');
@@ -78,7 +78,7 @@ const clearPaymentStorage = () => {
   localStorage.removeItem('currentBookingData');
   localStorage.removeItem('redirectAfterLogin');
   
-  console.log('✅ Payment storage cleared');
+
 };
 
 const HomeCallback = () => {
@@ -101,11 +101,7 @@ const HomeCallback = () => {
     const merchantTxnId = urlParams.get('MerchantTxnId');
     const gatewayTxnId = urlParams.get('GatewayTxnId');
     
-    console.log('🎯 NPS callback detected on /home:', {
-      merchantTxnId,
-      gatewayTxnId,
-      fullSearch: location.search
-    });
+  
 
     if (merchantTxnId && gatewayTxnId) {
       try {
@@ -122,7 +118,7 @@ const HomeCallback = () => {
         // Immediately call /payment/onepg API
         checkPaymentStatusOnePg(merchantTxnId, gatewayTxnId);
       } catch (validationError) {
-        console.error('❌ Transaction validation failed:', validationError.message);
+        console.error('Transaction validation failed:', validationError.message);
         
         // Clear URL parameters to prevent refresh attempts with old transaction
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -140,7 +136,7 @@ const HomeCallback = () => {
       }
     } else {
       // No payment parameters, redirect to main home page
-      console.log('No payment parameters found, redirecting to /main');
+    
       navigate('/main', { replace: true });
     }
   }, [location.search, navigate]);
@@ -176,29 +172,29 @@ const HomeCallback = () => {
 
   // Step 1: Check payment status using /payment/onepg API
   const checkPaymentStatusOnePg = async (merchantTxnId, gatewayTxnId) => {
-    console.log('Step 1: Checking payment status with /payment/onepg...');
+
     
     setPaymentStatus('checking');
     
     try {
       const result = await paymentService.checkPaymentOnePg(merchantTxnId, gatewayTxnId);
       
-      console.log(' Payment status result:', result);
+      
       setTransactionResult(result);
       
       if (result.success && result.isPaymentSuccessful) {
-        console.log(' Payment successful, proceeding to book seats...');
+      
         setPaymentStatus('booking');
         
         // Step 2: Call /seat/payment to book seats
         await bookSeatsAfterPayment(merchantTxnId);
       } else {
-        console.log(' Payment failed or not successful:', result.status);
+   
         setPaymentStatus('failed');
         setError('Payment got failed. Please try again.');
       }
     } catch (error) {
-      console.error(' Error in payment status check:', error);
+     
       setPaymentStatus('error');
       setError(error.message || 'Failed to check payment status');
     }
@@ -206,12 +202,12 @@ const HomeCallback = () => {
 
   // Step 2: Book seats after successful payment verification
   const bookSeatsAfterPayment = async (merchantTxnId) => {
-    console.log('🎫 Step 2: Booking seats after payment verification...');
+  
     
     // Check if we've already attempted booking with this transaction ID
     const attemptedBookings = JSON.parse(sessionStorage.getItem('attemptedBookings') || '[]');
     if (attemptedBookings.includes(merchantTxnId)) {
-      console.log('⚠️ Booking already attempted for this transaction ID:', merchantTxnId);
+
       setPaymentStatus('booking_error');
       setError('Booking was already attempted for this transaction. Please contact support if you need assistance.');
       return;
@@ -232,7 +228,7 @@ const HomeCallback = () => {
       }
       
       const rawBookingData = JSON.parse(storedData);
-      console.log('💾 Retrieved raw booking data:', rawBookingData);
+    
       
       // Handle different storage formats
       let bookingData = {};
@@ -242,16 +238,7 @@ const HomeCallback = () => {
         bookingData = rawBookingData;
       }
       
-      // 🔧 DEBUG: Log date information immediately after parsing
-      console.log('🔧 DEBUG: Date information in booking data:', {
-        travelDate: bookingData.travelDate,
-        returnTravelDate: bookingData.returnTravelDate,
-        returnDate: bookingData.returnDate,
-        searchParams: bookingData.searchParams,
-        formData: bookingData.formData,
-        hasFormDataReturnDate: bookingData.formData?.returnDate,
-        hasSearchParamsReturnDate: bookingData.searchParams?.returnDate
-      });
+     
       
       // Check if this is a two-way booking by analyzing the data structure
       // Method 1: Check if we have separate returnPassengers array (new format from PassengerDetail)
@@ -268,36 +255,22 @@ const HomeCallback = () => {
       // 🚨 FIXED: Prioritize tripType check for explicit two-way bookings
       const isTwoWayBooking = isTripTypeTwoWay || hasReturnPassengers || hasReturnSeats || hasMixedPassengerData;
       
-      console.log('🔍 Two-way booking detection:', {
-        hasReturnPassengers,
-        hasReturnSeats,
-        isTripTypeTwoWay,
-        hasMixedPassengerData,
-        isTwoWayBooking,
-        departureSeats: bookingData.selectedSeats?.length || 0,
-        returnSeats: bookingData.returnSeats?.length || 0,
-        travelDate: bookingData.travelDate,
-        returnTravelDate: bookingData.returnTravelDate,
-        busData: bookingData.bookingDetails,
-        returnBusData: bookingData.returnBusData,
-        rawBookingData: Object.keys(bookingData)
-      });
+     
       
       // 🚨 FORCE DEBUG: If tripType is twoWay, log the complete data structure
       if (bookingData.tripType === 'twoWay') {
-        console.log('🚨 DETECTED TWO-WAY TRIP! Complete booking data:', bookingData);
+
       }
       
       let seatPaymentData;
       
       if (isTwoWayBooking) {
-        // Two-way booking: Use seatInfoList format
-        console.log('🔄 Processing two-way booking with seatInfoList format');
+
         const seatInfoList = [];
         
         // Always add departure journey for two-way trips
         if (bookingData.passengers && bookingData.passengers.length > 0) {
-          console.log('➡️ Adding departure journey');
+         
           // Extract departure bus ID - handle frontend vs API format mismatch
           const departureBusId = bookingData.busData?.originalData?.busId || // API busId from originalData (integer)
                                 parseInt(bookingData.busData?.id?.replace('bus-', '')) || // Frontend id "bus-101" -> 101
@@ -306,16 +279,7 @@ const HomeCallback = () => {
                                 bookingData.busId || 
                                 101; // Default fallback
           
-          console.log('🔧 DEBUG Departure bus ID extraction:', {
-            'busData (full object)': bookingData.busData,
-            'busData?.originalData?.busId': bookingData.busData?.originalData?.busId,
-            'busData?.id (frontend)': bookingData.busData?.id,
-            'parsed from frontend id': bookingData.busData?.id ? parseInt(bookingData.busData.id.replace('bus-', '')) : null,
-            'busData?.busId': bookingData.busData?.busId,
-            'bookingDetails?.busId': bookingData.bookingDetails?.busId,
-            'finalDepartureBusId': departureBusId,
-            'isUsingFallback': departureBusId === 101
-          });
+       
           
           seatInfoList.push({
             dateOfTravel: formatDateForAPI(bookingData.travelDate),
@@ -338,14 +302,7 @@ const HomeCallback = () => {
         
         // Add return journey if available
         if (bookingData.returnPassengers && bookingData.returnPassengers.length > 0) {
-          console.log('⬅️ Adding return journey');
-          console.log('🔧 DEBUG Return bus data structure:', JSON.stringify(bookingData.returnBusData, null, 2));
-          console.log('🔧 DEBUG Return travel date sources:', {
-            returnTravelDate: bookingData.returnTravelDate,
-            returnDate: bookingData.returnDate,
-            travelDate: bookingData.travelDate,
-            finalChoice: bookingData.returnTravelDate || bookingData.returnDate || bookingData.travelDate
-          });
+         
           
           // Extract return bus ID - handle frontend vs API format mismatch
           const returnBusId = bookingData.returnBusData?.originalData?.busId || // API busId from originalData (integer)
@@ -356,15 +313,7 @@ const HomeCallback = () => {
                              bookingData.returnBusId ||
                              102; // Default fallback
           
-          console.log('🔧 DEBUG Return bus ID extraction:', {
-            'returnBusData (full object)': bookingData.returnBusData,
-            'returnBusData?.originalData?.busId': bookingData.returnBusData?.originalData?.busId,
-            'returnBusData?.id (frontend)': bookingData.returnBusData?.id,
-            'parsed from frontend id': bookingData.returnBusData?.id ? parseInt(bookingData.returnBusData.id.replace('bus-', '')) : null,
-            'returnBusData?.busId': bookingData.returnBusData?.busId,
-            'finalReturnBusId': returnBusId,
-            'isUsingFallback': returnBusId === 102
-          });
+        
           
           seatInfoList.push({
             dateOfTravel: formatDateForAPI(bookingData.returnTravelDate || bookingData.returnDate || bookingData.travelDate),
@@ -385,7 +334,7 @@ const HomeCallback = () => {
           });
         } else if (isTripTypeTwoWay) {
           // If tripType is twoWay but no returnPassengers, create a placeholder or log warning
-          console.log('⚠️ Two-way trip detected but no return passengers found. This might be incomplete data.');
+          
         }
         
         seatPaymentData = {
@@ -395,7 +344,7 @@ const HomeCallback = () => {
           }
         };
         
-        console.log('✅ Created two-way booking with seatInfoList format:', seatPaymentData);
+       
       } else {
         // One-way booking: Use seatInfo format
         seatPaymentData = {
@@ -429,44 +378,23 @@ const HomeCallback = () => {
         };
       }
       
-      // 🚨 EXACT JSON FOR POSTMAN TESTING 🚨
-      console.log('🔥 COPY THIS JSON FOR POSTMAN:');
-      console.log('POST URL: https://6le3z7icgf.execute-api.us-east-1.amazonaws.com/prod/seat/payment');
-      console.log('Headers: Content-Type: application/json');
-      console.log('Body (JSON):');
-      console.log(JSON.stringify(seatPaymentData, null, 2));
       
-      // 🔍 Enhanced debugging for 500 error diagnosis
-      console.log(' DEBUG: Authentication check before API call');
-      console.log(' Auth token exists:', !!localStorage.getItem('authToken') || !!sessionStorage.getItem('authToken'));
-      console.log(' Seat payment data validation:');
       
       if (isTwoWayBooking) {
-        console.log('🔄 TWO-WAY BOOKING DETECTED');
-        console.log('- Booking format: seatInfoList (two-way)');
-        console.log('- Number of journeys:', seatPaymentData.seatInfoList.length);
+       
         seatPaymentData.seatInfoList.forEach((journey, index) => {
-          console.log(`- Journey ${index + 1}: ${journey.dateOfTravel}, Bus ID: ${journey.busId}, Passengers: ${journey.passengersList.length}`);
+          
         });
-      } else {
-        console.log('➡️ ONE-WAY BOOKING DETECTED');
-        console.log('- Booking format: seatInfo (one-way)');
-        console.log('- Travel date format:', seatPaymentData.seatInfo.dateOfTravel);
-        console.log('- Bus ID type:', typeof seatPaymentData.seatInfo.busId, seatPaymentData.seatInfo.busId);
-        console.log('- Passengers count:', seatPaymentData.seatInfo.passengersList.length);
-      }
+      } 
       
-      console.log('- Merchant transaction ID:', seatPaymentData.paymentInfo.merchantTransactionId);
-      
-      console.log('🚀 Final request body to /seat/payment API:', JSON.stringify(seatPaymentData, null, 2));
       
       const result = await paymentService.processSeatPayment(seatPaymentData);
       
-      console.log(' Seat booking result:', result);
+     
       setBookingResult(result);
       
       if (result.success && result.isBookingSuccessful) {
-        console.log('✅ Seats booked successfully!');
+       
         setPaymentStatus('success');
         
         // Clear all payment-related storage after successful booking
@@ -507,7 +435,7 @@ const HomeCallback = () => {
         
         // Show loading receipt for 2 seconds, then show receipt buttons
         setTimeout(() => {
-          console.log(' Receipt data ready for display:', receiptData);
+         
           setShowReceiptButtons(true);
         }, 2000);
         
@@ -521,7 +449,7 @@ const HomeCallback = () => {
           setIsProcessing(false);
         }, 3000);
       } else {
-        console.log(' Seat booking failed:', result.error);
+        
         
         // Check if payment was successful but booking failed
         if (result.data?.paymentDetails?.status === 'fail') {
@@ -533,7 +461,7 @@ const HomeCallback = () => {
         }
       }
     } catch (error) {
-      console.error(' Error in seat booking:', error);
+      console.error('Error in seat booking:', error);
       
       // Handle specific database constraint violations
       if (error.message && error.message.includes('UNIQUE KEY constraint')) {
@@ -553,7 +481,7 @@ const HomeCallback = () => {
 
   // Function to handle retry payment
   const handleRetryPayment = () => {
-    console.log('🔄 Handling retry payment...');
+   
     
     // Clear any old transaction data to prevent reuse
     const usedTransactions = JSON.parse(localStorage.getItem('usedTransactionIds') || '{}');
@@ -573,11 +501,10 @@ const HomeCallback = () => {
     if (bookingData) {
       // Store retry data and navigate to payment
       sessionStorage.setItem('retryBookingData', bookingData);
-      console.log('📦 Saved booking data for retry, navigating to payment page');
+      
       navigate('/payment');
     } else {
-      // No booking data found, redirect to search results
-      console.log('❌ No booking data found, redirecting to search results');
+     
       navigate('/search-results');
     }
   };
@@ -684,7 +611,7 @@ const HomeCallback = () => {
         <div class="footer">
           <p>Thank you for choosing Sona Travel & Tours!</p>
           <p>For support, please contact us with your transaction ID.</p>
-          <p>🔒 This receipt is digitally generated and valid for your booking.</p>
+          <p>This receipt is digitally generated and valid for your booking.</p>
         </div>
       </body>
       </html>
@@ -793,7 +720,7 @@ const HomeCallback = () => {
               <div className="mt-4 space-y-3">
                 <button 
                   onClick={() => {
-                    console.log('📋 Opening receipt popup with data:', receiptData);
+                   
                     setShowReceipt(true);
                   }}
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
@@ -811,7 +738,7 @@ const HomeCallback = () => {
                 </button>
                 <button 
                   onClick={() => {
-                    console.log('🔙 Navigating to My Bookings manually...');
+                
                     // Clear countdown if user manually navigates
                     setRedirectCountdown(null);
                     // Navigate to user profile with my bookings tab active

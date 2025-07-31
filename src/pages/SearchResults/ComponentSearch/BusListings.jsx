@@ -220,7 +220,7 @@ const BusListings = ({
   };
 
   const handleBookNow = (bus) => {
-    console.log('Navigating to seat selection for bus:', bus);
+   
     if (!bus || !bus.id) {
       console.error('Bus data or ID is missing:', bus);
       return;
@@ -232,7 +232,7 @@ const BusListings = ({
   
   // Handle seat selection - show inline seat selection
   const handleSelectSeats = (bus) => {
-    console.log('Select Seats clicked for bus:', bus);
+   
     
     // Validation: Check if required search parameters are selected
     const hasValidFrom = searchParams.fromCity && searchParams.fromCity.trim() !== '';
@@ -240,11 +240,6 @@ const BusListings = ({
     const hasValidDate = searchParams.date && searchParams.date.trim() !== '' && searchParams.date !== null;
     
     if (!hasValidFrom || !hasValidTo || !hasValidDate) {
-      console.warn('❌ Cannot select seats - missing required parameters:', {
-        fromCity: searchParams.fromCity,
-        toCity: searchParams.toCity,
-        date: searchParams.date
-      });
       
       // Show error message to user
       if (typeof toast !== 'undefined') {
@@ -312,12 +307,7 @@ const BusListings = ({
       setIsSearching(false);
     }
   };
-console.log('🚌 BusListings received props:', { 
-  buses, 
-  busesLength: buses.length,
-  firstBusAvailableSeats: buses[0]?.availableSeats,
-  firstBusBookedSeats: buses[0]?.bookedSeats 
-});
+
   return (
     <div className="space-y-4">
       {/* Filter summary display with removable filters */}
@@ -670,7 +660,7 @@ console.log('🚌 BusListings received props:', {
                 </span><Button 
                   variant="primary"                
                   onClick={() => {
-                    console.log('Select Seats clicked for bus:', bus);
+                    
                     handleSelectSeats(bus);
                   }}
                   className={`${

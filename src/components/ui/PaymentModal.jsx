@@ -40,7 +40,7 @@ const PaymentModal = ({
 
   // Session expiry handler for payment modal
   const handleSessionExpiry = (message = 'Session expired. Please login again to continue payment.') => {
-    console.warn('PaymentModal: Session expired, redirecting to login');
+    // PaymentModal: Session expired, redirecting to login
     
     // Clear all auth tokens
     clearAuthToken();
@@ -71,15 +71,7 @@ const PaymentModal = ({
   // Initialize payment modal when opened
   useEffect(() => {
     if (isOpen) {
-      console.log('💳 PaymentModal received props:', {
-        tripType,
-        returnPassengers: returnPassengers?.length || 0,
-        returnSeats: returnSeats?.length || 0,
-        returnBusData,
-        returnTravelDate,
-        travelDate,
-        busData: bookingDetails
-      });
+     
       
       // Store booking data immediately when modal opens (fix for callback storage issue)
       const bookingData = {
@@ -96,8 +88,7 @@ const PaymentModal = ({
         returnTravelDate: returnTravelDate
       };
       
-      console.log('💾 PaymentModal storing booking data:', bookingData);
-      
+    
       // Store in both sessionStorage and localStorage for redundancy
       sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
       localStorage.setItem('currentBookingData', JSON.stringify(bookingData));
@@ -174,7 +165,7 @@ const PaymentModal = ({
           toast.success(`Payment methods loaded for ${selectedCategory?.name || 'selected category'}.`);
         }
       } else {
-        console.error('❌ Failed to load payment instruments:', instruments.message);
+        console.error('Failed to load payment instruments:', instruments.message);
         
         // Try to use fallback instruments
         const fallbackInstruments = api.getFallbackPaymentInstruments();

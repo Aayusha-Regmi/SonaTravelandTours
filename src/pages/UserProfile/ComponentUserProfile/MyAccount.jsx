@@ -265,7 +265,7 @@ const MyAccount = () => {
             return;
           }
         } catch (err) {
-          console.warn('Email uniqueness check failed:', err);
+          // Email uniqueness check failed
           // Continue with profile update if check fails
         }
       }

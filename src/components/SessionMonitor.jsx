@@ -11,7 +11,7 @@ const SessionMonitor = () => {
   const navigate = useNavigate();
 
   const handleSessionExpiry = (message = 'Session expired. Please login again.') => {
-    console.warn('Session expired, clearing tokens and redirecting to login');
+    // Session expired, clearing tokens and redirecting to login
     
     // Clear all auth tokens
     clearAuthToken();
@@ -49,7 +49,7 @@ const SessionMonitor = () => {
       
       // Skip session check for public pages
       if (publicPaths.includes(currentPath)) {
-        console.log('SessionMonitor: Skipping session check for public page:', currentPath);
+       
         return;
       }
       
@@ -61,7 +61,7 @@ const SessionMonitor = () => {
       if (loginSession === 'active' && loginTime) {
         const timeSinceLogin = now - parseInt(loginTime);
         if (timeSinceLogin < 30000) { // 30 seconds grace period
-          console.log('SessionMonitor: Active login session (grace period), skipping expiry check');
+         
           return;
         } else {
           // Clear login session after grace period
@@ -76,7 +76,7 @@ const SessionMonitor = () => {
         // Only redirect to login if user is on a protected page
         if (protectedPaths.some(path => currentPath.startsWith(path)) || 
             criticalPaths.some(path => currentPath.startsWith(path))) {
-          console.log('SessionMonitor: No token found on protected page, redirecting to login');
+          
           handleSessionExpiry('Please login to access this page.');
         }
         return;
@@ -84,19 +84,19 @@ const SessionMonitor = () => {
       
       // For critical payment/booking pages, perform strict validation
       if (criticalPaths.some(path => currentPath.startsWith(path))) {
-        console.log('SessionMonitor: Critical page detected, performing strict session validation');
+       
         
         // For payment pages, validate the token by checking if user is authenticated
         if (!isAuthenticated()) {
-          console.log('SessionMonitor: Token invalid on critical page');
+          
           handleSessionExpiry('Your session has expired. Please login again to continue with your booking.');
           return;
         }
         
-        console.log('SessionMonitor: Session valid for critical operation');
+       
       } else {
         // For regular protected pages, just check token presence
-        console.log('SessionMonitor: Token present, session is valid');
+       
       }
     };
 
@@ -110,12 +110,12 @@ const SessionMonitor = () => {
       // More frequent checks for payment/booking pages (every 2 minutes)
       checkInterval = 2 * 60 * 1000;
       initialDelay = 5000; // 5 seconds
-      console.log('SessionMonitor: Setting up strict monitoring for critical page');
+      
     } else {
       // Less frequent checks for regular pages (every 10 minutes)
       checkInterval = 10 * 60 * 1000;
       initialDelay = 10000; // 10 seconds
-      console.log('SessionMonitor: Setting up regular monitoring');
+      
     }
 
     const interval = setInterval(checkSession, checkInterval);
@@ -136,14 +136,14 @@ const SessionMonitor = () => {
         // Check if this is during an active login session
         const loginSession = localStorage.getItem('loginSession');
         if (loginSession === 'active') {
-          console.log('SessionMonitor: Token removal during login session - ignoring');
+         
           return;
         }
         
         // Check if there was an explicit logout flag set
         const explicitLogout = localStorage.getItem('explicitLogout');
         if (explicitLogout === 'true') {
-          console.log('SessionMonitor: Explicit logout detected in another tab');
+         
           localStorage.removeItem('explicitLogout'); // Clean up the flag
           
           const currentPath = window.location.pathname;
@@ -151,12 +151,12 @@ const SessionMonitor = () => {
           
           // Only trigger logout if we're on a protected page
           if (!publicPaths.includes(currentPath)) {
-            console.warn('User logged out in another tab, redirecting to login');
+            // User logged out in another tab, redirecting to login
             handleSessionExpiry('You have been logged out in another tab.');
           }
         } else {
           // Token removed but no explicit logout - might be session expiry or login process
-          console.log('SessionMonitor: Token removed without explicit logout flag - not taking action');
+          
         }
       }
     };

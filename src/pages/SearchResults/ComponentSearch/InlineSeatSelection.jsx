@@ -43,20 +43,20 @@ const InlineSeatSelection = ({
   
   // Get dynamic seat price from bus data, fallback to 2000
   const busseatPrice = parseInt(busData?.fair || busData?.fare || busData?.price || 2000);
-  const seatPrice = busseatPrice-(0.13*busseatPrice);
-  
+  const seatPrice = busseatPrice - 0.13*busseatPrice;
+  const vatAmount = busseatPrice*0.13;
   // Update seat selection when seats change
   useEffect(() => {
     if (tripType === 'twoWay') {
       if (activeTab === 'departure') {
         setSelectedSeats(departureSeats);
-        setTotalPrice(departureSeats.length * seatPrice);
+        setTotalPrice(departureSeats.length * (seatPrice + vatAmount));
       } else {
         setSelectedSeats(returnSeats);
-        setTotalPrice(returnSeats.length * seatPrice);
+        setTotalPrice(returnSeats.length * (seatPrice + vatAmount));
       }
     }
-  }, [departureSeats, returnSeats, activeTab, tripType, seatPrice]);
+  }, [departureSeats, returnSeats, activeTab, tripType, seatPrice, vatAmount]);
   
   // This useEffect will refresh booked seats whenever:
   // - busData changes (different bus selected)
@@ -101,7 +101,7 @@ const InlineSeatSelection = ({
         
         // Only make API request if user is authenticated
         if (!isAuthenticated()) {
-          console.warn('User not authenticated, cannot fetch seat details');
+          // User not authenticated, cannot fetch seat details
           setBookedSeats([]);
           return;
         }
@@ -147,7 +147,7 @@ const InlineSeatSelection = ({
         }, 200);
         
       } catch (error) {
-        console.error(' SEAT API ERROR:', error.message);
+        console.error('SEAT API ERROR:', error.message);
         
         
         // On error, show all seats as available instead of mock data
@@ -258,10 +258,10 @@ const InlineSeatSelection = ({
   // Calculate available seats and update price when selectedSeats change
   useEffect(() => {
     if (Object.keys(seatConfig).length > 0) {
-      // Update total price based on selected seats
-      setTotalPrice(selectedSeats.length * seatPrice);
+      // Update total price based on selected seats (including VAT)
+      setTotalPrice(selectedSeats.length *seatPrice + selectedSeats.length*vatAmount);
     }
-  }, [selectedSeats, seatConfig]);
+  }, [selectedSeats, seatConfig, seatPrice, vatAmount]);
 
   useEffect(() => {
    
@@ -352,7 +352,7 @@ const InlineSeatSelection = ({
         returnTravelDate: finalReturnDate, // Use calculated return date
         searchParams: searchParams,          // Search parameters (from/to cities, etc.)
         travelDate: finalTravelDate,         // Use calculated departure date
-        totalPrice: tripType === 'twoWay' ? (departureSeats.length * seatPrice) + (returnSeats.length * seatPrice) : totalPrice,              // Total calculated price
+        totalPrice: tripType === 'twoWay' ? (departureSeats.length *seatPrice + departureSeats.length *vatAmount) + (returnSeats.length *seatPrice + returnSeats.length *vatAmount) : selectedSeats.length *seatPrice + selectedSeats.length *vatAmount,              // Total calculated price including VAT
         seatPrice: seatPrice,                // Price per seat (2000)
         tripType: tripType,                  // Trip type (oneWay/twoWay)
         bookingDetails: {
@@ -363,7 +363,7 @@ const InlineSeatSelection = ({
           arrivalTime: busData?.arrivalTime,
           totalSeats: tripType === 'twoWay' ? departureSeats.length : selectedSeats.length,
           farePerSeat: seatPrice,
-          totalFare: tripType === 'twoWay' ? (departureSeats.length * seatPrice) + (returnSeats.length * seatPrice) : totalPrice,
+          totalFare: tripType === 'twoWay' ? (departureSeats.length *seatPrice + departureSeats.length *vatAmount) + (returnSeats.length *seatPrice + returnSeats.length *vatAmount) : selectedSeats.length *seatPrice + selectedSeats.length *vatAmount,
           origin: searchParams?.fromCity || busData?.departureLocation || 'Kathmandu',
           destination: searchParams?.toCity || busData?.arrivalLocation || 'Birgunj'
         }
@@ -379,19 +379,18 @@ const InlineSeatSelection = ({
 
   const bookSeats = async (selectedSeats) => {
     try {
-      // Simulate API call with dummy data
-      console.log('Booking seats:', selectedSeats, 'for bus:', busId);
+
       
       // Simulate a successful response - replace with real API call
       const response = {
         success: true,
         bookedSeats: selectedSeats,
         busId: busId,
-        totalPrice: selectedSeats.length * seatPrice,
+        totalPrice: (selectedSeats.length * seatPrice)+((0.13*seatPrice)*selectedSeats.length),
         bookingId: `BK${Date.now()}`
       };
       
-      console.log('Booking successful:', response);
+    
       return response;
     } catch (error) {
       console.error('Error booking seats:', error);
@@ -753,23 +752,24 @@ const InlineSeatSelection = ({
           <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
             <div className="text-center sm:text-right">
               <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">
-                Total Amount
+                Total Amount <span className='italic text-gray-400'>(Including 13% Vat)</span>
                 {tripType === 'twoWay' && (
                   <span className="text-xs text-gray-500 block">
                     (Both journeys)
                   </span>
                 )}
               </p>
+            
               <span className="text-xl sm:text-2xl font-bold text-gray-800">
                 Rs. {(tripType === 'twoWay' 
-                  ? (departureSeats.length * seatPrice) + (returnSeats.length * seatPrice)
-                  : totalPrice
+                  ? (departureSeats.length *seatPrice + departureSeats.length*vatAmount) + (returnSeats.length *seatPrice + returnSeats.length* vatAmount)
+                  : selectedSeats.length *seatPrice + selectedSeats.length*vatAmount
                 ).toLocaleString()}
               </span>
               {tripType === 'twoWay' && (
                 <div className="text-xs text-gray-500 mt-1">
-                  <div>Departure: Rs. {(departureSeats.length * seatPrice).toLocaleString()}</div>
-                  <div>Return: Rs. {(returnSeats.length * seatPrice).toLocaleString()}</div>
+                  <div>Departure: Rs. {(departureSeats.length *seatPrice + departureSeats.length *vatAmount).toLocaleString()}</div>
+                  <div>Return: Rs. {(returnSeats.length *seatPrice + returnSeats.length *vatAmount).toLocaleString()}</div>
                 </div>
               )}
             </div>
