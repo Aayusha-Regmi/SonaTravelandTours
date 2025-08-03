@@ -29,14 +29,7 @@ export const getSessionStatus = () => {
  */
 export const logSessionStatus = (context = 'Unknown') => {
   const status = getSessionStatus();
-  console.log(`=== SESSION STATUS [${context}] ===`);
-  console.log('Has Token:', status.hasToken);
-  console.log('Is Authenticated:', status.isAuthenticated);
-  console.log('Is Expired:', status.isExpired);
-  console.log('Token Preview:', status.token);
-  console.log('Current Path:', status.currentPath);
-  console.log('Timestamp:', status.timestamp);
-  console.log('================================');
+
   return status;
 };
 
@@ -62,7 +55,7 @@ export const isLoginPage = (path = window.location.pathname) => {
 export const triggerSessionExpiry = () => {
   // Set token expiry to past time
   localStorage.setItem('tokenExpiry', '0');
-  console.log('Session expiry triggered for testing');
+ 
   
   // Reload page to trigger session check
   window.location.reload();
@@ -78,7 +71,7 @@ export const resetSession = () => {
   sessionStorage.removeItem('authToken');
   sessionStorage.removeItem('token');
   sessionStorage.removeItem('tokenExpiry');
-  console.log('Session reset for testing');
+
 };
 
 /**
@@ -92,7 +85,7 @@ export const createMockSession = () => {
   const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
   localStorage.setItem('tokenExpiry', expiryTime.toString());
   
-  console.log('Mock session created for testing');
+  
   return mockToken;
 };
 
@@ -108,7 +101,7 @@ if (typeof window !== 'undefined') {
     createMockSession
   };
   
-  console.log('Session debugging utilities available at window.sessionDebug');
+
 }
 
 export default {

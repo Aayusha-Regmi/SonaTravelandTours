@@ -198,7 +198,7 @@ class UserActionRestorer {
         return false;
       }
 
-      console.log('💳 Restoring payment process');
+      
       
       // Navigate to payment page with restored data
       navigate('/payment', {
@@ -230,7 +230,7 @@ class UserActionRestorer {
         return false;
       }
 
-      console.log('🪑 Restoring seat selection');
+      
       
       // Navigate to seat selection page with restored data
       navigate('/seat-selection', {
@@ -262,7 +262,6 @@ class UserActionRestorer {
         return false;
       }
 
-      console.log('📝 Restoring form data for:', formId);
       
       // Navigate to the page containing the form
       navigate(action.pathname, {
@@ -296,7 +295,7 @@ class UserActionRestorer {
         return false;
       }
 
-      console.log('🧭 Restoring page navigation to:', targetPath);
+    
       
       // Navigate to the target page
       navigate(targetPath, {
@@ -328,7 +327,7 @@ class UserActionRestorer {
         return false;
       }
 
-      console.log('🔍 Restoring filters:', filters);
+    
       
       // Navigate to the page with filters applied
       navigate(action.pathname, {
@@ -361,7 +360,7 @@ class UserActionRestorer {
         return false;
       }
 
-      console.log('🪟 Restoring modal state:', modalType);
+      
       
       // Navigate to the page with modal state
       navigate(action.pathname, {
@@ -395,7 +394,7 @@ class UserActionRestorer {
         return false;
       }
 
-      console.log('📅 Restoring booking process');
+     
       
       // Navigate to booking page with restored data
       navigate('/booking', {
@@ -427,7 +426,7 @@ class UserActionRestorer {
         return false;
       }
 
-      console.log('👤 Restoring profile edit');
+      
       
       // Navigate to profile page with edit state
       navigate('/profile', {
@@ -457,7 +456,7 @@ class UserActionRestorer {
       if (context.navigationState) {
         const { url, pathname, state } = context.navigationState;
         
-        console.log('🔄 Restoring general page state to:', pathname);
+      
         
         navigate(pathname, {
           state: {
@@ -474,7 +473,7 @@ class UserActionRestorer {
         const { pathname } = context.pageState;
         
         if (pathname && pathname !== '/login') {
-          console.log('🔄 Restoring page state to:', pathname);
+         
           
           navigate(pathname, {
             state: {
@@ -493,7 +492,7 @@ class UserActionRestorer {
         const { pathname } = mostRecentAction;
         
         if (pathname && pathname !== '/login') {
-          console.log('🔄 Restoring from most recent action to:', pathname);
+          
           
           navigate(pathname, {
             state: {
@@ -531,7 +530,7 @@ class UserActionRestorer {
    */
   clearRestorationData() {
     userActionTracker.clearAll();
-    console.log('🧹 All restoration data cleared');
+  
   }
 }
 
