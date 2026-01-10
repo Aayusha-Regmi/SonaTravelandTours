@@ -1,16 +1,17 @@
-# 🚌 Sona Travel and Tours
+#  Sona Travel and Tours
 
 A modern, responsive web application for bus booking and travel services built with React.js and Tailwind CSS.
 
-## 👥 Developers
+##  Developers
 
 **Developed by:**
-- **Rohit Jha** - [LinkedIn](https://www.linkedin.com/in/jrohitofficial/)
 - **Aayusha Regmi** - [LinkedIn](https://www.linkedin.com/in/aayusha-regmi/)
+- **Rohit Jha** - [LinkedIn](https://www.linkedin.com/in/jrohitofficial/)
 
-## 🌟 Features
 
-### 🎯 Core Features
+##  Features
+
+###  Core Features
 - **Bus Search & Booking** - Search for buses between Kathmandu and Birgunj
 - **One-Way & Two-Way Trips** - Flexible booking options
 - **Real-Time Seat Selection** - Interactive seat map for bus selection
@@ -20,21 +21,21 @@ A modern, responsive web application for bus booking and travel services built w
 - **Live Bus Tracking** - Real-time location tracking
 - **Travel Insurance** - Optional travel insurance coverage
 
-### 📱 User Experience
+###  User Experience
 - **Progressive Web App (PWA)** - App-like experience on mobile devices
 - **Dark/Light Theme Support** - Adaptive UI themes
 - **Offline Capabilities** - Basic functionality without internet
 - **Touch-Optimized** - Enhanced mobile touch interactions
 - **Accessibility** - WCAG compliant design
 
-### 🎨 Advanced UI Features
+###  Advanced UI Features
 - **Glass Morphism Design** - Modern backdrop blur effects
 - **Smooth Animations** - CSS transitions and transforms
 - **Interactive Maps** - Leaflet integration for route visualization
 - **Toast Notifications** - Real-time user feedback
 - **Loading States** - Skeleton loaders and spinners
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **React 19** - Latest React with concurrent features
@@ -56,7 +57,7 @@ A modern, responsive web application for bus booking and travel services built w
 - **Prettier** - Code formatting
 - **Vite PWA Plugin** - Progressive Web App features
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - **Node.js** (v16 or higher)
@@ -95,7 +96,7 @@ npm run build
 npm run preview
 ```
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 src/
@@ -122,7 +123,7 @@ src/
 └── styles/              # Global styles
 ```
 
-## 🔧 Key Implementation Details
+##  Key Implementation Details
 
 ### Search Form Component
 - **Responsive Dropdown Overlays** - Maximum z-index implementation for proper layering
@@ -147,7 +148,7 @@ src/
 - **Local Storage** - Persistent data storage
 - **Session Management** - User session handling
 
-## 🎨 UI/UX Features
+##  UI/UX Features
 
 ### Design System
 - **Consistent Color Palette** - Orange primary with neutral grays
@@ -168,18 +169,18 @@ xl: 1280px  /* Extra large devices */
 - **Transform Animations** - Scale and rotate effects
 - **Loading Animations** - Spinner and skeleton loaders
 
-## 🔒 Security Features
+##  Security Features
 
 - **Input Validation** - Client and server-side validation
 - **XSS Protection** - Sanitized user inputs
 - **HTTPS Enforcement** - Secure data transmission
 - **JWT Security** - Token-based authentication
 
-## 🌐 API Integration
+##  API Integration
 
 ### Base URLs
 - **Development**: `http://localhost:3000`
-- **Production**: `https://api.sonatravels.com`
+- **Production**: `http://prod_url`
 
 ### Key Endpoints
 - `GET /api/routes` - Available bus routes
@@ -194,7 +195,7 @@ xl: 1280px  /* Extra large devices */
 - **Push Notifications** - Booking updates
 - **App Icons** - Custom app icons for different devices
 
-## 🧪 Development Features
+##  Development Features
 
 ### Debug Tools
 - **API Debugger** - Real-time API request monitoring
@@ -206,14 +207,14 @@ xl: 1280px  /* Extra large devices */
 - **Prettier Formatting** - Consistent code style
 - **Component Documentation** - JSDoc comments
 
-## 📊 Performance Optimizations
+##  Performance Optimizations
 
 - **Code Splitting** - Route-based code splitting
 - **Image Optimization** - WebP format support
 - **Bundle Analysis** - Build size optimization
 - **Lazy Loading** - Component lazy loading
 
-## 🚀 Deployment
+##  Deployment
 
 ### Build Configuration
 ```bash
@@ -227,7 +228,7 @@ VITE_ESEWA_MERCHANT_ID=your_merchant_id
 - **Netlify** - Alternative hosting platform
 - **AWS S3** - Enterprise hosting solution
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -247,7 +248,7 @@ VITE_ESEWA_MERCHANT_ID=your_merchant_id
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -255,7 +256,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📞 Support
+
 
 For support, please contact:
 - **Rohit Jha** - [LinkedIn](https://www.linkedin.com/in/jrohitofficial/)
