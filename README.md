@@ -188,7 +188,7 @@ xl: 1280px  /* Extra large devices */
 - `POST /api/booking` - Create booking
 - `POST /api/payment` - Process payment
 
-## 📱 PWA Features
+##  PWA Features
 
 - **App Manifest** - Native app-like installation
 - **Service Worker** - Offline functionality
@@ -244,7 +244,7 @@ VITE_ESEWA_MERCHANT_ID=your_merchant_id
    - Confirm eSewa merchant configuration
    - Validate payment callback URLs
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
